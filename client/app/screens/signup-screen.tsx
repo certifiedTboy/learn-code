@@ -1,16 +1,18 @@
+import SuccessModal from "@/components/common/success-modal";
 import OTPBottomSheetModal from "@/components/onboarding/otp-bottom-sheet-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
-import SuccessModal from "@/components/ui/success-modal";
 import { Colors } from "@/constant/Colors";
 import { validateRegform } from "@/helpers/form-validators";
+import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useCreateNewUserMutation } from "@/lib/apis/user-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -60,6 +62,13 @@ const SignUpScreen = () => {
   }) => {
     const { firstName, lastName, email, password } = values.values;
 
+    if (!values.isValid)
+      return showNotification({
+        type: "error",
+        title: "Invalid Input",
+        message: "Invalid input values.",
+      });
+
     await createNewUser({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
@@ -70,8 +79,19 @@ const SignUpScreen = () => {
     });
   };
 
-  console.log(error);
-  console.log(data);
+  useEffect(() => {
+    if (isError) {
+      showNotification({
+        type: "error",
+        title: "Signup Failed",
+        message: error?.data?.message || "Something went wrong!",
+      });
+    }
+
+    if (isSuccess) {
+      setShowBottomSheetModal(true);
+    }
+  }, [isError, isSuccess]);
 
   return (
     <KeyboardAvoidingView
@@ -94,13 +114,24 @@ const SignUpScreen = () => {
             darkColor={Colors.dark.background}
             lightColor={Colors.light.background}
           >
-            <OTPBottomSheetModal
-              isVisible={showBottomSheetModal}
-              setIsVisibile={() => setShowBottomSheetModal(false)}
-            />
+            {showBottomSheetModal && (
+              <OTPBottomSheetModal
+                isVisible={true}
+                setIsVisibile={() => setShowBottomSheetModal(false)}
+                email={data?.data.email}
+                onUserVerificationSuccess={() => {
+                  setShowBottomSheetModal(false);
+                  setShowModal(true);
+                }}
+              />
+            )}
             <SuccessModal
               visible={showModal}
-              onClose={() => setShowModal(false)}
+              onClose={() => {
+                setShowModal(false);
+                navigation.navigate("SignInScreen");
+              }}
+              message="Your account has been created successfully!"
             />
             <ScrollView
               contentContainerStyle={{ flexGrow: 1 }}
@@ -232,6 +263,7 @@ const SignUpScreen = () => {
                   onPress={() => createNewUserHandler({ isValid, values })}
                 >
                   <Text style={styles.signInText}>SIGN UP</Text>
+                  {isLoading && <ActivityIndicator size="small" color="#fff" />}
                 </TouchableOpacity>
 
                 <View style={styles.dividerContainer}>
@@ -340,6 +372,9 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 3,
     marginBottom: height * 0.04,
   },
   signInText: {

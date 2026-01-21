@@ -33,14 +33,14 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('', {
         cause: `Invalid login credentials`,
-        description: 'User with this email does not exist',
+        description: 'No user with this email exists',
       });
     }
 
     if (!user.isVerified) {
       throw new UnauthorizedException('', {
-        cause: `This account is not verified`,
-        description: 'This account is not verified',
+        cause: `Unverified account`,
+        description: 'Account is unverified.',
       });
     }
     if (user && user.isVerified) {

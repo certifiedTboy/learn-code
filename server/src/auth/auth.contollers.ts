@@ -41,21 +41,11 @@ export class AuthControllers {
    * @param {AuthDto} authDto - The data transfer object containing user credentials.
    */
   @Post('login')
-  async login(
-    @Body() authDto: AuthDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async login(@Body() authDto: AuthDto) {
     try {
       const { password, email } = authDto;
 
       const result = await this.authService.signIn(password, email);
-
-      res.cookie('accessToken', result?.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: 60 * 60 * 1000 * 24, // 1 day
-      });
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {

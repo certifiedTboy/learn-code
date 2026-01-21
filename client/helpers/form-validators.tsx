@@ -7,13 +7,13 @@ export const validateRegform = () => {
     password: Yup.string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/\d/, "Password must contain at least one number")
       .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$#!%*?&])[A-Za-z\d@$#!%*?&]{8,}$/,
-        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+        /[@$#!%*?&]/,
+        "Password must contain at least one special character",
       ),
-    confirmPassword: Yup.string()
-      .required("Confirm password is required")
-      .oneOf([Yup.ref("password")], "Passwords must match"),
     email: Yup.string()
       .email("Invalid email")
       .required("You need to provide an email"),

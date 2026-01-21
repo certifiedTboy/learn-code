@@ -49,17 +49,20 @@ export class UsersService {
           const updatedUser = await this.userModel.findOneAndUpdate(
             { email: userWithEmailExist.email },
             {
-              verificationCode: otp,
+              verificationCode: otp.split('').slice(0, -1).join(''),
               isVerified: false,
               verificationCodeExpiresIn,
+              password: await PasscodeHashing.hashPassword(
+                createUserDto.password,
+              ),
             },
             { new: true },
           );
 
           await this.emailService.sendVerificationMail(
             updatedUser!.email,
-            'Bravixo Account Verification',
-            updatedUser!.verificationCode,
+            'Learnc Code Account Verification',
+            otp,
             updatedUser!.firstName,
           );
 
@@ -77,7 +80,7 @@ export class UsersService {
       }
 
       throw new BadRequestException('', {
-        cause: 'User with this email or phone number already exists',
+        cause: 'User with this email exist',
         description: 'invalid credentials',
       });
     }
@@ -87,7 +90,7 @@ export class UsersService {
 
     const createdUser = new this.userModel({
       ...createUserDto,
-      verificationCode: otp,
+      verificationCode: otp.split('').slice(0, -1).join(''),
       verificationCodeExpiresIn: verificationCodeExpiresIn,
       password: await PasscodeHashing.hashPassword(createUserDto.password),
     });
@@ -95,8 +98,8 @@ export class UsersService {
 
     await this.emailService.sendVerificationMail(
       user.email,
-      'Bravixo Account Verification',
-      user.verificationCode,
+      'Learnc Code Account Verification',
+      otp,
       user.firstName,
     );
     return user;
@@ -171,14 +174,17 @@ export class UsersService {
 
     const updatedUser = await this.userModel.findOneAndUpdate(
       { email },
-      { verificationCode: otp, verificationCodeExpiresIn },
+      {
+        verificationCode: otp.split('').slice(0, -1).join(''),
+        verificationCodeExpiresIn,
+      },
       { new: true },
     );
 
     await this.emailService.sendVerificationMail(
       updatedUser!.email,
       'Bravixo Account Verification',
-      updatedUser!.verificationCode,
+      otp,
       updatedUser!.firstName,
     );
 

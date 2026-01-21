@@ -1,86 +1,208 @@
 import { BottomSheet } from "@rneui/themed";
-import { useRef, useState } from "react";
 
+import { Colors } from "@/constant/Colors";
+import { validateVerificationform } from "@/helpers/form-validators";
+import { showNotification } from "@/helpers/notification";
+import { useGetScreenOrientation } from "@/hooks/use-get-screen-orientation";
+import { useTimeCountdown } from "@/hooks/use-time-countdown";
 import {
+  useGetNewVerificationCodeMutation,
+  useVerifyUserAccountMutation,
+} from "@/lib/apis/user-apis";
+import { Formik } from "formik";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
   Dimensions,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
+import { OtpInput } from "react-native-otp-entry";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemedText } from "../themed-text";
+import Icon from "../ui/Icon";
 
 const { width, height } = Dimensions.get("window");
+
+/**
+ * yup validation schema for the registration form
+ */
+const VerificationSchema = validateVerificationform();
 
 const OTPBottomSheetModal = ({
   isVisible,
   setIsVisibile,
+  email,
+  onUserVerificationSuccess,
 }: {
   isVisible: boolean;
   setIsVisibile: () => void;
+  email: string;
+  onUserVerificationSuccess: () => void;
 }) => {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const inputs = useRef<(TextInput | null)[]>([]);
+  const [verifyAccount, { isLoading, isError, error, isSuccess }] =
+    useVerifyUserAccountMutation();
 
-  const handleChange = (text: string, index: number) => {
-    if (isNaN(Number(text))) return;
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
+  const [
+    getNewVerificationCode,
+    {
+      isLoading: newVerificationCodeLoading,
+      isSuccess: newVerificationTokenSuccess,
+    },
+  ] = useGetNewVerificationCodeMutation();
 
-    if (text && index < otp.length - 1) {
-      inputs.current[index + 1]?.focus();
-    } else if (!text && index > 0) {
-      inputs.current[index - 1]?.focus();
-    } else if (index === otp.length - 1) {
-      inputs.current[index]?.blur();
-    } else {
-      inputs.current[0]?.focus();
+  const { width } = useWindowDimensions();
+
+  const { countdownTimeLeft, startCountdown, isCountingDown } =
+    useTimeCountdown();
+
+  const { isPortrait, getScreenOrientation } = useGetScreenOrientation();
+
+  useEffect(() => {
+    if (newVerificationTokenSuccess) {
+      showNotification({
+        type: "success",
+        title: "Success",
+        message: "A new code is sent",
+      });
     }
-  };
+
+    if (isError) {
+      showNotification({
+        type: "error",
+        title: "Error",
+        message: error?.data?.message || "Account verification failed!",
+      });
+    }
+
+    if (isSuccess) {
+      onUserVerificationSuccess();
+    }
+
+    getScreenOrientation(width);
+  }, [isError, newVerificationTokenSuccess, width, isSuccess]);
 
   return (
     <SafeAreaProvider>
-      <BottomSheet
-        modalProps={{}}
-        isVisible={isVisible}
-        onBackdropPress={setIsVisibile}
+      <Formik
+        initialValues={{ verificationCode: "" }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={VerificationSchema}
       >
-        <View style={[styles.container, styles.sheetBackground]}>
-          {/* Header */}
-          <Text style={styles.title}>OTP Verification</Text>
-          <Text style={styles.subtitle}>
-            Enter the verification code sent to your email
-          </Text>
+        {({ handleChange, values, errors, handleBlur, isValid }) => (
+          <BottomSheet
+            modalProps={{}}
+            isVisible={isVisible}
+            onBackdropPress={setIsVisibile}
+          >
+            <View style={[styles.container, styles.sheetBackground]}>
+              {/* Header */}
+              <Text style={styles.title}>Account Verification</Text>
+              <Text style={styles.subtitle}>
+                Enter the verification code sent to your email
+              </Text>
 
-          {/* OTP Inputs */}
-          <View style={styles.otpContainer}>
-            {otp.map((value, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => {
-                  inputs.current[index] = ref;
-                }}
-                value={value}
-                onChangeText={(text) => handleChange(text, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-                style={styles.otpInput}
-              />
-            ))}
-          </View>
+              {/* OTP Inputs */}
+              <View style={styles.otpContainer}>
+                <OtpInput
+                  numberOfDigits={6}
+                  onTextChange={handleChange("verificationCode")}
+                  onBlur={() => handleBlur("verificationCode")}
+                  onFilled={() =>
+                    verifyAccount({
+                      verificationCode: values.verificationCode,
+                    })
+                  }
+                  blurOnFilled={true}
+                  disabled={newVerificationCodeLoading || isLoading}
+                  theme={{
+                    pinCodeTextStyle: styles.pinCodeText,
+                    // filledPinCodeContainerStyle: styles.input,
+                    containerStyle: {
+                      ...styles.inputContainer,
+                      width: isPortrait ? width * 0.8 : width * 0.6,
+                    },
+                  }}
+                  textInputProps={{
+                    accessibilityLabel: "One-Time Password",
+                  }}
+                />
+              </View>
 
-          {/* Resend */}
-          <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn&apos;t receive code?</Text>
-            <TouchableOpacity>
-              <Text style={styles.resendLink}> Resend</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </BottomSheet>
+              {newVerificationCodeLoading && (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.light.generalBg}
+                />
+              )}
+
+              {isLoading && (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.light.generalBg}
+                />
+              )}
+
+              <View style={styles.errorTextContainer}>
+                {errors?.verificationCode && (
+                  <>
+                    <Icon
+                      name="alert-circle"
+                      size={16}
+                      color={Colors.light.errorText}
+                    />
+                    <ThemedText style={styles.errorText}>
+                      {errors.verificationCode}
+                    </ThemedText>
+                  </>
+                )}
+              </View>
+
+              <View style={styles.resendBtnContainer}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {!isCountingDown ? (
+                    <View style={styles.resendContainer}>
+                      <Text style={styles.resendText}>
+                        Didn&apos;t receive code?
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (!isCountingDown) {
+                            getNewVerificationCode({
+                              email,
+                            });
+                            startCountdown();
+                          }
+                        }}
+                      >
+                        <Text style={styles.resendLink}> Resend</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.timerContainer}>
+                      <ThemedText style={styles.timerText}>
+                        {countdownTimeLeft > 0 &&
+                          `Resend code in ${
+                            countdownTimeLeft === 60 ? 0 : countdownTimeLeft
+                          } seconds`}
+                      </ThemedText>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+          </BottomSheet>
+        )}
+      </Formik>
     </SafeAreaProvider>
   );
 };
@@ -104,6 +226,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  errorTextContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  errorText: {
+    color: Colors.light.errorText,
+    fontSize: 12,
+    fontFamily: "robotoMedium",
+  },
+
   title: {
     fontSize: width * 0.07,
     fontWeight: "700",
@@ -115,12 +247,33 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.04,
   },
 
+  resendBtnContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: -15,
+  },
+
+  resendBtnText: {
+    fontSize: 15,
+    fontFamily: "robotoMedium",
+    alignSelf: "flex-end",
+    marginLeft: -10,
+    marginRight: -13,
+  },
+
   otpContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: height * 0.04,
+    marginBottom: height * 0.02,
     gap: 3,
   },
+
+  inputContainer: {
+    marginHorizontal: "auto",
+    marginTop: 30,
+  },
+  pinCodeText: { color: "#0263FFFF" },
   otpInput: {
     width: width * 0.15,
     height: width * 0.15,
@@ -135,7 +288,7 @@ const styles = StyleSheet.create({
   resendContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: height * 0.05,
+    // marginBottom: height * 0.05,
   },
   resendText: {
     color: "#666",
@@ -155,6 +308,15 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontWeight: "700",
     fontSize: 16,
+  },
+
+  timerContainer: { flexDirection: "row", alignItems: "center" },
+
+  timerText: {
+    fontSize: 12,
+    color: Colors.light.textSecondary,
+    marginLeft: 5,
+    fontFamily: "robotoMedium",
   },
 });
 

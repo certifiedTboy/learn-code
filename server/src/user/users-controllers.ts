@@ -130,7 +130,7 @@ export class UsersController {
    * @description Handles requests to generate a new verification code for the user.
    * Validates the input data and checks if the user exists.
    * If valid, generates a new verification code and sends it to the user.
-   * @param {GenerateNewTokenDto} GenerateNewTokenDto - The email of the user for whom the verification code is to be generated.
+   * @param {GenerateNewTokenDto} generateNewTokenDto - The email of the user for whom the verification code is to be generated.
    * @throws {Error} - Throws an error if the code generation process fails.
    */
   @Post('new-verification-code')
@@ -157,11 +157,7 @@ export class UsersController {
       }
 
       // Send the verification code via email
-      return ResponseHandler.ok(
-        201,
-        'New verification code generated successfully',
-        updatedUser,
-      );
+      return ResponseHandler.ok(201, 'New Verification code sent', updatedUser);
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new InternalServerErrorException('', {

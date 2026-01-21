@@ -1,3 +1,4 @@
+import Notification from "@/components/common/Notification";
 import { Colors } from "@/constant/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { store } from "@/lib/redux/store";
@@ -35,6 +36,7 @@ export default function RootLayout() {
           style={[{ backgroundColor }, styles.container]}
           edges={["top", "bottom", "left", "right"]}
         >
+          <Notification />
           <AppNavigator />
         </SafeAreaView>
       </ThemeProvider>

@@ -1,9 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constant/Colors";
+import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +17,19 @@ import {
   View,
 } from "react-native";
 
+import { useLoginUserMutation } from "@/lib/apis/user-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
 const SignInScreen = () => {
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
   const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const [loginUser, { isLoading, isError, error }] = useLoginUserMutation();
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -33,6 +42,26 @@ const SignInScreen = () => {
     { light: "#555", dark: "#555" },
     "text",
   );
+
+  const handleLoginInputchange = (field: string, value: string) => {
+    setLoginData({ ...loginData, [field]: value });
+  };
+
+  const handleSubmit = () => {
+    if (!loginData.email || !loginData.password) return;
+
+    loginUser(loginData);
+  };
+
+  useEffect(() => {
+    if (isError) {
+      showNotification({
+        type: "error",
+        title: "Login Failed",
+        message: error?.data?.message || "Something went wrong!",
+      });
+    }
+  }, [isError]);
 
   return (
     <ThemedView
@@ -62,6 +91,7 @@ const SignInScreen = () => {
                 autoCapitalize="none"
                 style={[styles.input, { color: inputTextColor }]}
                 placeholderTextColor={placeHolderColor}
+                onChangeText={(value) => handleLoginInputchange("email", value)}
               />
             </View>
 
@@ -73,6 +103,9 @@ const SignInScreen = () => {
                   secureTextEntry={!passwordVisible}
                   style={[styles.passwordInput, { color: inputTextColor }]}
                   placeholderTextColor={placeHolderColor}
+                  onChangeText={(value) =>
+                    handleLoginInputchange("password", value)
+                  }
                 />
                 <TouchableOpacity
                   onPress={() => setPasswordVisible(!passwordVisible)}
@@ -91,8 +124,12 @@ const SignInScreen = () => {
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.signInButton}>
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={handleSubmit}
+            >
               <Text style={styles.signInText}>SIGN IN</Text>
+              {isLoading && <ActivityIndicator size="small" color="#FFF" />}
             </TouchableOpacity>
 
             <View style={styles.dividerContainer}>
@@ -198,6 +235,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginBottom: height * 0.04,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 3,
   },
   signInText: {
     color: "#FFF",
