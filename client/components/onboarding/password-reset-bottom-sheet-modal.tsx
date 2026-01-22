@@ -6,7 +6,7 @@ import { showNotification } from "@/helpers/notification";
 import { useGetScreenOrientation } from "@/hooks/use-get-screen-orientation";
 import { useTimeCountdown } from "@/hooks/use-time-countdown";
 import {
-  useGetNewVerificationCodeMutation,
+  useRequestPasscodeResetMutation,
   useVerifyUserAccountMutation,
 } from "@/lib/apis/user-apis";
 import { Formik } from "formik";
@@ -32,27 +32,26 @@ const { width, height } = Dimensions.get("window");
  */
 const VerificationSchema = validateVerificationform();
 
-const OTPBottomSheetModal = ({
+const PasswordResetBottomSheetModal = ({
   isVisible,
   setIsVisibile,
   email,
   onUserVerificationSuccess,
+  setValidPasswordResetCode,
 }: {
   isVisible: boolean;
   setIsVisibile: () => void;
   email: string;
   onUserVerificationSuccess: () => void;
+  setValidPasswordResetCode: (verificationCode: string) => void;
 }) => {
   const [verifyAccount, { isLoading, isError, error, isSuccess }] =
     useVerifyUserAccountMutation();
 
   const [
-    getNewVerificationCode,
-    {
-      isLoading: newVerificationCodeLoading,
-      isSuccess: newVerificationTokenSuccess,
-    },
-  ] = useGetNewVerificationCodeMutation();
+    requestPasscodeReset,
+    { isSuccess: newPasswordResetSuccess, isLoading: newPasswordResetLoading },
+  ] = useRequestPasscodeResetMutation();
 
   const { width } = useWindowDimensions();
 
@@ -62,7 +61,7 @@ const OTPBottomSheetModal = ({
   const { isPortrait, getScreenOrientation } = useGetScreenOrientation();
 
   useEffect(() => {
-    if (newVerificationTokenSuccess) {
+    if (newPasswordResetSuccess) {
       showNotification({
         type: "success",
         title: "Success",
@@ -77,7 +76,7 @@ const OTPBottomSheetModal = ({
         message:
           error && "data" in error && (error as any).data?.message
             ? (error as any).data.message
-            : "Account verification failed!",
+            : "Something went wrong",
       });
     }
 
@@ -86,12 +85,12 @@ const OTPBottomSheetModal = ({
     }
 
     getScreenOrientation(width);
-  }, [isError, newVerificationTokenSuccess, width, isSuccess]);
+  }, [isError, isSuccess, newPasswordResetSuccess, width]);
 
   return (
     <SafeAreaProvider>
       <Formik
-        initialValues={{ verificationCode: "" }}
+        initialValues={{ passwordResetCode: "" }}
         onSubmit={(values) => console.log(values)}
         validationSchema={VerificationSchema}
       >
@@ -103,25 +102,26 @@ const OTPBottomSheetModal = ({
           >
             <View style={[styles.container, styles.sheetBackground]}>
               {/* Header */}
-              <Text style={styles.title}>Account Verification</Text>
+              <Text style={styles.title}>Password Reset Verification</Text>
               <Text style={styles.subtitle}>
-                Enter the verification code sent to your email
+                Enter the password reset code sent to your email
               </Text>
 
               {/* OTP Inputs */}
               <View style={styles.otpContainer}>
                 <OtpInput
                   numberOfDigits={6}
-                  onTextChange={handleChange("verificationCode")}
-                  onBlur={() => handleBlur("verificationCode")}
-                  onFilled={() =>
+                  onTextChange={handleChange("passwordResetCode")}
+                  onBlur={() => handleBlur("passwordResetCode")}
+                  onFilled={() => {
                     verifyAccount({
-                      verificationCode: values.verificationCode,
-                      action: "ACCOUNT_VERIFICATION",
-                    })
-                  }
+                      verificationCode: values.passwordResetCode,
+                      action: "PASSWORD_RESET",
+                    });
+                    setValidPasswordResetCode(values.passwordResetCode);
+                  }}
                   blurOnFilled={true}
-                  disabled={newVerificationCodeLoading || isLoading}
+                  disabled={newPasswordResetLoading || isLoading}
                   theme={{
                     pinCodeTextStyle: styles.pinCodeText,
                     // filledPinCodeContainerStyle: styles.input,
@@ -136,7 +136,7 @@ const OTPBottomSheetModal = ({
                 />
               </View>
 
-              {newVerificationCodeLoading && (
+              {newPasswordResetLoading && (
                 <ActivityIndicator
                   size="small"
                   color={Colors.light.generalBg}
@@ -151,7 +151,7 @@ const OTPBottomSheetModal = ({
               )}
 
               <View style={styles.errorTextContainer}>
-                {errors?.verificationCode && (
+                {errors?.passwordResetCode && (
                   <>
                     <Icon
                       name="alert-circle"
@@ -159,7 +159,7 @@ const OTPBottomSheetModal = ({
                       color={Colors.light.errorText}
                     />
                     <ThemedText style={styles.errorText}>
-                      {errors.verificationCode}
+                      {errors.passwordResetCode}
                     </ThemedText>
                   </>
                 )}
@@ -181,7 +181,7 @@ const OTPBottomSheetModal = ({
                       <TouchableOpacity
                         onPress={() => {
                           if (!isCountingDown) {
-                            getNewVerificationCode({
+                            requestPasscodeReset({
                               email,
                             });
                             startCountdown();
@@ -211,7 +211,7 @@ const OTPBottomSheetModal = ({
   );
 };
 
-export default OTPBottomSheetModal;
+export default PasswordResetBottomSheetModal;
 
 const styles = StyleSheet.create({
   button: {

@@ -162,8 +162,16 @@ export const userApis = createApi({
 
     requestPasscodeReset: builder.mutation({
       query: (payload) => ({
-        url: `/users/request-passcode-reset`,
+        url: `/users/password/reset`,
         method: "POST",
+        body: payload,
+      }),
+    }),
+
+    updatePasscode: builder.mutation({
+      query: (payload) => ({
+        url: `/users/password/reset/update`,
+        method: "PATCH",
         body: payload,
       }),
     }),
@@ -179,4 +187,5 @@ export const {
   useGetNewVerificationCodeMutation,
   useRequestPasscodeResetMutation,
   useUploadProfileImageMutation,
+  useUpdatePasscodeMutation,
 } = userApis;

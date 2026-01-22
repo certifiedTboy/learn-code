@@ -3,6 +3,8 @@ import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constant/Colors";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useLoginUserMutation } from "@/lib/apis/user-apis";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,9 +19,6 @@ import {
   View,
 } from "react-native";
 
-import { useLoginUserMutation } from "@/lib/apis/user-apis";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-
 const { width, height } = Dimensions.get("window");
 
 const SignInScreen = () => {
@@ -29,7 +28,8 @@ const SignInScreen = () => {
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const [loginUser, { isLoading, isError, error }] = useLoginUserMutation();
+  const [loginUser, { isLoading, isError, error, isSuccess }] =
+    useLoginUserMutation();
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -58,10 +58,19 @@ const SignInScreen = () => {
       showNotification({
         type: "error",
         title: "Login Failed",
-        message: error?.data?.message || "Something went wrong!",
+        message:
+          error && "data" in error && (error as any).data?.message
+            ? (error as any).data.message
+            : "Something went wrong",
       });
     }
   }, [isError]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigation.navigate("CoursesScreen");
+    }
+  }, [isSuccess]);
 
   return (
     <ThemedView

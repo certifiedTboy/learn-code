@@ -8,4 +8,8 @@ export class UpdatePasswordDto {
   @IsString()
   @IsNotEmpty()
   readonly passwordResetCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly confirmPassword: string;
 }

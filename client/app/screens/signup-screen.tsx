@@ -84,7 +84,10 @@ const SignUpScreen = () => {
       showNotification({
         type: "error",
         title: "Signup Failed",
-        message: error?.data?.message || "Something went wrong!",
+        message:
+          error && "data" in error && (error as any).data?.message
+            ? (error as any).data.message
+            : "Something went wrong",
       });
     }
 

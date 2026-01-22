@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import CoursesScreen from "./screens/courses-screen";
 import HomeScreen from "./screens/onboarding-screen";
 import RequestPasswordResetScreen from "./screens/request-password-reset-screen";
 import SignInScreen from "./screens/signin-screen";
@@ -35,6 +36,11 @@ const OnboardingStack = () => {
         name="UpdatePasswordScreen"
         options={{ headerShown: false }}
         component={UpdatePasswordScreen}
+      />
+      <Stack.Screen
+        name="CoursesScreen"
+        options={{ headerShown: false }}
+        component={CoursesScreen}
       />
     </Stack.Navigator>
   );

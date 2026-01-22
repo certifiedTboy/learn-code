@@ -10,6 +10,7 @@ import { CodeGenerator } from '../helpers/code-generator';
 import { AccessJwtService } from '../common/jwt/access-jwt.service';
 import { EmailService } from 'src/common/mailer/mailer.service';
 import { Time } from '../helpers/time';
+import { VerifyUserDto } from './dto/verify-user.dto';
 
 /**
  * @class UsersService
@@ -112,44 +113,81 @@ export class UsersService {
    * @returns {Promise<UserDocument | null>} - The verified user object or null if verification fails.
    * @throws {Error} - Throws an error if the verification process fails.
    */
-  async verifyUser(verificationCode: string): Promise<UserDocument | null> {
-    const user = await this.findUserByVerificationCode(verificationCode);
-
-    if (!user) {
-      // User not found or verification code is invalid
-      throw new BadRequestException('', {
-        cause: 'invalid verification code',
-        description: 'Some error description',
+  async verifyUser(verifyUserDto: VerifyUserDto): Promise<UserDocument | null> {
+    if (verifyUserDto.action === 'ACCOUNT_VERIFICATION') {
+      const user = await this.checkIfUserExist({
+        verificationCode: verifyUserDto.verificationCode,
       });
-    }
 
-    // Check if the verification code has expired
-    if (Time.checkIfTimeIsExpired(user.verificationCodeExpiresIn)) {
-      throw new BadRequestException('', {
-        cause: 'Verification code has expired',
-        description: 'Please request a new verification code',
+      if (!user) {
+        // User not found or verification code is invalid
+        throw new BadRequestException('', {
+          cause: 'invalid verification code',
+          description: 'Invalid verification code',
+        });
+      }
+
+      // Check if the verification code has expired
+      if (Time.checkIfTimeIsExpired(user.verificationCodeExpiresIn)) {
+        throw new BadRequestException('', {
+          cause: 'Code has expired',
+          description: 'Please request a new verification code',
+        });
+      }
+
+      // Update user verification status and clear verification code
+      const updatedUser = await this.userModel.findOneAndUpdate(
+        { _id: user?._id },
+        {
+          isVerified: true,
+          isActive: true,
+          verificationCode: null,
+          verificationCodeExpiresIn: null,
+        },
+        { new: true },
+      );
+
+      await this.emailService.sendAccountSetupSuccessMail(
+        updatedUser!.email,
+        'Account Setup Successful',
+        updatedUser!.firstName,
+      );
+
+      return updatedUser;
+    } else {
+      const user = await this.checkIfUserExist({
+        passwordResetCode: verifyUserDto.verificationCode,
       });
+
+      if (!user) {
+        // User not found or verification code is invalid
+        throw new BadRequestException('', {
+          cause: 'invalid password reset code',
+          description: 'Invalid password reset code',
+        });
+      }
+
+      // Check if the verification code has expired
+      if (Time.checkIfTimeIsExpired(user.passwordResetCodeExpiresIn)) {
+        throw new BadRequestException('', {
+          cause: 'Code has expired',
+          description: 'Please request a new verification code',
+        });
+      }
+
+      // Update user verification status and clear verification code
+      const updatedUser = await this.userModel.findOneAndUpdate(
+        { _id: user?._id },
+        {
+          isVerified: true,
+          isActive: true,
+          passwordResetCodeExpiresIn: null,
+        },
+        { new: true },
+      );
+
+      return updatedUser;
     }
-
-    // Update user verification status and clear verification code
-    const updatedUser = await this.userModel.findOneAndUpdate(
-      { _id: user?._id },
-      {
-        isVerified: true,
-        isActive: true,
-        verificationCode: null,
-        verificationCodeExpiresIn: null,
-      },
-      { new: true },
-    );
-
-    await this.emailService.sendAccountSetupSuccessMail(
-      updatedUser!.email,
-      'Account Setup Successful',
-      updatedUser!.firstName,
-    );
-
-    return updatedUser;
   }
 
   /**
@@ -183,7 +221,7 @@ export class UsersService {
 
     await this.emailService.sendVerificationMail(
       updatedUser!.email,
-      'Bravixo Account Verification',
+      'Learn Code Account Verification',
       otp,
       updatedUser!.firstName,
     );
@@ -196,7 +234,7 @@ export class UsersService {
    * @description Checks if a user exists in the database based on the provided query.
    * @param {object} query - The query object to search for the user.
    */
-  async checkIfUserExist(query: object): Promise<User | null> {
+  async checkIfUserExist(query: object): Promise<UserDocument | null> {
     return this.userModel.findOne(query).select('-__v');
   }
 
@@ -249,15 +287,15 @@ export class UsersService {
       });
     }
 
-    if (
-      user.passwordResetCodeExpiresIn &&
-      Time.checkIfTimeIsExpired(user.passwordResetCodeExpiresIn)
-    ) {
-      throw new BadRequestException('', {
-        cause: 'Password reset code has expired',
-        description: 'Please request a new password reset code',
-      });
-    }
+    // if (
+    //   user.passwordResetCodeExpiresIn &&
+    //   Time.checkIfTimeIsExpired(user.passwordResetCodeExpiresIn)
+    // ) {
+    //   throw new BadRequestException('', {
+    //     cause: 'Password reset code has expired',
+    //     description: 'Please request a new password reset code',
+    //   });
+    // }
 
     // hash the password and save it to the database
     const hashedPassword = await PasscodeHashing.hashPassword(password);
@@ -339,70 +377,19 @@ export class UsersService {
      */
     if (!user) {
       throw new BadRequestException('', {
-        cause: 'User not found',
+        cause: 'Email does not exist',
         description: 'User does not exist',
       });
     }
 
-    /**
-     * check if user is verified, throw an error if user is not verified
-     */
-    if (!user.isVerified) {
-      throw new BadRequestException('', {
-        cause: 'User not verified',
-        description: 'User is not verified',
-      });
-    }
-
-    /**
-     * check if password reset code already exists and is not expired, then resend the same code
-     */
-    if (user.passwordResetCode) {
-      if (!Time.checkIfTimeIsExpired(user.passwordResetCodeExpiresIn)) {
-        await this.emailService.sendPasswordResetMail(
-          user.email,
-          'Password Reset Request',
-          user.passwordResetCode,
-          user.firstName,
-        );
-      } else {
-        /**
-         * If password reset token exist and is expired, generate a new one
-         * and send to the user email, then update the user record
-         */
-        const token = CodeGenerator.generateOtp();
-
-        const updatedUser = await this.userModel.findOneAndUpdate(
-          { email: user?.email },
-          {
-            passwordResetToken: token,
-            passwordResetTokenExpiresIn: Time.getTimeInOneHour(),
-          },
-          { new: true },
-        );
-
-        await this.emailService.sendPasswordResetMail(
-          updatedUser!.email,
-          'Password Reset Request',
-          updatedUser!.passwordResetCode,
-          updatedUser!.firstName,
-        );
-
-        return updatedUser;
-      }
-    }
-
-    /**
-     * If password reset token does not exist, generate a new one
-     * and send to the user email, then update the user record
-     */
-    const token = CodeGenerator.generateOtp();
+    const otp = CodeGenerator.generateOtp();
 
     const updatedUser = await this.userModel.findOneAndUpdate(
       { email: user?.email },
       {
-        passwordResetCode: token,
+        passwordResetCode: otp.split('').slice(0, -1).join(''),
         passwordResetCodeExpiresIn: Time.getTimeInOneHour(),
+        isVerified: false,
       },
       { new: true },
     );
@@ -410,7 +397,7 @@ export class UsersService {
     await this.emailService.sendPasswordResetMail(
       updatedUser!.email,
       'Password Reset Request',
-      updatedUser!.passwordResetCode,
+      otp,
       updatedUser!.firstName,
     );
 
@@ -419,7 +406,7 @@ export class UsersService {
 
   /**
    * @method increaseUserUnreadMessageCount
-   * @description Updates the offline status of a user.
+   * @description Increases the unread message count of a user.
    * @param {string} userId - The ID of the user to update.
    * @returns {Promise<UserDocument>} - The updated user object or null if not found.
    */

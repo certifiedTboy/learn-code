@@ -96,9 +96,7 @@ export class UsersController {
   @Patch('verify')
   async verifyUser(@Body() verifyUserDto: VerifyUserDto) {
     try {
-      const result = await this.usersService.verifyUser(
-        verifyUserDto.verificationCode,
-      );
+      const result = await this.usersService.verifyUser(verifyUserDto);
 
       /**
        * we check if the result still contains the verification code
@@ -111,6 +109,7 @@ export class UsersController {
 
       return ResponseHandler.ok(200, 'User verified successfully', result!);
     } catch (error: unknown) {
+      console.log(error);
       if (error instanceof Error) {
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
@@ -188,13 +187,13 @@ export class UsersController {
       if (!email) {
         throw new BadRequestException('', {
           cause: 'Email is required',
-          description: 'Please provide a valid email address',
+          description: 'Email is required',
         });
       }
 
       const user = await this.usersService.getResetPasswordCode(email);
 
-      return ResponseHandler.ok(200, 'Password reset code sent successfully', {
+      return ResponseHandler.ok(200, 'Password reset code sent', {
         email: user?.email,
       });
     } catch (error: unknown) {
@@ -230,6 +229,13 @@ export class UsersController {
           cause: 'Password and password reset code are required',
           description:
             'Please provide a valid password and password reset code',
+        });
+      }
+
+      if (password !== updatePasswordDto.confirmPassword) {
+        throw new BadRequestException('', {
+          cause: 'Passwords do not match',
+          description: 'Passwords do not match',
         });
       }
 
