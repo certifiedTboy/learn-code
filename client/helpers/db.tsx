@@ -35,6 +35,8 @@ export const createUserProfileTable = async () => {
       CREATE TABLE IF NOT EXISTS user_profile (
         id TEXT PRIMARY KEY NOT NULL,
         email TEXT NOT NULL,
+        firstName TEXT DEFAULT NULL,
+        lastName TEXT DEFAULT NULL,
         profilePicture TEXT DEFAULT NULL
       );
     `);
@@ -49,19 +51,27 @@ export const createUserProfileTable = async () => {
 export const upsertUserProfile = async (userProfile: {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
   profilePicture: string;
 }) => {
   try {
     const db = await getDatabase();
     await db.runAsync(
       `
-      INSERT INTO user_profile (id, email, profilePicture)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO user_profile (id, email, firstName, lastName, profilePicture)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         email = excluded.email,
         profilePicture = excluded.profilePicture
     `,
-      [userProfile.id, userProfile.email, userProfile.profilePicture],
+      [
+        userProfile.id,
+        userProfile.email,
+        userProfile.firstName,
+        userProfile.lastName,
+        userProfile.profilePicture,
+      ],
     );
   } catch (error) {
     console.log("Error upserting user profile:", error);
@@ -97,15 +107,17 @@ export const getUserProfileById = async (email: string) => {
  */
 export const updateUserProfilePicture = async (
   email: string,
+  firstName: string,
+  lastName: string,
   profilePicture: string,
 ) => {
   try {
     const db = await getDatabase();
     await db.runAsync(
       `
-      UPDATE user_profile SET profilePicture = ? WHERE email = ?
+      UPDATE user_profile SET firstName = ?, lastName = ?, profilePicture = ? WHERE email = ?
     `,
-      [profilePicture, email],
+      [firstName, lastName, profilePicture, email],
     );
   } catch (error) {
     console.log("Error updating user profile picture:", error);

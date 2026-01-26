@@ -35,6 +35,7 @@ const OnboardingStack = () => {
       <Stack.Screen
         name="UpdatePasswordScreen"
         options={{ headerShown: false }}
+        // @ts-ignore
         component={UpdatePasswordScreen}
       />
       <Stack.Screen

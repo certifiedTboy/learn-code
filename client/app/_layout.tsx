@@ -1,6 +1,7 @@
 import Notification from "@/components/common/Notification";
 import { Colors } from "@/constant/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import AuthContextProvider from "@/lib/context/auth-context";
 import { store } from "@/lib/redux/store";
 import {
   DarkTheme,
@@ -32,13 +33,15 @@ export default function RootLayout() {
     <Provider store={store}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <StatusBar style="auto" translucent={true} />
-        <SafeAreaView
-          style={[{ backgroundColor }, styles.container]}
-          edges={["top", "bottom", "left", "right"]}
-        >
-          <Notification />
-          <AppNavigator />
-        </SafeAreaView>
+        <AuthContextProvider>
+          <SafeAreaView
+            style={[{ backgroundColor }, styles.container]}
+            edges={["top", "bottom", "left", "right"]}
+          >
+            <Notification />
+            <AppNavigator />
+          </SafeAreaView>
+        </AuthContextProvider>
       </ThemeProvider>
     </Provider>
   );

@@ -5,7 +5,10 @@ import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useLoginUserMutation } from "@/lib/apis/user-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+
+import { AuthContext } from "@/lib/context/auth-context";
+
 import {
   ActivityIndicator,
   Dimensions,
@@ -28,8 +31,10 @@ const SignInScreen = () => {
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const [loginUser, { isLoading, isError, error, isSuccess }] =
+  const [loginUser, { isLoading, isError, error, isSuccess, data }] =
     useLoginUserMutation();
+
+  const { updateAuthenticatedState } = useContext(AuthContext);
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -68,6 +73,11 @@ const SignInScreen = () => {
 
   useEffect(() => {
     if (isSuccess) {
+      updateAuthenticatedState(
+        data?.data?.refreshToken,
+        data?.data?.accessToken,
+        data?.data?.user,
+      );
       navigation.navigate("CoursesScreen");
     }
   }, [isSuccess]);
