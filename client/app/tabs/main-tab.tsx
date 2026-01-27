@@ -22,14 +22,14 @@ const MainTabs = () => {
 
   const renderScene = SceneMap({
     courses: CoursesScreen,
-    ai: AIScreen,
+    "ask-ai": AIScreen,
     "my-courses": MyCoursesScreen,
     profile: ProfileScreen,
   });
 
   const [routes] = useState([
     { key: "courses", title: "Courses", icon: "book-open-variant-outline" },
-    { key: "ai", title: "AI", icon: "brain" },
+    { key: "ask-ai", title: "Ask AI", icon: "brain" },
     {
       key: "my-courses",
       title: "My Courses",

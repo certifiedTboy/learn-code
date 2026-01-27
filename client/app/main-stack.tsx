@@ -1,6 +1,7 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import "react-native-reanimated";
+import AIChatScreen from "./screens/ai-chat-screen";
 import CourseDetailsScreen from "./screens/course-details-screen";
 import MainTabs from "./tabs/main-tab";
 
@@ -34,6 +35,14 @@ const MainStack = () => {
           animation: "slide_from_right",
         })}
         component={CourseDetailsScreen}
+      />
+
+      <Stack.Screen
+        name="ai-chat-screen"
+        options={() => ({
+          animation: "slide_from_right",
+        })}
+        component={AIChatScreen}
       />
     </Stack.Navigator>
   );
