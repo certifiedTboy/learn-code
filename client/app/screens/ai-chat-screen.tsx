@@ -1,0 +1,270 @@
+import TypingIndicator from "@/components/ai-chat/TypingIndication";
+import { ThemedView } from "@/components/themed-view";
+import Icon from "@/components/ui/Icon";
+import { Colors } from "@/constants/Colors";
+import { generateRandomRoomId } from "@/helpers/chat";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { ChatContext } from "@/lib/context/chat-context";
+import { useFocusEffect } from "@react-navigation/native";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  Dimensions,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSelector } from "react-redux";
+
+const { width } = Dimensions.get("window");
+
+const AIChatScreen = () => {
+  const [messages, setMessages] = useState<
+    { id: string; sender: string; text: string }[]
+  >([]);
+  const [input, setInput] = useState("");
+
+  const roomIdRef = useRef(generateRandomRoomId());
+
+  const flatListRef = useRef<FlatList>(null);
+
+  const { joinRoom, sendMessage, socketMessage, clearSocketMessage, isTyping } =
+    useContext(ChatContext);
+
+  const { currentUser } = useSelector((state: any) => state.authState);
+
+  const chatBackgroundColor = useThemeColor(
+    { light: "#ffffff", dark: "#000000" },
+    "background",
+  );
+
+  const inputTextColor = useThemeColor(
+    { light: Colors.light.text, dark: Colors.dark.text },
+    "text",
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (currentUser) {
+        joinRoom(roomIdRef?.current, currentUser?.email);
+      }
+
+      return () => {
+        clearSocketMessage();
+      };
+    }, [currentUser]),
+  );
+
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
+    flatListRef?.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  // Simulated ChatGPT streaming response
+  const simulateAssistantReply = (fullText: string) => {
+    const messageId = Date.now().toString();
+
+    setMessages((prev) => [...prev, { id: messageId, sender: "ai", text: "" }]);
+
+    let index = 0;
+
+    const interval = setInterval(() => {
+      index++;
+
+      setMessages((prev: any[]) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, text: fullText.slice(0, index) }
+            : msg,
+        ),
+      );
+
+      if (index === fullText.length) {
+        clearInterval(interval);
+      }
+    }, 0); // typing speed
+  };
+
+  useEffect(() => {
+    if (
+      socketMessage &&
+      socketMessage?.content &&
+      socketMessage?.senderId !== currentUser?.email
+    ) {
+      simulateAssistantReply(socketMessage?.content);
+    }
+  }, [socketMessage]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+
+    const userMessage = {
+      chatId: Date.now().toString(),
+      senderId: currentUser?.email,
+      content: input,
+      roomId: roomIdRef?.current,
+    };
+
+    sendMessage(userMessage);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        sender: userMessage.senderId,
+        text: userMessage.content,
+      },
+    ]);
+    setInput("");
+  };
+
+  const renderItem = ({ item }: { item: any }) => {
+    const isUser = item?.sender === currentUser?.email;
+
+    return (
+      <View
+        style={[
+          styles.messageBubble,
+          isUser ? styles.userBubble : styles.assistantBubble,
+        ]}
+      >
+        <Text
+          style={[styles.messageText, isUser && { color: Colors.dark.text }]}
+        >
+          {item.text}
+        </Text>
+      </View>
+    );
+  };
+
+  return (
+    <ThemedView
+      lightColor="#ffffff"
+      darkColor="#000000"
+      style={[styles.container]}
+    >
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.chatContainer}
+          showsVerticalScrollIndicator={false}
+        />
+
+        {/* Input Bar */}
+        <View
+          style={[
+            styles.inputWrapper,
+            { backgroundColor: chatBackgroundColor },
+          ]}
+        >
+          {isTyping && <TypingIndicator />}
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Ask AI..."
+              placeholderTextColor={Colors.light.generalBg}
+              value={input}
+              onChangeText={setInput}
+              style={[styles.input, { color: inputTextColor }]}
+              multiline
+            />
+
+            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+              <Icon
+                name="send"
+                size={width * 0.055}
+                color="#fff"
+                onPress={handleSend}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </ThemedView>
+  );
+};
+
+export default AIChatScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
+  chatContainer: {
+    paddingHorizontal: width * 0.05,
+    paddingTop: width * 0.04,
+    paddingBottom: width * 0.25,
+  },
+
+  messageBubble: {
+    maxWidth: "80%",
+    paddingVertical: width * 0.035,
+    paddingHorizontal: width * 0.045,
+    borderRadius: 18,
+    marginBottom: width * 0.03,
+  },
+
+  userBubble: {
+    backgroundColor: Colors.light.generalBg,
+    alignSelf: "flex-end",
+    borderBottomRightRadius: 6,
+  },
+
+  assistantBubble: {
+    backgroundColor: "#E7ECF6",
+    alignSelf: "flex-start",
+    borderBottomLeftRadius: 6,
+  },
+
+  messageText: {
+    fontSize: width * 0.042,
+    color: Colors.light.text,
+    lineHeight: width * 0.058,
+  },
+
+  inputWrapper: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+  },
+
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingHorizontal: width * 0.04,
+    paddingVertical: width * 0.02,
+    borderTopWidth: 1,
+    borderColor: Colors.dark.generalBg,
+    // padding: width * 0.02,
+    borderRadius: 10,
+  },
+
+  input: {
+    flex: 1,
+    fontSize: width * 0.042,
+    maxHeight: width * 0.3,
+    backgroundColor: "transparent",
+  },
+
+  sendButton: {
+    backgroundColor: Colors.light.generalBg,
+    borderRadius: 18,
+    padding: width * 0.03,
+    marginLeft: width * 0.02,
+  },
+});

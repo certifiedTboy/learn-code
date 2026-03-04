@@ -1,0 +1,91 @@
+import { NestFactory } from '@nestjs/core';
+import { BadRequestException, VersioningType } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+// import { BadRequestException } from '@nestjs/common';
+import * as express from 'express';
+import { ConfigService } from '@nestjs/config';
+import * as cookieParser from 'cookie-parser';
+import { AppModule } from './app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './common/exceptions/http-exceptions.filter';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true, // <-- REQUIRED for Stripe
+  });
+
+  /**
+   *
+   * @description This method is used to enable versioning for the API.
+   * It allows you to manage different versions of your API endpoints.
+   * The versioning type is set to URI, meaning the version will be included in the URL.
+   * For example, a request to /api/v1/users will be routed to the v1 version of the users controller.
+   * This is useful for maintaining backward compatibility when making changes to the API.
+   * The global prefix 'api' is set, so all routes will be prefixed with /api.
+   */
+  app.setGlobalPrefix('api');
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
+
+  // Enable CORS for React Native app
+  app.enableCors({
+    origin: [
+      'http://localhost:5173',
+      'https://bravixo-client.vercel.app',
+      'https://2c8c1a26d806.ngrok-free.app',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
+  app.use(cookieParser());
+  app.use(
+    '/products/payment/webhook',
+    express.raw({ type: 'application/json' }),
+  );
+
+  const configService: ConfigService = app.get(ConfigService);
+  const port = configService.get<string>('PORT');
+
+  /**
+   * @method app.useGlobalFilters
+   * @description This method is used to set up global exception filters.
+   * It allows you to handle exceptions in a centralized manner,
+   */
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // strips unknown properties
+      forbidNonWhitelisted: true, // throws error for extra fields
+      transform: true, // transforms payloads to DTO instances
+      stopAtFirstError: true, // stops at the first validation error
+
+      exceptionFactory: (errors) => {
+        const errorMessage = errors[0].constraints
+          ? Object.values(errors[0].constraints).join(', ')
+          : '';
+        throw new BadRequestException('', {
+          cause: errorMessage,
+          description: errorMessage,
+        });
+      },
+    }),
+  );
+
+  const config = new DocumentBuilder()
+    .setTitle('bravixo api')
+    .setDescription(
+      'bravixo authentication and user management API documentation',
+    )
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
+
+  await app.listen(port ?? 9000);
+}
+bootstrap();
