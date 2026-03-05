@@ -1,5 +1,3 @@
-import { BottomSheet } from "@rneui/themed";
-
 import { Colors } from "@/constants/Colors";
 import { validateVerificationform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
@@ -9,19 +7,26 @@ import {
   useGetNewVerificationCodeMutation,
   useVerifyUserAccountMutation,
 } from "@/lib/apis/user-apis";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
+
 import { OtpInput } from "react-native-otp-entry";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemedText } from "../themed-text";
 import Icon from "../ui/Icon";
 
@@ -45,6 +50,8 @@ const OTPBottomSheetModal = ({
 }) => {
   const [verifyAccount, { isLoading, isError, error, isSuccess }] =
     useVerifyUserAccountMutation();
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const [
     getNewVerificationCode,
@@ -88,20 +95,31 @@ const OTPBottomSheetModal = ({
     getScreenOrientation(width);
   }, [isError, newVerificationTokenSuccess, width, isSuccess]);
 
+  // callbacks
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+  }, []);
+
+  useEffect(() => {
+    handlePresentModalPress();
+  }, []);
+
   return (
-    <SafeAreaProvider>
+    <BottomSheetModalProvider>
       <Formik
         initialValues={{ verificationCode: "" }}
         onSubmit={(values) => console.log(values)}
         validationSchema={VerificationSchema}
       >
         {({ handleChange, values, errors, handleBlur, isValid }) => (
-          <BottomSheet
-            modalProps={{}}
-            isVisible={isVisible}
-            onBackdropPress={setIsVisibile}
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            onChange={handleSheetChanges}
           >
-            <View style={[styles.container, styles.sheetBackground]}>
+            <BottomSheetView style={[styles.container, styles.sheetBackground]}>
               {/* Header */}
               <Text style={styles.title}>Account Verification</Text>
               <Text style={styles.subtitle}>
@@ -109,32 +127,37 @@ const OTPBottomSheetModal = ({
               </Text>
 
               {/* OTP Inputs */}
-              <View style={styles.otpContainer}>
-                <OtpInput
-                  numberOfDigits={6}
-                  onTextChange={handleChange("verificationCode")}
-                  onBlur={() => handleBlur("verificationCode")}
-                  onFilled={() =>
-                    verifyAccount({
-                      verificationCode: values.verificationCode,
-                      action: "ACCOUNT_VERIFICATION",
-                    })
-                  }
-                  blurOnFilled={true}
-                  disabled={newVerificationCodeLoading || isLoading}
-                  theme={{
-                    pinCodeTextStyle: styles.pinCodeText,
-                    // filledPinCodeContainerStyle: styles.input,
-                    containerStyle: {
-                      ...styles.inputContainer,
-                      width: isPortrait ? width * 0.8 : width * 0.6,
-                    },
-                  }}
-                  textInputProps={{
-                    accessibilityLabel: "One-Time Password",
-                  }}
-                />
-              </View>
+              <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+              >
+                <View style={styles.otpContainer}>
+                  <OtpInput
+                    numberOfDigits={6}
+                    onTextChange={handleChange("verificationCode")}
+                    onBlur={() => handleBlur("verificationCode")}
+                    onFilled={() =>
+                      verifyAccount({
+                        verificationCode: values.verificationCode,
+                        action: "ACCOUNT_VERIFICATION",
+                      })
+                    }
+                    blurOnFilled={true}
+                    disabled={newVerificationCodeLoading || isLoading}
+                    theme={{
+                      pinCodeTextStyle: styles.pinCodeText,
+                      // filledPinCodeContainerStyle: styles.input,
+                      containerStyle: {
+                        ...styles.inputContainer,
+                        width: isPortrait ? width * 0.8 : width * 0.6,
+                      },
+                    }}
+                    textInputProps={{
+                      accessibilityLabel: "One-Time Password",
+                    }}
+                  />
+                </View>
+              </KeyboardAvoidingView>
 
               {newVerificationCodeLoading && (
                 <ActivityIndicator
@@ -203,11 +226,11 @@ const OTPBottomSheetModal = ({
                   )}
                 </View>
               </View>
-            </View>
-          </BottomSheet>
+            </BottomSheetView>
+          </BottomSheetModal>
         )}
       </Formik>
-    </SafeAreaProvider>
+    </BottomSheetModalProvider>
   );
 };
 

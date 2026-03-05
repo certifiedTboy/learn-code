@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet, View } from "react-native";
-import Pdf from "react-native-pdf";
+// import Pdf from "react-native-pdf";
 
 const CourseContentScreen = () => {
   // const navigation = useNavigation();
@@ -13,9 +13,9 @@ const CourseContentScreen = () => {
         }}
       /> */}
 
-      <Pdf
+      {/* <Pdf
         source={{
-          uri: "",
+          uri: "https://learning-code-app.s3.eu-west-2.amazonaws.com/module 1/Module 1_ Core Foundation - Week 1 - 7.pdf",
         }}
         onLoadComplete={(numberOfPages, filePath) => {
           console.log(`Number of pages: ${numberOfPages}`);
@@ -30,7 +30,7 @@ const CourseContentScreen = () => {
           console.log(`Link pressed: ${uri}`);
         }}
         style={styles.pdf}
-      />
+      /> */}
     </View>
   );
 };

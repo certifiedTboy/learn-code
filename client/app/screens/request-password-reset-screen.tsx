@@ -86,11 +86,87 @@ const RequestPasswordResetScreen = () => {
   };
 
   return (
-    <ThemedView
-      style={styles.container}
-      darkColor={Colors.dark.background}
-      lightColor={Colors.light.background}
-    >
+    <>
+      <ThemedView
+        style={styles.container}
+        darkColor={Colors.dark.background}
+        lightColor={Colors.light.background}
+      >
+        <SuccessModal
+          visible={showModal}
+          onClose={() => {
+            setShowModal(false);
+            navigation.navigate("UpdatePasswordScreen", {
+              verificationCode: validPasswordResetCode,
+            });
+          }}
+          message="Password reset request is verified!"
+        />
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <Formik
+              initialValues={{
+                email: "",
+              }}
+              onSubmit={(values) => console.log(values)}
+              validationSchema={PasswordResetRequestSchema}
+            >
+              {({ handleChange, values, errors, handleBlur, isValid }) => (
+                <View style={styles.container}>
+                  <ThemedText style={styles.title}>Reset Password</ThemedText>
+                  <ThemedText style={styles.subtitle}>
+                    Enter your email to reset your password
+                  </ThemedText>
+
+                  <View style={styles.inputGroup}>
+                    <ThemedText style={styles.label}>Email Here</ThemedText>
+                    <TextInput
+                      placeholder="Enter your email"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      style={[styles.input, { color: inputTextColor }]}
+                      placeholderTextColor={placeHolderColor}
+                      onChangeText={handleChange("email")}
+                      onBlur={handleBlur("email")}
+                      value={values.email}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.signInButton}
+                    onPress={() =>
+                      passwordResetRequestSubmitHandler({ isValid, values })
+                    }
+                  >
+                    <Text style={styles.signInText}>RESET PASSWORD</Text>
+                    {isLoading && (
+                      <ActivityIndicator size="small" color="#fff" />
+                    )}
+                  </TouchableOpacity>
+
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                      Don&apos;t have an account?
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("SignupScreen")}
+                    >
+                      <Text style={styles.signupText}>Sign up Here</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </Formik>
+          </KeyboardAvoidingView>
+        </ScrollView>
+      </ThemedView>
+
       {isModalVisible && (
         <PasswordResetBottomSheetModal
           isVisible={isModalVisible}
@@ -103,79 +179,7 @@ const RequestPasswordResetScreen = () => {
           setValidPasswordResetCode={setValidPasswordResetCode}
         />
       )}
-
-      <SuccessModal
-        visible={showModal}
-        onClose={() => {
-          setShowModal(false);
-          navigation.navigate("UpdatePasswordScreen", {
-            verificationCode: validPasswordResetCode,
-          });
-        }}
-        message="Password reset request is verified!"
-      />
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <Formik
-            initialValues={{
-              email: "",
-            }}
-            onSubmit={(values) => console.log(values)}
-            validationSchema={PasswordResetRequestSchema}
-          >
-            {({ handleChange, values, errors, handleBlur, isValid }) => (
-              <View style={styles.container}>
-                <ThemedText style={styles.title}>Reset Password</ThemedText>
-                <ThemedText style={styles.subtitle}>
-                  Enter your email to reset your password
-                </ThemedText>
-
-                <View style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Email Here</ThemedText>
-                  <TextInput
-                    placeholder="Enter your email"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={[styles.input, { color: inputTextColor }]}
-                    placeholderTextColor={placeHolderColor}
-                    onChangeText={handleChange("email")}
-                    onBlur={handleBlur("email")}
-                    value={values.email}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  style={styles.signInButton}
-                  onPress={() =>
-                    passwordResetRequestSubmitHandler({ isValid, values })
-                  }
-                >
-                  <Text style={styles.signInText}>RESET PASSWORD</Text>
-                  {isLoading && <ActivityIndicator size="small" color="#fff" />}
-                </TouchableOpacity>
-
-                <View style={styles.footer}>
-                  <Text style={styles.footerText}>
-                    Don&apos;t have an account?
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("SignupScreen")}
-                  >
-                    <Text style={styles.signupText}>Sign up Here</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          </Formik>
-        </KeyboardAvoidingView>
-      </ScrollView>
-    </ThemedView>
+    </>
   );
 };
 

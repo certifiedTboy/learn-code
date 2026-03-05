@@ -4,10 +4,9 @@ import { Colors } from "@/constants/Colors";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useLoginUserMutation } from "@/lib/apis/user-apis";
+import { AuthContext } from "@/lib/context/auth-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
-
-import { AuthContext } from "@/lib/context/auth-context";
 
 import {
   ActivityIndicator,

@@ -1,5 +1,3 @@
-import { BottomSheet } from "@rneui/themed";
-
 import { Colors } from "@/constants/Colors";
 import { validateVerificationform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
@@ -9,19 +7,26 @@ import {
   useRequestPasscodeResetMutation,
   useVerifyUserAccountMutation,
 } from "@/lib/apis/user-apis";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { OtpInput } from "react-native-otp-entry";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemedText } from "../themed-text";
 import Icon from "../ui/Icon";
 
@@ -52,6 +57,16 @@ const PasswordResetBottomSheetModal = ({
     requestPasscodeReset,
     { isSuccess: newPasswordResetSuccess, isLoading: newPasswordResetLoading },
   ] = useRequestPasscodeResetMutation();
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  // callbacks
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+  }, []);
 
   const { width } = useWindowDimensions();
 
@@ -87,127 +102,146 @@ const PasswordResetBottomSheetModal = ({
     getScreenOrientation(width);
   }, [isError, isSuccess, newPasswordResetSuccess, width]);
 
+  useEffect(() => {
+    if (isVisible) {
+      handlePresentModalPress();
+    } else {
+      bottomSheetModalRef.current?.dismiss();
+    }
+  }, [isVisible]);
+
   return (
-    <SafeAreaProvider>
-      <Formik
-        initialValues={{ passwordResetCode: "" }}
-        onSubmit={(values) => console.log(values)}
-        validationSchema={VerificationSchema}
-      >
-        {({ handleChange, values, errors, handleBlur, isValid }) => (
-          <BottomSheet
-            modalProps={{}}
-            isVisible={isVisible}
-            onBackdropPress={setIsVisibile}
-          >
-            <View style={[styles.container, styles.sheetBackground]}>
-              {/* Header */}
-              <Text style={styles.title}>Password Reset Verification</Text>
-              <Text style={styles.subtitle}>
-                Enter the password reset code sent to your email
-              </Text>
+    <GestureHandlerRootView style={styles.container}>
+      <BottomSheetModalProvider>
+        <Formik
+          initialValues={{ passwordResetCode: "" }}
+          onSubmit={(values) => console.log(values)}
+          validationSchema={VerificationSchema}
+        >
+          {({ handleChange, values, errors, handleBlur, isValid }) => (
+            <BottomSheetModal
+              ref={bottomSheetModalRef}
+              onChange={handleSheetChanges}
+              enablePanDownToClose={true}
+              keyboardBehavior="interactive"
+            >
+              <BottomSheetView
+                style={[styles.container, styles.sheetBackground]}
+              >
+                {/* Header */}
+                <Text style={styles.title}>Password Reset Verification</Text>
+                <Text style={styles.subtitle}>
+                  Enter the password reset code sent to your email
+                </Text>
 
-              {/* OTP Inputs */}
-              <View style={styles.otpContainer}>
-                <OtpInput
-                  numberOfDigits={6}
-                  onTextChange={handleChange("passwordResetCode")}
-                  onBlur={() => handleBlur("passwordResetCode")}
-                  onFilled={() => {
-                    verifyAccount({
-                      verificationCode: values.passwordResetCode,
-                      action: "PASSWORD_RESET",
-                    });
-                    setValidPasswordResetCode(values.passwordResetCode);
-                  }}
-                  blurOnFilled={true}
-                  disabled={newPasswordResetLoading || isLoading}
-                  theme={{
-                    pinCodeTextStyle: styles.pinCodeText,
-                    // filledPinCodeContainerStyle: styles.input,
-                    containerStyle: {
-                      ...styles.inputContainer,
-                      width: isPortrait ? width * 0.8 : width * 0.6,
-                    },
-                  }}
-                  textInputProps={{
-                    accessibilityLabel: "One-Time Password",
-                  }}
-                />
-              </View>
+                {/* OTP Inputs */}
 
-              {newPasswordResetLoading && (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.light.generalBg}
-                />
-              )}
-
-              {isLoading && (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.light.generalBg}
-                />
-              )}
-
-              <View style={styles.errorTextContainer}>
-                {errors?.passwordResetCode && (
-                  <>
-                    <Icon
-                      name="alert-circle"
-                      size={16}
-                      color={Colors.light.errorText}
+                <View style={styles.otpContainer}>
+                  <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                  >
+                    <OtpInput
+                      numberOfDigits={6}
+                      onTextChange={handleChange("passwordResetCode")}
+                      onBlur={() => handleBlur("passwordResetCode")}
+                      onFilled={() => {
+                        verifyAccount({
+                          verificationCode: values.passwordResetCode,
+                          action: "PASSWORD_RESET",
+                        });
+                        setValidPasswordResetCode(values.passwordResetCode);
+                      }}
+                      blurOnFilled={true}
+                      disabled={newPasswordResetLoading || isLoading}
+                      theme={{
+                        pinCodeTextStyle: styles.pinCodeText,
+                        // filledPinCodeContainerStyle: styles.input,
+                        containerStyle: {
+                          ...styles.inputContainer,
+                          width: isPortrait ? width * 0.8 : width * 0.6,
+                        },
+                      }}
+                      textInputProps={{
+                        accessibilityLabel: "One-Time Password",
+                      }}
                     />
-                    <ThemedText style={styles.errorText}>
-                      {errors.passwordResetCode}
-                    </ThemedText>
-                  </>
-                )}
-              </View>
+                  </KeyboardAvoidingView>
+                </View>
 
-              <View style={styles.resendBtnContainer}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {!isCountingDown ? (
-                    <View style={styles.resendContainer}>
-                      <Text style={styles.resendText}>
-                        Didn&apos;t receive code?
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (!isCountingDown) {
-                            requestPasscodeReset({
-                              email,
-                            });
-                            startCountdown();
-                          }
-                        }}
-                      >
-                        <Text style={styles.resendLink}> Resend</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View style={styles.timerContainer}>
-                      <ThemedText style={styles.timerText}>
-                        {countdownTimeLeft > 0 &&
-                          `Resend code in ${
-                            countdownTimeLeft === 60 ? 0 : countdownTimeLeft
-                          } seconds`}
+                {newPasswordResetLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.light.generalBg}
+                  />
+                )}
+
+                {isLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.light.generalBg}
+                  />
+                )}
+
+                <View style={styles.errorTextContainer}>
+                  {errors?.passwordResetCode && (
+                    <>
+                      <Icon
+                        name="alert-circle"
+                        size={16}
+                        color={Colors.light.errorText}
+                      />
+                      <ThemedText style={styles.errorText}>
+                        {errors.passwordResetCode}
                       </ThemedText>
-                    </View>
+                    </>
                   )}
                 </View>
-              </View>
-            </View>
-          </BottomSheet>
-        )}
-      </Formik>
-    </SafeAreaProvider>
+
+                <View style={styles.resendBtnContainer}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {!isCountingDown ? (
+                      <View style={styles.resendContainer}>
+                        <Text style={styles.resendText}>
+                          Didn&apos;t receive code?
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (!isCountingDown) {
+                              requestPasscodeReset({
+                                email,
+                              });
+                              startCountdown();
+                            }
+                          }}
+                        >
+                          <Text style={styles.resendLink}> Resend</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View style={styles.timerContainer}>
+                        <ThemedText style={styles.timerText}>
+                          {countdownTimeLeft > 0 &&
+                            `Resend code in ${
+                              countdownTimeLeft === 60 ? 0 : countdownTimeLeft
+                            } seconds`}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </BottomSheetView>
+            </BottomSheetModal>
+          )}
+        </Formik>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 };
 

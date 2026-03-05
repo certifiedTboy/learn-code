@@ -97,211 +97,219 @@ const SignUpScreen = () => {
   }, [isError, isSuccess]);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <Formik
-        initialValues={{
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-        }}
-        onSubmit={(values) => console.log(values)}
-        validationSchema={SignupSchema}
+    <>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {({ handleChange, values, errors, handleBlur, isValid }) => (
-          <ThemedView
-            style={styles.container}
-            darkColor={Colors.dark.background}
-            lightColor={Colors.light.background}
-          >
-            {showBottomSheetModal && (
-              <OTPBottomSheetModal
-                isVisible={true}
-                setIsVisibile={() => setShowBottomSheetModal(false)}
-                email={data?.data.email}
-                onUserVerificationSuccess={() => {
-                  setShowBottomSheetModal(false);
-                  setShowModal(true);
-                }}
-              />
-            )}
-            <SuccessModal
-              visible={showModal}
-              onClose={() => {
-                setShowModal(false);
-                navigation.navigate("SignInScreen");
-              }}
-              message="Your account has been created successfully!"
-            />
-            <ScrollView
-              contentContainerStyle={{ flexGrow: 1 }}
-              showsVerticalScrollIndicator={false}
+        <Formik
+          initialValues={{
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
+          }}
+          onSubmit={(values) => console.log(values)}
+          validationSchema={SignupSchema}
+        >
+          {({ handleChange, values, errors, handleBlur, isValid }) => (
+            <ThemedView
+              style={styles.container}
+              darkColor={Colors.dark.background}
+              lightColor={Colors.light.background}
             >
-              <View style={styles.container}>
-                <ThemedText style={styles.title}>Sign up</ThemedText>
-                <ThemedText style={styles.subtitle}>
-                  Please sign up here
-                </ThemedText>
+              <SuccessModal
+                visible={showModal}
+                onClose={() => {
+                  setShowModal(false);
+                  navigation.navigate("SignInScreen");
+                }}
+                message="Your account has been created successfully!"
+              />
+              <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.container}>
+                  <ThemedText style={styles.title}>Sign up</ThemedText>
+                  <ThemedText style={styles.subtitle}>
+                    Please sign up here
+                  </ThemedText>
 
-                <View style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>First Name</ThemedText>
-                  <TextInput
-                    placeholder="Enter your first name"
-                    keyboardType="default"
-                    autoCapitalize="none"
-                    style={[styles.input, { color: inputTextColor }]}
-                    placeholderTextColor={placeHolderColor}
-                    onChangeText={handleChange("firstName")}
-                    onBlur={handleBlur("firstName")}
-                    value={values.firstName}
-                  />
-
-                  {errors?.firstName && (
-                    <View style={styles.errorTextContainer}>
-                      <Icon
-                        name="alert-circle"
-                        size={16}
-                        color={Colors.light.errorText}
-                      />
-                      <ThemedText style={styles.errorText}>
-                        {errors.firstName}
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Last Name</ThemedText>
-                  <TextInput
-                    placeholder="Enter your last name"
-                    keyboardType="default"
-                    autoCapitalize="none"
-                    style={[styles.input, { color: inputTextColor }]}
-                    placeholderTextColor={placeHolderColor}
-                    onChangeText={handleChange("lastName")}
-                    onBlur={handleBlur("lastName")}
-                    value={values.lastName}
-                  />
-
-                  {errors?.lastName && (
-                    <View style={styles.errorTextContainer}>
-                      <Icon
-                        name="alert-circle"
-                        size={16}
-                        color={Colors.light.errorText}
-                      />
-                      <ThemedText style={styles.errorText}>
-                        {errors?.lastName}
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Email Here</ThemedText>
-                  <TextInput
-                    placeholder="Enter your email"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={[styles.input, { color: inputTextColor }]}
-                    placeholderTextColor={placeHolderColor}
-                    onChangeText={handleChange("email")}
-                    onBlur={handleBlur("email")}
-                    value={values.email}
-                  />
-
-                  {errors?.email && (
-                    <View style={styles.errorTextContainer}>
-                      <Icon
-                        name="alert-circle"
-                        size={16}
-                        color={Colors.light.errorText}
-                      />
-                      <ThemedText style={styles.errorText}>
-                        {errors?.email}
-                      </ThemedText>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <ThemedText style={styles.label}>Password</ThemedText>
-                  <View style={styles.passwordWrapper}>
+                  <View style={styles.inputGroup}>
+                    <ThemedText style={styles.label}>First Name</ThemedText>
                     <TextInput
-                      placeholder="Enter your password"
-                      secureTextEntry={!passwordVisible}
-                      style={[styles.passwordInput, { color: inputTextColor }]}
+                      placeholder="Enter your first name"
+                      keyboardType="default"
+                      autoCapitalize="none"
+                      style={[styles.input, { color: inputTextColor }]}
                       placeholderTextColor={placeHolderColor}
-                      onChangeText={handleChange("password")}
-                      onBlur={handleBlur("password")}
-                      value={values.password}
+                      onChangeText={handleChange("firstName")}
+                      onBlur={handleBlur("firstName")}
+                      value={values.firstName}
                     />
-                    <TouchableOpacity
-                      onPress={() => setPasswordVisible(!passwordVisible)}
-                    >
-                      <Text style={styles.eyeIcon}>
-                        {passwordVisible ? "🙈" : "👁️"}
-                      </Text>
-                    </TouchableOpacity>
+
+                    {errors?.firstName && (
+                      <View style={styles.errorTextContainer}>
+                        <Icon
+                          name="alert-circle"
+                          size={16}
+                          color={Colors.light.errorText}
+                        />
+                        <ThemedText style={styles.errorText}>
+                          {errors.firstName}
+                        </ThemedText>
+                      </View>
+                    )}
                   </View>
 
-                  {errors?.password && (
-                    <View style={styles.errorTextContainer}>
-                      <Icon
-                        name="alert-circle"
-                        size={16}
-                        color={Colors.light.errorText}
+                  <View style={styles.inputGroup}>
+                    <ThemedText style={styles.label}>Last Name</ThemedText>
+                    <TextInput
+                      placeholder="Enter your last name"
+                      keyboardType="default"
+                      autoCapitalize="none"
+                      style={[styles.input, { color: inputTextColor }]}
+                      placeholderTextColor={placeHolderColor}
+                      onChangeText={handleChange("lastName")}
+                      onBlur={handleBlur("lastName")}
+                      value={values.lastName}
+                    />
+
+                    {errors?.lastName && (
+                      <View style={styles.errorTextContainer}>
+                        <Icon
+                          name="alert-circle"
+                          size={16}
+                          color={Colors.light.errorText}
+                        />
+                        <ThemedText style={styles.errorText}>
+                          {errors?.lastName}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.inputGroup}>
+                    <ThemedText style={styles.label}>Email Here</ThemedText>
+                    <TextInput
+                      placeholder="Enter your email"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      style={[styles.input, { color: inputTextColor }]}
+                      placeholderTextColor={placeHolderColor}
+                      onChangeText={handleChange("email")}
+                      onBlur={handleBlur("email")}
+                      value={values.email}
+                    />
+
+                    {errors?.email && (
+                      <View style={styles.errorTextContainer}>
+                        <Icon
+                          name="alert-circle"
+                          size={16}
+                          color={Colors.light.errorText}
+                        />
+                        <ThemedText style={styles.errorText}>
+                          {errors?.email}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <ThemedText style={styles.label}>Password</ThemedText>
+                    <View style={styles.passwordWrapper}>
+                      <TextInput
+                        placeholder="Enter your password"
+                        secureTextEntry={!passwordVisible}
+                        style={[
+                          styles.passwordInput,
+                          { color: inputTextColor },
+                        ]}
+                        placeholderTextColor={placeHolderColor}
+                        onChangeText={handleChange("password")}
+                        onBlur={handleBlur("password")}
+                        value={values.password}
                       />
-                      <ThemedText style={styles.errorText}>
-                        {errors.password}
-                      </ThemedText>
+                      <TouchableOpacity
+                        onPress={() => setPasswordVisible(!passwordVisible)}
+                      >
+                        <Text style={styles.eyeIcon}>
+                          {passwordVisible ? "🙈" : "👁️"}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
-                </View>
 
-                <TouchableOpacity
-                  style={styles.signInButton}
-                  onPress={() => createNewUserHandler({ isValid, values })}
-                >
-                  <Text style={styles.signInText}>SIGN UP</Text>
-                  {isLoading && <ActivityIndicator size="small" color="#fff" />}
-                </TouchableOpacity>
+                    {errors?.password && (
+                      <View style={styles.errorTextContainer}>
+                        <Icon
+                          name="alert-circle"
+                          size={16}
+                          color={Colors.light.errorText}
+                        />
+                        <ThemedText style={styles.errorText}>
+                          {errors.password}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
 
-                <View style={styles.dividerContainer}>
-                  <View style={styles.divider} />
-                  <Text style={styles.dividerText}>Or Sign up with</Text>
-                  <View style={styles.divider} />
-                </View>
+                  <TouchableOpacity
+                    style={styles.signInButton}
+                    onPress={() => createNewUserHandler({ isValid, values })}
+                  >
+                    <Text style={styles.signInText}>SIGN UP</Text>
+                    {isLoading && (
+                      <ActivityIndicator size="small" color="#fff" />
+                    )}
+                  </TouchableOpacity>
 
-                <TouchableOpacity style={styles.googleBtn}>
-                  <Text style={styles.googleText}>Sign up with Google</Text>
-                </TouchableOpacity>
+                  <View style={styles.dividerContainer}>
+                    <View style={styles.divider} />
+                    <Text style={styles.dividerText}>Or Sign up with</Text>
+                    <View style={styles.divider} />
+                  </View>
 
-                {/* <GoogleSigninButton
+                  <TouchableOpacity style={styles.googleBtn}>
+                    <Text style={styles.googleText}>Sign up with Google</Text>
+                  </TouchableOpacity>
+
+                  {/* <GoogleSigninButton
               style={{ width: 192, height: 48 }}
               size={GoogleSigninButton.Size.Wide}
               color={GoogleSigninButton.Color.Dark}
               //   onPress={signInWithGoogle}
             /> */}
 
-                <View style={styles.footer}>
-                  <Text style={styles.footerText}>
-                    Already have an account?
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("SignInScreen")}
-                  >
-                    <Text style={styles.signupText}> Sign in Here</Text>
-                  </TouchableOpacity>
+                  <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                      Already have an account?
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate("SignInScreen")}
+                    >
+                      <Text style={styles.signupText}> Sign in Here</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
-          </ThemedView>
-        )}
-      </Formik>
-    </KeyboardAvoidingView>
+              </ScrollView>
+            </ThemedView>
+          )}
+        </Formik>
+      </KeyboardAvoidingView>
+
+      {showBottomSheetModal && (
+        <OTPBottomSheetModal
+          isVisible={true}
+          setIsVisibile={() => setShowBottomSheetModal(false)}
+          email={data?.data.email}
+          onUserVerificationSuccess={() => {
+            setShowBottomSheetModal(false);
+            setShowModal(true);
+          }}
+        />
+      )}
+    </>
   );
 };
 
