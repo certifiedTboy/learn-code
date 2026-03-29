@@ -7,6 +7,7 @@ import AIChatScreen from "./screens/ai-chat-screen";
 import CourseContentScreen from "./screens/course-content-screen";
 import CourseDetailsScreen from "./screens/course-details-screen";
 import MainCourseScreen from "./screens/main-course-screen";
+import PaymentOptionsScreen from "./screens/payment-options-screen";
 import MainTabs from "./tabs/main-tab";
 
 const Stack = createNativeStackNavigator();
@@ -43,6 +44,7 @@ const MainStack = () => {
         name="course-details"
         options={() => ({
           animation: "slide_from_right",
+          // headerShown: false,
         })}
         component={CourseDetailsScreen}
       />
@@ -66,6 +68,14 @@ const MainStack = () => {
       <Stack.Screen
         name="course-content"
         component={CourseContentScreen}
+        options={() => ({
+          animation: "slide_from_right",
+        })}
+      />
+
+      <Stack.Screen
+        name="payment-options"
+        component={PaymentOptionsScreen}
         options={() => ({
           animation: "slide_from_right",
         })}

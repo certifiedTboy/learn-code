@@ -77,7 +77,7 @@ const MainTabs = () => {
   return (
     <SafeAreaView
       style={[{ backgroundColor: safeAreaBackground }, styles.container]}
-      edges={["bottom", "left", "right"]}
+      edges={["top", "bottom", "left", "right"]}
     >
       <View style={{ flex: 1 }}>
         {/* Optional header */}

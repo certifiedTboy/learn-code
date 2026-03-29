@@ -25,6 +25,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { OtpInput } from "react-native-otp-entry";
 import { ThemedText } from "../themed-text";
@@ -108,129 +109,133 @@ const OTPBottomSheetModal = ({
   }, []);
 
   return (
-    <BottomSheetModalProvider>
-      <Formik
-        initialValues={{ verificationCode: "" }}
-        onSubmit={(values) => console.log(values)}
-        validationSchema={VerificationSchema}
-      >
-        {({ handleChange, values, errors, handleBlur, isValid }) => (
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            onChange={handleSheetChanges}
-          >
-            <BottomSheetView style={[styles.container, styles.sheetBackground]}>
-              {/* Header */}
-              <Text style={styles.title}>Account Verification</Text>
-              <Text style={styles.subtitle}>
-                Enter the verification code sent to your email
-              </Text>
-
-              {/* OTP Inputs */}
-              <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
+    <GestureHandlerRootView style={styles.container}>
+      <BottomSheetModalProvider>
+        <Formik
+          initialValues={{ verificationCode: "" }}
+          onSubmit={(values) => console.log(values)}
+          validationSchema={VerificationSchema}
+        >
+          {({ handleChange, values, errors, handleBlur, isValid }) => (
+            <BottomSheetModal
+              ref={bottomSheetModalRef}
+              onChange={handleSheetChanges}
+            >
+              <BottomSheetView
+                style={[styles.container, styles.sheetBackground]}
               >
-                <View style={styles.otpContainer}>
-                  <OtpInput
-                    numberOfDigits={6}
-                    onTextChange={handleChange("verificationCode")}
-                    onBlur={() => handleBlur("verificationCode")}
-                    onFilled={() =>
-                      verifyAccount({
-                        verificationCode: values.verificationCode,
-                        action: "ACCOUNT_VERIFICATION",
-                      })
-                    }
-                    blurOnFilled={true}
-                    disabled={newVerificationCodeLoading || isLoading}
-                    theme={{
-                      pinCodeTextStyle: styles.pinCodeText,
-                      // filledPinCodeContainerStyle: styles.input,
-                      containerStyle: {
-                        ...styles.inputContainer,
-                        width: isPortrait ? width * 0.8 : width * 0.6,
-                      },
-                    }}
-                    textInputProps={{
-                      accessibilityLabel: "One-Time Password",
-                    }}
-                  />
-                </View>
-              </KeyboardAvoidingView>
+                {/* Header */}
+                <Text style={styles.title}>Account Verification</Text>
+                <Text style={styles.subtitle}>
+                  Enter the verification code sent to your email
+                </Text>
 
-              {newVerificationCodeLoading && (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.light.generalBg}
-                />
-              )}
-
-              {isLoading && (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.light.generalBg}
-                />
-              )}
-
-              <View style={styles.errorTextContainer}>
-                {errors?.verificationCode && (
-                  <>
-                    <Icon
-                      name="alert-circle"
-                      size={16}
-                      color={Colors.light.errorText}
-                    />
-                    <ThemedText style={styles.errorText}>
-                      {errors.verificationCode}
-                    </ThemedText>
-                  </>
-                )}
-              </View>
-
-              <View style={styles.resendBtnContainer}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
+                {/* OTP Inputs */}
+                <KeyboardAvoidingView
+                  style={{ flex: 1 }}
+                  behavior={Platform.OS === "ios" ? "padding" : undefined}
                 >
-                  {!isCountingDown ? (
-                    <View style={styles.resendContainer}>
-                      <Text style={styles.resendText}>
-                        Didn&apos;t receive code?
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (!isCountingDown) {
-                            getNewVerificationCode({
-                              email,
-                            });
-                            startCountdown();
-                          }
-                        }}
-                      >
-                        <Text style={styles.resendLink}> Resend</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View style={styles.timerContainer}>
-                      <ThemedText style={styles.timerText}>
-                        {countdownTimeLeft > 0 &&
-                          `Resend code in ${
-                            countdownTimeLeft === 60 ? 0 : countdownTimeLeft
-                          } seconds`}
+                  <View style={styles.otpContainer}>
+                    <OtpInput
+                      numberOfDigits={6}
+                      onTextChange={handleChange("verificationCode")}
+                      onBlur={() => handleBlur("verificationCode")}
+                      onFilled={() =>
+                        verifyAccount({
+                          verificationCode: values.verificationCode,
+                          action: "ACCOUNT_VERIFICATION",
+                        })
+                      }
+                      blurOnFilled={true}
+                      disabled={newVerificationCodeLoading || isLoading}
+                      theme={{
+                        pinCodeTextStyle: styles.pinCodeText,
+                        // filledPinCodeContainerStyle: styles.input,
+                        containerStyle: {
+                          ...styles.inputContainer,
+                          width: isPortrait ? width * 0.8 : width * 0.6,
+                        },
+                      }}
+                      textInputProps={{
+                        accessibilityLabel: "One-Time Password",
+                      }}
+                    />
+                  </View>
+                </KeyboardAvoidingView>
+
+                {newVerificationCodeLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.light.generalBg}
+                  />
+                )}
+
+                {isLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color={Colors.light.generalBg}
+                  />
+                )}
+
+                <View style={styles.errorTextContainer}>
+                  {errors?.verificationCode && (
+                    <>
+                      <Icon
+                        name="alert-circle"
+                        size={16}
+                        color={Colors.light.errorText}
+                      />
+                      <ThemedText style={styles.errorText}>
+                        {errors.verificationCode}
                       </ThemedText>
-                    </View>
+                    </>
                   )}
                 </View>
-              </View>
-            </BottomSheetView>
-          </BottomSheetModal>
-        )}
-      </Formik>
-    </BottomSheetModalProvider>
+
+                <View style={styles.resendBtnContainer}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {!isCountingDown ? (
+                      <View style={styles.resendContainer}>
+                        <Text style={styles.resendText}>
+                          Didn&apos;t receive code?
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (!isCountingDown) {
+                              getNewVerificationCode({
+                                email,
+                              });
+                              startCountdown();
+                            }
+                          }}
+                        >
+                          <Text style={styles.resendLink}> Resend</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View style={styles.timerContainer}>
+                        <ThemedText style={styles.timerText}>
+                          {countdownTimeLeft > 0 &&
+                            `Resend code in ${
+                              countdownTimeLeft === 60 ? 0 : countdownTimeLeft
+                            } seconds`}
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </BottomSheetView>
+            </BottomSheetModal>
+          )}
+        </Formik>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 };
 

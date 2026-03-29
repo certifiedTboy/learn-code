@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
   Dimensions,
@@ -17,6 +18,8 @@ const { width } = Dimensions.get("window");
 const HERO_HEIGHT = width * 0.5;
 
 const CourseDetailsScreen = () => {
+  const navigation = useNavigation<NavigationProp<any>>();
+
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
@@ -41,8 +44,11 @@ const CourseDetailsScreen = () => {
 
       {/* Enroll Button */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.enrollBtn}>
-          <Text style={styles.enrollText}>GET ENROLL</Text>
+        <TouchableOpacity
+          style={styles.enrollBtn}
+          onPress={() => navigation.navigate("payment-options")}
+        >
+          <Text style={styles.enrollText}>GET ENROLLED</Text>
         </TouchableOpacity>
       </View>
       {/* </ScrollView> */}

@@ -10,6 +10,7 @@ import {
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet } from "react-native";
+import { PaystackProvider } from "react-native-paystack-webview";
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
@@ -34,13 +35,19 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <StatusBar style="auto" translucent={true} />
         <AuthContextProvider>
-          <SafeAreaView
-            style={[{ backgroundColor }, styles.container]}
-            edges={["top", "bottom", "left", "right"]}
+          <PaystackProvider
+            // debug={true}
+            publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
           >
-            <Notification />
-            <AppNavigator />
-          </SafeAreaView>
+            <SafeAreaView
+              style={[{ backgroundColor }, styles.container]}
+              edges={["bottom", "left", "right"]}
+            >
+              <Notification />
+
+              <AppNavigator />
+            </SafeAreaView>
+          </PaystackProvider>
         </AuthContextProvider>
       </ThemeProvider>
     </Provider>
