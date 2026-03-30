@@ -7,7 +7,7 @@ import {
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { CourseServices } from './course-services';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { AuthGuard } from '../guard/auth-guard';
+import { AdminGuard, AuthGuard } from '../guard/auth-guard';
 
 /**
  * @class CourseControllers
@@ -18,7 +18,7 @@ import { AuthGuard } from '../guard/auth-guard';
   path: 'courses',
   version: '1',
 })
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 export class CourseControllers {
   constructor(private readonly courseService: CourseServices) {}
 
@@ -41,6 +41,7 @@ export class CourseControllers {
   }
 
   @Post('create')
+  @UseGuards(AdminGuard)
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     try {
       const createdCourse =

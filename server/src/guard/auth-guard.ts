@@ -11,6 +11,7 @@ import { AccessJwtService } from '../common/jwt/access-jwt.service';
 interface UserPayload {
   _id: string;
   email: string;
+  role?: string;
 }
 
 declare module 'express' {
@@ -42,6 +43,50 @@ export class AuthGuard implements CanActivate {
       request.user = {
         _id: payload._id, // Assuming sub is the user ID
         email: payload.email,
+        role: payload.role,
+      }; // Assign the user data to the request object
+
+      return true;
+    } else {
+      throw new UnauthorizedException('jwt expired', {
+        cause: 'Unauthorized access',
+        description: 'Unauthorized access',
+      });
+    }
+  }
+}
+
+@Injectable()
+export class AdminGuard implements CanActivate {
+  constructor(private readonly jwtService: AccessJwtService) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>();
+
+    const authHeader = request.headers['authorization'];
+
+    if (authHeader?.split(' ')[0] !== 'Bearer') {
+      throw new UnauthorizedException('Invalid token format', {
+        cause: 'Unauthorized access',
+        description: 'Unauthorized access',
+      });
+    }
+
+    const accessToken = authHeader.split(' ')[1];
+
+    if (accessToken) {
+      const payload = await this.jwtService.verifyToken(accessToken);
+
+      if (payload.role !== 'admin') {
+        throw new UnauthorizedException('Forbidden resource', {
+          cause: 'Forbidden access',
+          description: 'You do not have permission to access this resource',
+        });
+      }
+
+      request.user = {
+        _id: payload._id, // Assuming sub is the user ID
+        email: payload.email,
+        role: payload.role,
       }; // Assign the user data to the request object
 
       return true;
