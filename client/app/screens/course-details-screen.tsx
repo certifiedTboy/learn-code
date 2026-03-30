@@ -2,9 +2,15 @@ import CourseDetailsTab from "@/components/courses/course-details-tab";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { getCourseById } from "@/helpers/db/course-db";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
-import React from "react";
+import { CourseDetailsContext } from "@/lib/context/course-details-context";
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
+import { useCallback, useContext, useEffect } from "react";
 import {
   Dimensions,
   Image,
@@ -17,13 +23,48 @@ import {
 const { width } = Dimensions.get("window");
 const HERO_HEIGHT = width * 0.5;
 
-const CourseDetailsScreen = () => {
+const CourseDetailsScreen = ({ route }: { route: any }) => {
+  const { setCourse, course } = useContext(CourseDetailsContext);
+
   const navigation = useNavigation<NavigationProp<any>>();
+
+  const { id, name } = route.params;
+
+  const headerTitleTextColor = useThemeColor(
+    { light: Colors.light.text, dark: Colors.dark.text },
+    "text",
+  );
 
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
   );
+
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: name,
+        headerTitleStyle: {
+          fontSize: 18,
+          fontWeight: "600",
+          marginLeft: -100,
+          color: headerTitleTextColor,
+        },
+      });
+    }, []),
+  );
+
+  useEffect(() => {
+    if (id) {
+      (async () => {
+        const course = await getCourseById(id);
+        if (course) {
+          setCourse(course);
+        }
+      })();
+    }
+  }, [id]);
+
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
       {/* <ScrollView
@@ -32,10 +73,7 @@ const CourseDetailsScreen = () => {
         nestedScrollEnabled={true}
       > */}
       <View style={styles.heroWrapper}>
-        <Image
-          source={{ uri: "https://via.placeholder.com/600x400" }}
-          style={styles.hero}
-        />
+        <Image source={{ uri: course?.image }} style={styles.hero} />
         <View style={styles.playButton}>
           <Icon name="play" size={22} color="#ffffff" />
         </View>

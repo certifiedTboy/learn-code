@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth-module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChatModule } from './chat/chat-module';
 import { QueueModule } from './queue/queue-module';
+import { CourseModule } from './course/course-module';
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
@@ -65,6 +66,7 @@ import { BullModule } from '@nestjs/bullmq';
     UsersModule,
     ChatModule,
     QueueModule,
+    CourseModule,
   ],
   controllers: [AppController],
 

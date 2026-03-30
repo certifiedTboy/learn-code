@@ -1,28 +1,4 @@
-import * as SQLite from "expo-sqlite";
-
-let dbInstance: SQLite.SQLiteDatabase | null = null;
-
-export const getDatabase = async () => {
-  if (!dbInstance) {
-    dbInstance = await SQLite.openDatabaseAsync("code_db");
-    await dbInstance.execAsync(`PRAGMA journal_mode = WAL`);
-    await dbInstance.execAsync(`PRAGMA foreign_keys = ON`);
-  }
-  return dbInstance;
-};
-
-export const runWithLock = async (fn: () => Promise<void>) => {
-  let dbLock = false;
-  while (dbLock) {
-    await new Promise((res) => setTimeout(res, 50));
-  }
-  dbLock = true;
-  try {
-    await fn();
-  } finally {
-    dbLock = false;
-  }
-};
+import { getDatabase } from "./db";
 
 /**
  * Creates the user profile table if it doesn't exist.

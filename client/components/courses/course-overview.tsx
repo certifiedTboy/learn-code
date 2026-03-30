@@ -1,8 +1,12 @@
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { CourseDetailsContext } from "@/lib/context/course-details-context";
+import { useContext } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 const CourseOverview = () => {
+  const { course } = useContext(CourseDetailsContext);
+
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
@@ -21,42 +25,37 @@ const CourseOverview = () => {
   return (
     <ScrollView contentContainerStyle={[styles.content, { backgroundColor }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: textColor }]}>Graphic Design</Text>
-        <Text style={styles.price}>72$</Text>
+        <Text style={[styles.title, { color: textColor }]}>{course?.name}</Text>
+        <Text style={styles.price}>{course?.price}</Text>
       </View>
 
       <Text style={[styles.author, { color: Colors.dark.textSecondary }]}>
-        By Syd Hassan
+        By {course?.instructor || "Syd Hassan"}
       </Text>
 
       <Text style={[styles.description, { color: textColor }]}>
-        Lorem ipsum dolor sit amet, consectetur. Nec eget accumsan molestie, non
-        integer rhoncus vitae nisi ut natoque metus sollicitud gravida.
-        Consectetur aliquet sit diam.
+        {course?.description}
       </Text>
 
       <Text style={styles.readMore}>Read More</Text>
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <Stat label="60+ Lectures" />
-        <Stat label="Certificate" />
-        <Stat label="08+ Weeks" />
-        <Stat label="30% Off" />
+        <Stat label={`${course?.totalTopics}+ Topics`} />
+        <Stat label={`${course?.subscribers} Subscribers`} />
+        <Stat label={`${course?.requiredDuration}+ Weeks`} />
+        <Stat label={`Complete by ${course?.completed}`} />
+        <Stat label={`${course?.rating} Rating`} />
+        {course?.discount && <Stat label={`${course?.discount}% Off`} />}
       </View>
 
       {/* Skills */}
-      <Text style={styles.sectionTitle}>Skills</Text>
+      <Text style={[styles.sectionTitle, { color: Colors.dark.textSecondary }]}>
+        Skills
+      </Text>
       <View style={styles.skillsRow}>
-        {[
-          "Adobe",
-          "Adobe Photoshop",
-          "Logo",
-          "Designing",
-          "Poster Design",
-          "Figma",
-        ].map((skill) => (
-          <View key={skill} style={styles.skillChip}>
+        {course?.skills?.map((skill: string | null) => (
+          <View key={skill} style={[styles.skillChip]}>
             <Text style={[styles.skillText, { color: skillTextColor }]}>
               {skill}
             </Text>

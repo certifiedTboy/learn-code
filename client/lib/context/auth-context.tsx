@@ -1,4 +1,4 @@
-import { upsertUserProfile } from "@/helpers/db";
+import { upsertUserProfile } from "@/helpers/db/db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useState } from "react";
 

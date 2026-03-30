@@ -8,7 +8,8 @@ import {
 } from "@react-navigation/native";
 import { useCallback, useRef, useState } from "react";
 
-import { createUserProfileTable } from "@/helpers/db";
+import { createCourseTable } from "@/helpers/db/course-db";
+import { createUserProfileTable } from "@/helpers/db/user-db";
 import {
   Dimensions,
   FlatList,
@@ -64,12 +65,10 @@ const OnboardingScreen = () => {
    */
   useFocusEffect(
     useCallback(() => {
-      // Create the contact table if it doesn't exist
-      const onCreateContactTable = async () => {
+      (async () => {
         await createUserProfileTable();
-      };
-
-      onCreateContactTable();
+        await createCourseTable();
+      })();
     }, []),
   );
 

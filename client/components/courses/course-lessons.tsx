@@ -1,14 +1,15 @@
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { courses } from "@/lib/apis/course-apis";
-import React from "react";
+import { CourseDetailsContext } from "@/lib/context/course-details-context";
+import React, { useContext } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text } from "react-native";
 import CourseItem from "./course-item";
-import CourseCheckedItem from "./CourseCheckedItem";
 
 const { width } = Dimensions.get("window");
 
 const CourseLessons = () => {
+  const { course } = useContext(CourseDetailsContext);
+
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
@@ -20,21 +21,13 @@ const CourseLessons = () => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {courses.map((chapter, index) => (
+      {course?.contents?.map((chapter: any, index: number) => (
         <CourseItem
           key={index}
-          title={chapter.title}
+          title={chapter?.mainTopic}
           isCheckedList={chapter.isCheckedList}
         >
-          {chapter.isCheckedList ? (
-            chapter?.items?.map((item, itemIndex) => (
-              <CourseCheckedItem key={itemIndex} checked={item.checked}>
-                {item.text}
-              </CourseCheckedItem>
-            ))
-          ) : (
-            <Text style={styles.contentText}>{chapter.content}</Text>
-          )}
+          <Text style={styles.contentText}>{chapter?.description}</Text>
         </CourseItem>
       ))}
     </ScrollView>

@@ -1,7 +1,9 @@
 import Notification from "@/components/common/Notification";
 import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import AuthContextProvider from "@/lib/context/auth-context";
+import CourseDetailsContextProvider from "@/lib/context/course-details-context";
 import { store } from "@/lib/redux/store";
 import {
   DarkTheme,
@@ -15,8 +17,6 @@ import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import AppNavigator from "./app-navigator";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -34,19 +34,22 @@ export default function RootLayout() {
     <Provider store={store}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <StatusBar style="auto" translucent={true} />
+
         <AuthContextProvider>
           <PaystackProvider
             // debug={true}
             publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
           >
-            <SafeAreaView
-              style={[{ backgroundColor }, styles.container]}
-              edges={["bottom", "left", "right"]}
-            >
-              <Notification />
+            <CourseDetailsContextProvider>
+              <SafeAreaView
+                style={[{ backgroundColor }, styles.container]}
+                edges={["bottom", "left", "right"]}
+              >
+                <Notification />
 
-              <AppNavigator />
-            </SafeAreaView>
+                <AppNavigator />
+              </SafeAreaView>
+            </CourseDetailsContextProvider>
           </PaystackProvider>
         </AuthContextProvider>
       </ThemeProvider>

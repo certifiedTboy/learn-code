@@ -1,12 +1,16 @@
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
+import { getAllCourse, upsertCourse } from "@/helpers/db/course-db";
+import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useGetAllCoursesMutation } from "@/lib/apis/course-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,50 +23,16 @@ import {
 const { width, height } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.42;
 
-const courses = [
-  {
-    id: "1",
-    title: "Graphics Design",
-    rating: "★★★★★",
-    author: "By Emmanuel",
-    image: require("@/assets/images/Isolation_Mode.png"),
-  },
-  {
-    id: "2",
-    title: "Wireframing",
-    rating: "★★★★★",
-    author: "By Tosin",
-    image: require("@/assets/images/Layer_1.png"),
-  },
-  {
-    id: "3",
-    title: "Wireframing",
-    rating: "★★★★★",
-    author: "By Tosin",
-    image: require("@/assets/images/Isolation_Mode_1.png"),
-  },
-
-  {
-    id: "4",
-    title: "Wireframing",
-    rating: "★★★★★",
-    author: "By Tosin",
-    image: require("@/assets/images/Isolation_Mode.png"),
-  },
-
-  {
-    id: "5",
-    title: "Wireframing",
-    rating: "★★★★★",
-    author: "By Tosin",
-    image: require("@/assets/images/Isolation_Mode.png"),
-  },
-];
-
 const CoursesScreen = () => {
   const theme = useColorScheme();
 
+  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+
   const navigation = useNavigation<NavigationProp<any>>();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [getAllCoursesFromDb, { data, error }] = useGetAllCoursesMutation();
 
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
@@ -89,10 +59,43 @@ const CoursesScreen = () => {
     "background",
   );
 
+  useEffect(() => {
+    (async () => {
+      const courses = await getAllCourse();
+
+      if (!courses || courses?.length === 0) {
+        getAllCoursesFromDb(null);
+      } else {
+        setAvailableCourses(courses);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (data && data?.data) {
+      setAvailableCourses(data?.data);
+      showNotification({
+        type: "success",
+        title: "Courses Updated",
+        message: "Courses Updated!",
+      });
+      (async () => {
+        for (const course of data?.data) {
+          await upsertCourse(course);
+        }
+      })();
+    }
+  }, [data]);
+
   const RenderedCard = useCallback(
     ({ item }: { item: any }) => (
       <TouchableOpacity
-        onPress={() => navigation.navigate("course-details")}
+        onPress={() =>
+          navigation.navigate("course-details", {
+            id: item?._id,
+            name: item?.name,
+          })
+        }
         style={[
           theme === "light" && {
             borderWidth: 1,
@@ -109,20 +112,29 @@ const CoursesScreen = () => {
           styles.card,
         ]}
       >
-        <Image source={item.image} style={styles.cardImage} />
-        <Text style={styles.cardTitle}>{item.title}</Text>
-        <Text style={styles.rating}>{item.rating}</Text>
-        <Text style={styles.author}>{item.author}</Text>
+        <Image source={{ uri: item?.image }} style={styles.cardImage} />
+        <Text style={styles.cardTitle}>{item?.name}</Text>
+        <Text style={styles.rating}>★★★★★</Text>
+        <Text style={styles.author}>Adebisi Tosin</Text>
       </TouchableOpacity>
     ),
     [],
   );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    getAllCoursesFromDb(null);
+    setTimeout(() => setRefreshing(false), 2000); // simulate refresh
+  };
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Search */}
         <TextInput
@@ -140,13 +152,12 @@ const CoursesScreen = () => {
         {/* Categories */}
         <View style={styles.chipsRow}>
           {[
-            "UI/UX",
-            "Graphics Design",
-            "Figma",
-            "Web Design",
-            "Software Development",
+            "Design",
+            "Engineering",
+            "Data",
+            "Graphics",
+            "Writing",
             "Cloud",
-            "Mobile Development",
           ].map((item) => (
             <TouchableOpacity
               key={item}
@@ -162,16 +173,16 @@ const CoursesScreen = () => {
         {/* Continue Watching */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: courseTitleColor }]}>
-            Continue Watching
+            Continue Learning
           </Text>
           <Text style={styles.seeAll}>See All</Text>
         </View>
 
         <View style={styles.cardRow}>
           <FlatList
-            data={courses}
+            data={availableCourses}
             horizontal
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item?._id}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingRight: 16, gap: 12 }}
             renderItem={RenderedCard}

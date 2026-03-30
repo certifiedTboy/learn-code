@@ -19,7 +19,7 @@ const { width } = Dimensions.get("window");
 const CourseItem = ({
   title,
   children,
-  isCheckedList = false,
+  isCheckedList = true,
 }: {
   title: string;
   children: React.ReactNode;

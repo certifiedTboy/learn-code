@@ -105,7 +105,7 @@ export const userApis = createApi({
           // console.log("Fetched user profile data:", userProfileData);
           // await upsertUserProfile(userProfileData);
         } catch (error) {
-          console.log(error);
+          // console.log(error);
         }
       },
     }),
@@ -123,7 +123,7 @@ export const userApis = createApi({
 
           dispatch(setCurrentUser({ currentUser: data.data }));
         } catch (error: unknown) {
-          console.log(error);
+          // console.log(error);
         }
       },
     }),
@@ -147,7 +147,7 @@ export const userApis = createApi({
             dispatch(setCurrentUser({ currentUser: user }));
           }
         } catch (error) {
-          console.log(error);
+          // console.log(error);
         }
       },
     }),
