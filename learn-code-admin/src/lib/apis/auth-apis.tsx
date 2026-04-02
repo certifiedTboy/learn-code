@@ -42,7 +42,7 @@ export const authApis = createApi({
 
     getAdminProfile: builder.mutation({
       query: () => ({
-        url: "/auth/profile",
+        url: "/auth/me",
         method: "GET",
         credentials: "include",
       }),

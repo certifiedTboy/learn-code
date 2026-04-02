@@ -29,6 +29,8 @@ export default function VerifyAccount() {
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
+    if (Object.values(error)[0]) return;
+
     verifyAdminAccount({
       ...formData,
       action: "ACCOUNT_VERIFICATION",
@@ -46,6 +48,7 @@ export default function VerifyAccount() {
         errorResponse && "data" in errorResponse
           ? (errorResponse.data as any)?.message || "Something went wrong"
           : "Something went wrong";
+
       toast({
         variant: "destructive",
         title: message,

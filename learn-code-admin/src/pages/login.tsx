@@ -1,33 +1,54 @@
+import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Mail, Lock } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useToast } from "../hooks/use-toast";
+import useForm from "../hooks/useForm";
 import { Input } from "../components/ui/input";
-
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema } from "../helpers/data-validator-schema";
+import { useLoginAdminAccountMutation } from "../lib/apis/auth-apis";
 
 export default function Login() {
+  const {
+    formData,
+    error,
+    inputType,
+    handlePasswordTypeChange,
+    handleInputChange,
+  } = useForm(loginSchema);
   const [, setLocation] = useLocation();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-  });
+  const { toast } = useToast();
 
-  const onSubmit = (_data: LoginFormValues) => {
-    setLocation("/dashboard");
+  const [
+    loginAdminAccount,
+    { isLoading, error: errorResponse, isSuccess, isError },
+  ] = useLoginAdminAccountMutation();
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+
+    if (Object.values(error)[0]) return;
+    loginAdminAccount(formData);
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      setLocation("/dashboard");
+    }
+
+    if (isError) {
+      const message =
+        errorResponse && "data" in errorResponse
+          ? (errorResponse.data as any)?.message || "Something went wrong"
+          : "Something went wrong";
+      toast({
+        variant: "destructive",
+        title: message,
+      });
+    }
+  }, [isSuccess, isError]);
 
   return (
     <div className="min-h-screen w-full flex bg-background">
@@ -86,7 +107,7 @@ export default function Login() {
           </div>
 
           <div className="glass-panel p-8 rounded-2xl">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
@@ -95,15 +116,14 @@ export default function Login() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
-                      {...register("email")}
+                      onChange={handleInputChange}
+                      name="email"
                       placeholder="admin@example.com"
                       className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
                     />
                   </div>
-                  {errors.email && (
-                    <p className="text-xs text-destructive">
-                      {errors.email.message}
-                    </p>
+                  {error.field === "email" && (
+                    <p className="text-xs text-destructive">{error.message}</p>
                   )}
                 </div>
 
@@ -114,23 +134,29 @@ export default function Login() {
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
-                      {...register("password")}
-                      type="password"
+                      onChange={handleInputChange}
+                      type={inputType.passwordType}
+                      name="password"
                       placeholder="••••••••"
                       className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
                     />
+
+                    <span
+                      onClick={() => handlePasswordTypeChange("passwordType")}
+                      className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+                    >
+                      {inputType.passwordType === "password" ? "👁️" : "🙈"}
+                    </span>
                   </div>
-                  {errors.password && (
-                    <p className="text-xs text-destructive">
-                      {errors.password.message}
-                    </p>
+                  {error.field === "password" && (
+                    <p className="text-xs text-destructive">{error.message}</p>
                   )}
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
+                className="w-full cursor-pointer h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
               >
                 Sign In
               </Button>

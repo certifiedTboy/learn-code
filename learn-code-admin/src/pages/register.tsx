@@ -28,6 +28,9 @@ export default function Register() {
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
+
+    if (Object.values(error)[0]) return;
+
     createAdminAccount({
       ...formData,
       firstName: "admin",

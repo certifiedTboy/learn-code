@@ -27,3 +27,8 @@ export const accountVerificationSchema = object({
     .max(6, "Verification code must be 6 characters")
     .matches(/^\d+$/, "Verification code must be a number"),
 });
+
+export const loginSchema = object({
+  email: string().required("Email is required"),
+  password: string().required("Password is required"),
+});
