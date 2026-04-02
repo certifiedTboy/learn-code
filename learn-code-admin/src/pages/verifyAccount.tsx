@@ -1,20 +1,20 @@
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowLeft, Mail, Lock } from "lucide-react";
+import { GraduationCap, ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { registerSchema } from "../helpers/data-validator-schema";
+import { accountVerificationSchema } from "../helpers/data-validator-schema";
 import useForm from "../hooks/useForm";
-import { useCreateAdminAccountMutation } from "../lib/apis/auth-apis";
+import { useVerifyAdminAccountMutation } from "../lib/apis/auth-apis";
 import { useEffect } from "react";
 
-export default function Register() {
+export default function VerifyAccount() {
   const [, setLocation] = useLocation();
   const [
-    createAdminAccount,
-    { isLoading, error: errorResponse, isSuccess, isError },
-  ] = useCreateAdminAccountMutation();
+    verifyAdminAccount,
+    { isLoading, error: errorResponse, isSuccess, isError, data: responseData },
+  ] = useVerifyAdminAccountMutation();
 
   const { toast } = useToast();
 
@@ -24,21 +24,21 @@ export default function Register() {
     handlePasswordTypeChange,
     inputType,
     formData,
-  } = useForm(registerSchema);
+  } = useForm(accountVerificationSchema);
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    createAdminAccount({
+
+    verifyAdminAccount({
       ...formData,
-      firstName: "admin",
-      lastName: "admin",
-      role: "admin",
+      action: "ACCOUNT_VERIFICATION",
+      verificationCode: formData.verificationCode.slice(0, 5),
     });
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setLocation("/verify-acount");
+      setLocation("/login");
     }
 
     if (isError) {
@@ -74,108 +74,25 @@ export default function Register() {
         >
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-display font-bold tracking-tight mb-2">
-              Create an account
+              Verify Acount
             </h2>
-            <p className="text-muted-foreground">
-              Start managing your courses today
-            </p>
+            <p className="text-muted-foreground">Verify your account</p>
           </div>
 
           <div className="glass-panel p-8 rounded-2xl">
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
-                {/* <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    First Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      {...register("firstName")}
-                      placeholder="John"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive">
-                      {errors.firstName.message}
-                    </p>
-                  )}
-                </div> */}
-
-                {/* <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Last Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      {...register("lastName")}
-                      placeholder="Doe"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {errors.lastName && (
-                    <p className="text-xs text-destructive">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div> */}
-
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      onChange={handleInputChange}
-                      placeholder="admin@example.com"
-                      name="email"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {error?.field === "email" && (
-                    <p className="text-xs text-destructive">{error?.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      onChange={handleInputChange}
-                      type={inputType?.passwordType}
-                      placeholder="••••••••"
-                      name="password"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                    <span
-                      onClick={() => handlePasswordTypeChange("passwordType")}
-                      className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
-                    >
-                      {inputType.passwordType === "password" ? "👁️" : "🙈"}
-                    </span>
-                  </div>
-                  {error?.field === "password" && (
-                    <p className="text-xs text-destructive">{error?.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Confirm Password
+                    Verification Code
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
                       onChange={handleInputChange}
                       type={inputType.confirmPasswordType}
-                      placeholder="••••••••"
-                      name="confirmPassword"
+                      placeholder="••••••"
+                      name="verificationCode"
                       className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
                     />
 
@@ -190,7 +107,7 @@ export default function Register() {
                         : "🙈"}
                     </span>
                   </div>
-                  {error?.field === "confirmPassword" && (
+                  {error?.field === "verificationCode" && (
                     <p className="text-xs text-destructive">{error?.message}</p>
                   )}
                 </div>
@@ -200,7 +117,7 @@ export default function Register() {
                 type="submit"
                 className="w-full cursor-pointer h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
               >
-                Create Account
+                Verify Account
               </Button>
             </form>
           </div>

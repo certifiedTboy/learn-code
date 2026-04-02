@@ -8,6 +8,7 @@ import NotFound from "./pages/not-found";
 // Pages
 import Login from "./pages/login";
 import Register from "./pages/register";
+import VerifyAccount from "./pages/verifyAccount";
 import Dashboard from "./pages/dashboard";
 import CoursesList from "./pages/courses/list";
 import CourseForm from "./pages/courses/form";
@@ -25,6 +26,7 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/verify-acount" component={VerifyAccount} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/courses" component={CoursesList} />
       <Route path="/dashboard/courses/new" component={CourseForm} />

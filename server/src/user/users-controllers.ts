@@ -73,7 +73,9 @@ export class UsersController {
    * @param {CreateUserDto} createUserDto - The data transfer object containing user details.
    */
   @Post('create')
-  async createUser(@Body() createUserDto: CreateUserDto) {
+  async createUser(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
+    console.log(req.headers['user-agent']);
+
     try {
       const result = await this.usersService.create({
         ...createUserDto,
