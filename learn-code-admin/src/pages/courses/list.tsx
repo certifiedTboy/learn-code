@@ -40,7 +40,7 @@ export default function CoursesList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const filteredCourses = courses.filter(
+  const filteredCourses = courses?.filter(
     (c) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.description.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -80,12 +80,12 @@ export default function CoursesList() {
           />
         </div>
 
-        {filteredCourses.length > 0 ? (
+        {filteredCourses?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredCourses.map((course) => (
+              {filteredCourses?.map((course) => (
                 <motion.div
-                  key={course.id}
+                  key={course?.id}
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -94,7 +94,7 @@ export default function CoursesList() {
                   className="glass-panel rounded-2xl overflow-hidden group border border-white/5 hover:border-primary/30 transition-all duration-300 flex flex-col"
                 >
                   <div className="h-48 relative overflow-hidden bg-secondary">
-                    {course.image ? (
+                    {course?.image ? (
                       <img
                         src={course.image}
                         alt={course.name}
