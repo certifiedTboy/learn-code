@@ -1,4 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getToken } from "../../helpers/user-session";
+import { setCurrentUser } from "../../redux/slice/auth-slice";
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -6,8 +8,9 @@ export const authApis = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
+    prepareHeaders: async (headers) => {
+      const token = await getToken();
+
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -38,14 +41,33 @@ export const authApis = createApi({
         method: "POST",
         body: payload,
       }),
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(setCurrentUser(data.data?.user));
+        } catch (error) {
+          // console.log(error);
+        }
+      },
     }),
 
     getAdminProfile: builder.mutation({
       query: () => ({
         url: "/auth/me",
         method: "GET",
-        credentials: "include",
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          // console.log(data?.data);
+          dispatch(setCurrentUser(data.data));
+        } catch (error) {
+          // console.log(error);
+        }
+      },
     }),
   }),
 });

@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { INITIAL_COURSES, type Course } from "../lib/mock-data";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
+import { useGetAllCoursesMutation } from "../lib/apis/course-apis";
+import { type Course } from "../lib/mock-data";
 
 interface CoursesContextType {
   courses: Course[];
@@ -12,9 +13,13 @@ interface CoursesContextType {
 const CoursesContext = createContext<CoursesContextType | null>(null);
 
 export function CoursesProvider({ children }: { children: ReactNode }) {
-  const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
+  const [getAllCourses, { data }] = useGetAllCoursesMutation();
 
-  const getCourse = (id: string) => courses.find((c) => c.id === id);
+  useEffect(() => {
+    getAllCourses(null);
+  }, []);
+
+  const getCourse = (id: string) => data?.data?.find((c: any) => c._id === id);
 
   const createCourse = (
     data: Omit<Course, "id" | "subscribers" | "rating">,
@@ -25,23 +30,34 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
       subscribers: 0,
       rating: 0,
     };
-    setCourses((prev) => [...prev, newCourse]);
+    // setCourses((prev) => [...prev, newCourse]);
     return newCourse;
   };
 
   const updateCourse = (id: string, data: Partial<Omit<Course, "id">>) => {
-    setCourses((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...data } : c)),
-    );
+    // setCourses((prev) =>
+    //   prev.map((c) => (c.id === id ? { ...c, ...data } : c)),
+    // );
   };
 
   const deleteCourse = (id: string) => {
-    setCourses((prev) => prev.filter((c) => c.id !== id));
+    // setCourses((prev) => prev.filter((c) => c.id !== id));
   };
 
   return (
     <CoursesContext.Provider
-      value={{ courses, getCourse, createCourse, updateCourse, deleteCourse }}
+      value={{
+        courses: data?.data?.map((course: any) => {
+          return {
+            ...course,
+            id: course._id,
+          };
+        }),
+        getCourse,
+        createCourse,
+        updateCourse,
+        deleteCourse,
+      }}
     >
       {children}
     </CoursesContext.Provider>

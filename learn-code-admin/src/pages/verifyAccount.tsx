@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowLeft, Lock } from "lucide-react";
@@ -7,10 +8,12 @@ import { Input } from "../components/ui/input";
 import { accountVerificationSchema } from "../helpers/data-validator-schema";
 import useForm from "../hooks/useForm";
 import { useVerifyAdminAccountMutation } from "../lib/apis/auth-apis";
-import { useEffect } from "react";
+import Loader from "../components/ui/loader";
+import { useAuth } from "../hooks/use-auth";
 
 export default function VerifyAccount() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [
     verifyAdminAccount,
     { isLoading, error: errorResponse, isSuccess, isError, data: responseData },
@@ -54,7 +57,11 @@ export default function VerifyAccount() {
         title: message,
       });
     }
-  }, [isSuccess, isError]);
+
+    if (isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [isSuccess, isError, isAuthenticated]);
 
   return (
     <div className="min-h-screen w-full flex bg-background">
@@ -86,6 +93,7 @@ export default function VerifyAccount() {
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
+                  {isLoading && <Loader />}
                   <label className="text-sm font-medium text-foreground">
                     Verification Code
                   </label>

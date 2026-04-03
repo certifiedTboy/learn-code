@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
+import { deleteToken } from "../helpers/user-session";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,6 +28,11 @@ export function DashboardLayout({ children }: LayoutProps) {
     { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
+
+  const onLogoutUser = async () => {
+    await deleteToken();
+    window.location.href = "/login";
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
@@ -117,8 +123,8 @@ export function DashboardLayout({ children }: LayoutProps) {
 
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-            onClick={() => {}}
+            className="w-full cursor-pointer justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            onClick={onLogoutUser}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Log Out

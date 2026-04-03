@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowLeft, Mail, Lock } from "lucide-react";
@@ -7,10 +8,13 @@ import { Input } from "../components/ui/input";
 import { registerSchema } from "../helpers/data-validator-schema";
 import useForm from "../hooks/useForm";
 import { useCreateAdminAccountMutation } from "../lib/apis/auth-apis";
-import { useEffect } from "react";
+import { useAuth } from "../hooks/use-auth";
+import Loader from "../components/ui/loader";
 
 export default function Register() {
   const [, setLocation] = useLocation();
+
+  const { isAuthenticated } = useAuth();
   const [
     createAdminAccount,
     { isLoading, error: errorResponse, isSuccess, isError },
@@ -54,7 +58,11 @@ export default function Register() {
         title: message,
       });
     }
-  }, [isSuccess, isError]);
+
+    if (isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [isSuccess, isError, isAuthenticated]);
 
   return (
     <div className="min-h-screen w-full flex bg-background">
@@ -85,6 +93,7 @@ export default function Register() {
           </div>
 
           <div className="glass-panel p-8 rounded-2xl">
+            {isLoading && <Loader />}
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
                 {/* <div className="space-y-2">

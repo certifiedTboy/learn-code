@@ -1,16 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { authApis } from "../../lib/apis/auth-apis";
+import { courseApis } from "../../lib/apis/course-apis";
 import { authSlice } from "../slice/auth-slice";
 
 export const store = configureStore({
   reducer: {
     authState: authSlice.reducer,
     [authApis.reducerPath]: authApis.reducer,
+    [courseApis.reducerPath]: courseApis.reducer,
   },
 
+  devTools: import.meta.env.NODE_ENV !== "production",
+
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApis.middleware),
+    getDefaultMiddleware().concat(authApis.middleware, courseApis.middleware),
 });
 
 // optional, but required for refetchOnFocus/refetchOnReconnect behaviors

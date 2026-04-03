@@ -63,8 +63,8 @@ export default function CoursesList() {
               Create, edit, and organize your educational content.
             </p>
           </div>
-          <Link href="/dashboard/courses/new">
-            <Button className="shadow-glow">
+          <Link href="/dashboard/courses/new" className="cursor-pointer">
+            <Button className="shadow-glow cursor-pointer">
               <Plus className="w-4 h-4 mr-2" /> New Course
             </Button>
           </Link>

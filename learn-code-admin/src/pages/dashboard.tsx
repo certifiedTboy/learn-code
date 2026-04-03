@@ -8,17 +8,17 @@ import { useCourses } from "../hooks/use-courses";
 export default function Dashboard() {
   const { courses } = useCourses();
 
-  const totalCourses = courses.length;
-  const totalSubscribers = courses.reduce(
+  const totalCourses = courses?.length;
+  const totalSubscribers = courses?.reduce(
     (acc, c) => acc + (c.subscribers || 0),
     0,
   );
-  const avgRating = courses.length
+  const avgRating = courses?.length
     ? (
-        courses.reduce((acc, c) => acc + (c.rating || 0), 0) / courses.length
+        courses?.reduce((acc, c) => acc + (c.rating || 0), 0) / courses.length
       ).toFixed(1)
     : "0.0";
-  const totalRevenue = courses.reduce(
+  const totalRevenue = courses?.reduce(
     (acc, c) => acc + (c.price || 0) * (c.subscribers || 0),
     0,
   );
@@ -33,7 +33,7 @@ export default function Dashboard() {
     },
     {
       label: "Active Subscribers",
-      value: totalSubscribers.toLocaleString(),
+      value: totalSubscribers?.toLocaleString(),
       icon: Users,
       color: "text-primary",
       bg: "bg-primary/10",
@@ -47,7 +47,7 @@ export default function Dashboard() {
     },
     {
       label: "Est. Revenue",
-      value: `$${totalRevenue.toLocaleString()}`,
+      value: `$${totalRevenue?.toLocaleString()}`,
       icon: Clock,
       color: "text-green-400",
       bg: "bg-green-400/10",
@@ -80,8 +80,8 @@ export default function Dashboard() {
               Here's what's happening with your platform today.
             </p>
           </div>
-          <Link href="/dashboard/courses/new">
-            <Button className="shadow-glow">
+          <Link href="/dashboard/courses/new" className="cursor-pointer">
+            <Button className="shadow-glow cursor-pointer">
               <Plus className="w-4 h-4 mr-2" /> Create Course
             </Button>
           </Link>
@@ -128,19 +128,19 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {courses.length > 0 ? (
+          {courses?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.slice(0, 3).map((course) => (
+              {courses?.slice(0, 3)?.map((course) => (
                 <motion.div
                   key={course.id}
                   whileHover={{ y: -5 }}
                   className="glass-panel rounded-2xl overflow-hidden group border border-white/5 hover:border-primary/30 transition-all duration-300 flex flex-col"
                 >
                   <div className="h-40 bg-secondary/50 relative overflow-hidden">
-                    {course.image ? (
+                    {course?.image ? (
                       <img
-                        src={course.image}
-                        alt={course.name}
+                        src={course?.image}
+                        alt={course?.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -150,24 +150,31 @@ export default function Dashboard() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
-                      <span className="px-2.5 py-1 bg-primary/90 text-primary-foreground text-xs font-semibold rounded-md backdrop-blur-md">
-                        ${course.price}
-                      </span>
+                      <div className="flex gap-3">
+                        <span className="px-2.5 py-1 bg-primary/90 text-primary-foreground text-xs font-semibold rounded-md backdrop-blur-md">
+                          ${course?.price}
+                        </span>
+
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />{" "}
+                          {course.requiredDuration}w
+                        </span>
+                      </div>
                       <span className="flex items-center gap-1 text-xs text-white bg-black/50 px-2 py-1 rounded-md backdrop-blur-md">
-                        <Users className="w-3 h-3" /> {course.subscribers}
+                        <Users className="w-3 h-3" /> {course?.subscribers}
                       </span>
                     </div>
                   </div>
                   <div className="p-5 flex flex-col flex-1">
                     <h3 className="font-display font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                      {course.name}
+                      {course?.name}
                     </h3>
                     <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                      {course.description}
+                      {course?.description}
                     </p>
                     <div className="flex justify-between items-center pt-4 border-t border-border/50">
                       <span className="text-xs text-muted-foreground">
-                        {course.totalTopics} Topics
+                        {course?.totalTopics} Topics
                       </span>
                       <Link href={`/dashboard/courses/${course.id}/edit`}>
                         <Button

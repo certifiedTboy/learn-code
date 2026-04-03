@@ -3,11 +3,14 @@ import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Mail, Lock } from "lucide-react";
 import { Button } from "../components/ui/button";
+import Loader from "../components/ui/loader";
 import { useToast } from "../hooks/use-toast";
 import useForm from "../hooks/useForm";
 import { Input } from "../components/ui/input";
 import { loginSchema } from "../helpers/data-validator-schema";
 import { useLoginAdminAccountMutation } from "../lib/apis/auth-apis";
+import { useAuth } from "../hooks/use-auth";
+import { storeToken } from "../helpers/user-session";
 
 export default function Login() {
   const {
@@ -19,11 +22,13 @@ export default function Login() {
   } = useForm(loginSchema);
   const [, setLocation] = useLocation();
 
+  const { isAuthenticated } = useAuth();
+
   const { toast } = useToast();
 
   const [
     loginAdminAccount,
-    { isLoading, error: errorResponse, isSuccess, isError },
+    { isLoading, error: errorResponse, isSuccess, isError, data },
   ] = useLoginAdminAccountMutation();
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -35,6 +40,9 @@ export default function Login() {
 
   useEffect(() => {
     if (isSuccess) {
+      (async () => {
+        await storeToken(data?.data?.accessToken);
+      })();
       setLocation("/dashboard");
     }
 
@@ -48,7 +56,11 @@ export default function Login() {
         title: message,
       });
     }
-  }, [isSuccess, isError]);
+
+    if (isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [isSuccess, isError, isAuthenticated]);
 
   return (
     <div className="min-h-screen w-full flex bg-background">
@@ -107,6 +119,8 @@ export default function Login() {
           </div>
 
           <div className="glass-panel p-8 rounded-2xl">
+            {isLoading && <Loader />}
+
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">

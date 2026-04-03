@@ -1,4 +1,8 @@
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode, useEffect } from "react";
+// import { Redirect } from "wouter";
+import { useGetAdminProfileMutation } from "../lib/apis/auth-apis";
+import { useSelector } from "react-redux";
+import type { RootState } from "../redux/store/store";
 
 interface User {
   name: string;
@@ -11,16 +15,29 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: { name: "Admin User", role: "admin" },
-  isAuthenticated: true,
+  user: { name: "", role: "" },
+  isAuthenticated: false,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [getAdminProfile] = useGetAdminProfileMutation();
+
+  const { currentUser, isAuthenticated } = useSelector(
+    (state: RootState) => state.authState,
+  );
+
+  useEffect(() => {
+    getAdminProfile(null);
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
-        user: { name: "Admin User", role: "admin" },
-        isAuthenticated: true,
+        user: {
+          name: `${currentUser?.firstName} ${currentUser?.lastName}`,
+          role: currentUser?.role || "admin",
+        },
+        isAuthenticated,
       }}
     >
       {children}
@@ -32,6 +49,12 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-export function RequireAuth({ children }: { children: ReactNode }) {
-  return <>{children}</>;
-}
+// export function RequireAuth({ children }: { children: ReactNode }) {
+//   const { isAuthenticated } = useAuth();
+
+//   if (!isAuthenticated) {
+//     return <Redirect to="/login" />;
+//   }
+
+//   return <>{children}</>;
+// }

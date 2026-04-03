@@ -32,7 +32,7 @@ export default function CourseView() {
           <p className="text-muted-foreground mt-2 mb-6">
             The course you're looking for doesn't exist.
           </p>
-          <Link href="/dashboard/courses">
+          <Link href="/dashboard/courses" className="cursor-pointer">
             <Button>Back to Courses</Button>
           </Link>
         </div>
