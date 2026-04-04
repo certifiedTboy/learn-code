@@ -43,6 +43,7 @@ export class CourseControllers {
   @Post('create')
   @UseGuards(AdminGuard)
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
+    console.log(createCourseDto);
     try {
       const createdCourse =
         await this.courseService.createCourse(createCourseDto);

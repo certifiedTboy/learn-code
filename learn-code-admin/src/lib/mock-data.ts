@@ -20,5 +20,6 @@ export interface Course {
   requiredDuration: number;
   subscribers: number;
   rating: number;
+  skills: string | string[];
   contents: CourseContent[];
 }

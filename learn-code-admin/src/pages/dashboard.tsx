@@ -155,7 +155,7 @@ export default function Dashboard() {
                           ${course?.price}
                         </span>
 
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center text-xs gap-1">
                           <Clock className="w-3 h-3" />{" "}
                           {course.requiredDuration}w
                         </span>

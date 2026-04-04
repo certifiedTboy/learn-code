@@ -1,4 +1,4 @@
-import { object, string, ref } from "yup";
+import { object, string, ref, boolean, array, number } from "yup";
 
 export const registerSchema = object({
   //   firstName: string().required("First name is required"),

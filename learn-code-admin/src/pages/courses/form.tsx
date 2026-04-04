@@ -11,6 +11,8 @@ import { Label } from "../../components/ui/label";
 import { Switch } from "../../components/ui/switch";
 import { useToast } from "../../hooks/use-toast";
 import { useCourses } from "../../hooks/use-courses";
+import { useCreateNewCourseMutation } from "../../lib/apis/course-apis";
+import Loader from "../../components/ui/loader";
 import {
   ArrowLeft,
   Plus,
@@ -44,17 +46,28 @@ const courseFormSchema = z.object({
   totalTopics: z.coerce.number().min(1, "Must have at least 1 topic"),
   requiredDuration: z.coerce.number().min(1, "Duration required (weeks)"),
   contents: z.array(courseContentSchema).optional(),
+  skills: z.string(),
 });
 
 type CourseFormValues = z.infer<typeof courseFormSchema>;
+
+function formatSkills(skills: string[]) {
+  let concatenatedSkills = "";
+  for (let skill of skills) {
+    concatenatedSkills += `${skill} `;
+  }
+  return concatenatedSkills;
+}
 
 export default function CourseForm() {
   const [match, params] = useRoute("/dashboard/courses/:id/edit");
   const isEdit = match && params?.id !== "new";
   const courseId = params?.id;
+  const [createCourseMutation, { isLoading, isSuccess, error, isError }] =
+    useCreateNewCourseMutation();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { getCourse, createCourse, updateCourse } = useCourses();
+  const { getCourse } = useCourses();
 
   const courseData = isEdit && courseId ? getCourse(courseId) : undefined;
 
@@ -75,6 +88,7 @@ export default function CourseForm() {
       price: 0,
       totalTopics: 1,
       requiredDuration: 4,
+      skills: "",
       contents: [
         {
           mainTopic: "",
@@ -97,14 +111,18 @@ export default function CourseForm() {
   useEffect(() => {
     if (isEdit && courseData) {
       reset({
-        name: courseData.name,
-        description: courseData.description,
-        image: courseData.image || "",
-        price: courseData.price,
-        totalTopics: courseData.totalTopics,
-        requiredDuration: courseData.requiredDuration,
+        name: courseData?.name,
+        description: courseData?.description,
+        image: courseData?.image || "",
+        price: courseData?.price,
+        totalTopics: courseData?.totalTopics,
+        requiredDuration: courseData?.requiredDuration,
+        skills:
+          (Array.isArray(courseData?.skills) &&
+            formatSkills(courseData?.skills || [])) ||
+          "",
         contents:
-          courseData.contents && courseData.contents.length > 0
+          courseData?.contents && courseData?.contents.length > 0
             ? courseData.contents
             : [
                 {
@@ -118,21 +136,42 @@ export default function CourseForm() {
   }, [isEdit, courseData, reset]);
 
   const onSubmit = (data: CourseFormValues) => {
+    // return console.log(data.skills.split(","));
     const payload = {
       ...data,
+      skills: data?.skills.split(","),
+      rating: "0.0",
       image: data.image === "" ? undefined : data.image,
       contents: data.contents || [],
+      subscribers: 0,
+      completed: 0,
     };
 
     if (isEdit && courseId) {
-      updateCourse(courseId, payload);
-      toast({ title: "Course updated successfully" });
+      // updateCourse(courseId, payload);
     } else {
-      createCourse(payload);
-      toast({ title: "Course created successfully" });
+      createCourseMutation(payload);
     }
-    setLocation("/dashboard/courses");
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast({ title: "Course created successfully", variant: "default" });
+
+      setLocation("/dashboard/courses");
+    }
+
+    if (isError) {
+      const message =
+        error && "data" in error
+          ? (error.data as any)?.message
+          : "Something went wrong";
+      toast({
+        variant: "destructive",
+        title: message,
+      });
+    }
+  }, [isSuccess, isError]);
 
   return (
     <DashboardLayout>
@@ -141,6 +180,7 @@ export default function CourseForm() {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
+              className="cursor-pointer"
               size="icon"
               onClick={() => setLocation("/dashboard/courses")}
             >
@@ -155,7 +195,11 @@ export default function CourseForm() {
               </p>
             </div>
           </div>
-          <Button onClick={handleSubmit(onSubmit)} className="shadow-glow px-6">
+
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            className="shadow-glow px-6 cursor-pointer"
+          >
             <Save className="w-4 h-4 mr-2" />
             {isEdit ? "Save Changes" : "Publish Course"}
           </Button>
@@ -178,10 +222,12 @@ export default function CourseForm() {
                 />
                 {errors.name && (
                   <p className="text-xs text-destructive mt-1">
-                    {errors.name.message}
+                    {errors.name?.message}
                   </p>
                 )}
               </div>
+
+              {isLoading && <Loader />}
 
               <div>
                 <Label>Description</Label>
@@ -355,6 +401,99 @@ export default function CourseForm() {
                   </Button>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="glass-panel p-6 sm:p-8 rounded-2xl space-y-6">
+            <h2 className="text-xl font-display font-bold border-b border-border/50 pb-4">
+              Additional Information
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Obtainable Skills</Label>
+                <Input
+                  {...register("skills")}
+                  className="mt-1.5 bg-background/50"
+                  placeholder="e.g. Advanced React Patterns"
+                />
+                {errors.name && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.name.skills}
+                  </p>
+                )}
+              </div>
+
+              {/* <div>
+                <Label>Description</Label>
+                <Textarea
+                  {...register("description")}
+                  className="mt-1.5 bg-background/50 min-h-[100px]"
+                  placeholder="What will students learn?"
+                />
+                {errors.description && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div> */}
+
+              {/* <div>
+                <Label>Cover Image URL (Optional)</Label>
+                <Input
+                  {...register("image")}
+                  className="mt-1.5 bg-background/50"
+                  placeholder="https://..."
+                />
+                {errors.image && (
+                  <p className="text-xs text-destructive mt-1">
+                    {errors.image.message}
+                  </p>
+                )}
+              </div> */}
+
+              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                  <Label>Price ($)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...register("price")}
+                    className="mt-1.5 bg-background/50"
+                  />
+                  {errors.price && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.price.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label>Duration (Weeks)</Label>
+                  <Input
+                    type="number"
+                    {...register("requiredDuration")}
+                    className="mt-1.5 bg-background/50"
+                  />
+                  {errors.requiredDuration && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.requiredDuration.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label>Total Topics (Est.)</Label>
+                  <Input
+                    type="number"
+                    {...register("totalTopics")}
+                    className="mt-1.5 bg-background/50"
+                  />
+                  {errors.totalTopics && (
+                    <p className="text-xs text-destructive mt-1">
+                      {errors.totalTopics.message}
+                    </p>
+                  )}
+                </div>
+              </div> */}
             </div>
           </div>
         </form>
