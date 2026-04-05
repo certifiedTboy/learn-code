@@ -32,3 +32,29 @@ export const loginSchema = object({
   email: string().required("Email is required"),
   password: string().required("Password is required"),
 });
+
+/**
+ * Course creation validators
+ */
+export const subTopicSchema = object({
+  title: string().required("Title is required"),
+  contentURI: string().required("URI is required"),
+  isVideo: boolean().default(false),
+});
+
+export const courseContentSchema = object({
+  mainTopic: string().min(1, "Main topic is required"),
+  description: string().min(1, "Description is required"),
+  subTopics: array(subTopicSchema).min(1, "At least one sub-topic required"),
+});
+
+export const courseFormSchema = object({
+  name: string().min(3, "Name must be at least 3 characters"),
+  description: string().min(10, "Description is required"),
+  image: string().url("Must be a valid image URL").optional(),
+  price: number().min(0, "Price must be positive"),
+  totalTopics: number().min(1, "Must have at least 1 topic"),
+  requiredDuration: number().min(1, "Duration required (weeks)"),
+  contents: array(courseContentSchema).optional(),
+  skills: string(),
+});

@@ -1,8 +1,12 @@
 import { useEffect } from "react";
+import type { ChangeEvent } from "react";
 import { useRoute, useLocation } from "wouter";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import useForm from "../../hooks/useForm";
+import {
+  convertSkillsToArray,
+  convertSkillsToString,
+} from "../../helpers/course";
+import { courseFormSchema } from "../../helpers/data-validator-schema";
 import { DashboardLayout } from "../../components/layout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -22,43 +26,6 @@ import {
   Save,
 } from "lucide-react";
 
-const subTopicSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  contentURI: z.string().min(1, "URI is required"),
-  isVideo: z.boolean().default(false),
-});
-
-const courseContentSchema = z.object({
-  mainTopic: z.string().min(1, "Main topic is required"),
-  description: z.string().min(1, "Description is required"),
-  subTopics: z.array(subTopicSchema).min(1, "At least one sub-topic required"),
-});
-
-const courseFormSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  description: z.string().min(10, "Description is required"),
-  image: z
-    .string()
-    .url("Must be a valid image URL")
-    .optional()
-    .or(z.literal("")),
-  price: z.coerce.number().min(0, "Price must be positive"),
-  totalTopics: z.coerce.number().min(1, "Must have at least 1 topic"),
-  requiredDuration: z.coerce.number().min(1, "Duration required (weeks)"),
-  contents: z.array(courseContentSchema).optional(),
-  skills: z.string(),
-});
-
-type CourseFormValues = z.infer<typeof courseFormSchema>;
-
-function formatSkills(skills: string[]) {
-  let concatenatedSkills = "";
-  for (let skill of skills) {
-    concatenatedSkills += `${skill} `;
-  }
-  return concatenatedSkills;
-}
-
 export default function CourseForm() {
   const [match, params] = useRoute("/dashboard/courses/:id/edit");
   const isEdit = match && params?.id !== "new";
@@ -69,88 +36,42 @@ export default function CourseForm() {
   const { toast } = useToast();
   const { getCourse } = useCourses();
 
+  const {
+    formData,
+    handleInputChange,
+    error: formError,
+    appendContent,
+    handleContentDataChange,
+    appendLesson,
+    handleLessonDataChange,
+    markLessonIsVideo,
+    removeLesson,
+    removeContentFormInput,
+    updateFormDataForContentUpdate,
+  } = useForm(courseFormSchema);
+
   const courseData = isEdit && courseId ? getCourse(courseId) : undefined;
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<CourseFormValues>({
-    resolver: zodResolver(courseFormSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      image: "",
-      price: 0,
-      totalTopics: 1,
-      requiredDuration: 4,
-      skills: "",
-      contents: [
-        {
-          mainTopic: "",
-          description: "",
-          subTopics: [{ title: "", contentURI: "", isVideo: false }],
-        },
-      ],
-    },
-  });
-
-  const {
-    fields: contentFields,
-    append: appendContent,
-    remove: removeContent,
-  } = useFieldArray({
-    control,
-    name: "contents",
-  });
-
   useEffect(() => {
-    if (isEdit && courseData) {
-      reset({
-        name: courseData?.name,
-        description: courseData?.description,
-        image: courseData?.image || "",
-        price: courseData?.price,
-        totalTopics: courseData?.totalTopics,
-        requiredDuration: courseData?.requiredDuration,
-        skills:
-          (Array.isArray(courseData?.skills) &&
-            formatSkills(courseData?.skills || [])) ||
-          "",
-        contents:
-          courseData?.contents && courseData?.contents.length > 0
-            ? courseData.contents
-            : [
-                {
-                  mainTopic: "",
-                  description: "",
-                  subTopics: [{ title: "", contentURI: "", isVideo: false }],
-                },
-              ],
-      });
+    if (isEdit && courseId && courseData) {
+      updateFormDataForContentUpdate(courseData);
     }
-  }, [isEdit, courseData, reset]);
+  }, [isEdit, courseId, courseData]);
 
-  const onSubmit = (data: CourseFormValues) => {
-    // return console.log(data.skills.split(","));
-    const payload = {
-      ...data,
-      skills: data?.skills.split(","),
-      rating: "0.0",
-      image: data.image === "" ? undefined : data.image,
-      contents: data.contents || [],
-      subscribers: 0,
-      completed: 0,
-    };
-
+  const onSubmit = () => {
     if (isEdit && courseId) {
       // updateCourse(courseId, payload);
     } else {
-      createCourseMutation(payload);
+      createCourseMutation({
+        ...formData,
+        skills: convertSkillsToArray(formData.skills),
+        subscribers: 0,
+        rating: "0.0",
+        completed: 0,
+        price: +formData.price,
+        totalTopics: +formData.totalTopics,
+        requiredDuration: +formData.requiredDuration,
+      });
     }
   };
 
@@ -197,7 +118,7 @@ export default function CourseForm() {
           </div>
 
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={onSubmit}
             className="shadow-glow px-6 cursor-pointer"
           >
             <Save className="w-4 h-4 mr-2" />
@@ -205,7 +126,7 @@ export default function CourseForm() {
           </Button>
         </div>
 
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8">
           {/* Basic Info */}
           <div className="glass-panel p-6 sm:p-8 rounded-2xl space-y-6">
             <h2 className="text-xl font-display font-bold border-b border-border/50 pb-4">
@@ -216,13 +137,15 @@ export default function CourseForm() {
               <div>
                 <Label>Course Name</Label>
                 <Input
-                  {...register("name")}
+                  onChange={handleInputChange}
+                  name="name"
+                  value={formData?.name}
                   className="mt-1.5 bg-background/50"
                   placeholder="e.g. Advanced React Patterns"
                 />
-                {errors.name && (
+                {formError?.field === "name" && (
                   <p className="text-xs text-destructive mt-1">
-                    {errors.name?.message}
+                    {formError?.message}
                   </p>
                 )}
               </div>
@@ -232,13 +155,15 @@ export default function CourseForm() {
               <div>
                 <Label>Description</Label>
                 <Textarea
-                  {...register("description")}
+                  onChange={handleInputChange}
+                  name="description"
                   className="mt-1.5 bg-background/50 min-h-[100px]"
                   placeholder="What will students learn?"
+                  value={formData?.description}
                 />
-                {errors.description && (
+                {formError?.field === "description" && (
                   <p className="text-xs text-destructive mt-1">
-                    {errors.description.message}
+                    {formError?.message}
                   </p>
                 )}
               </div>
@@ -246,13 +171,15 @@ export default function CourseForm() {
               <div>
                 <Label>Cover Image URL (Optional)</Label>
                 <Input
-                  {...register("image")}
+                  onChange={handleInputChange}
+                  name="image"
                   className="mt-1.5 bg-background/50"
                   placeholder="https://..."
+                  value={formData?.image}
                 />
-                {errors.image && (
+                {formError?.field === "image" && (
                   <p className="text-xs text-destructive mt-1">
-                    {errors.image.message}
+                    {formError?.message}
                   </p>
                 )}
               </div>
@@ -261,14 +188,16 @@ export default function CourseForm() {
                 <div>
                   <Label>Price ($)</Label>
                   <Input
+                    onChange={handleInputChange}
+                    name="price"
                     type="number"
                     step="0.01"
-                    {...register("price")}
                     className="mt-1.5 bg-background/50"
+                    value={formData?.price}
                   />
-                  {errors.price && (
+                  {formError?.field === "price" && (
                     <p className="text-xs text-destructive mt-1">
-                      {errors.price.message}
+                      {formError?.message}
                     </p>
                   )}
                 </div>
@@ -276,12 +205,14 @@ export default function CourseForm() {
                   <Label>Duration (Weeks)</Label>
                   <Input
                     type="number"
-                    {...register("requiredDuration")}
+                    name="requiredDuration"
+                    onChange={handleInputChange}
                     className="mt-1.5 bg-background/50"
+                    value={formData?.requiredDuration}
                   />
-                  {errors.requiredDuration && (
+                  {formError?.field === "requiredDuration" && (
                     <p className="text-xs text-destructive mt-1">
-                      {errors.requiredDuration.message}
+                      {formError?.message}
                     </p>
                   )}
                 </div>
@@ -289,12 +220,14 @@ export default function CourseForm() {
                   <Label>Total Topics (Est.)</Label>
                   <Input
                     type="number"
-                    {...register("totalTopics")}
+                    name="totalTopics"
+                    onChange={handleInputChange}
                     className="mt-1.5 bg-background/50"
+                    value={formData?.totalTopics}
                   />
-                  {errors.totalTopics && (
+                  {formError?.field === "totalTopics" && (
                     <p className="text-xs text-destructive mt-1">
-                      {errors.totalTopics.message}
+                      {formError?.message}
                     </p>
                   )}
                 </div>
@@ -310,7 +243,7 @@ export default function CourseForm() {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="border-primary/50 text-primary hover:bg-primary/10"
+                className="border-primary/50 cursor-pointer text-primary hover:bg-primary/10"
                 onClick={() =>
                   appendContent({
                     mainTopic: "",
@@ -324,9 +257,10 @@ export default function CourseForm() {
             </div>
 
             <div className="space-y-6">
-              {contentFields.map((field, index) => (
+              {/* @ts-ignore */}
+              {formData?.contents?.map((content: any, index: number) => (
                 <div
-                  key={field.id}
+                  key={index}
                   className="bg-background/40 border border-white/5 rounded-xl p-5 relative group"
                 >
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -335,7 +269,7 @@ export default function CourseForm() {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:bg-destructive/10"
-                      onClick={() => removeContent(index)}
+                      onClick={() => removeContentFormInput(index)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -349,58 +283,45 @@ export default function CourseForm() {
                       <div>
                         <Label>Section {index + 1} Title</Label>
                         <Input
-                          {...register(`contents.${index}.mainTopic`)}
+                          // {...register(`contents.${index}.mainTopic`)}
+                          onChange={(event) =>
+                            handleContentDataChange(event, index)
+                          }
+                          name="mainTopic"
+                          value={content?.mainTopic}
                           className="mt-1.5 bg-card/50"
                           placeholder="e.g. Getting Started"
                         />
-                        {errors.contents?.[index]?.mainTopic && (
+                        {/* {errors.contents?.[index]?.mainTopic && (
                           <p className="text-xs text-destructive mt-1">
                             {errors.contents[index]?.mainTopic?.message}
                           </p>
-                        )}
+                        )} */}
                       </div>
                       <div>
                         <Label>Section Description</Label>
                         <Input
-                          {...register(`contents.${index}.description`)}
+                          onChange={(event) =>
+                            handleContentDataChange(event, index)
+                          }
+                          name="description"
+                          value={content?.description}
                           className="mt-1.5 bg-card/50"
                           placeholder="Brief overview of this section"
                         />
                       </div>
                       <SubTopicsField
-                        control={control}
-                        register={register}
-                        watch={watch}
-                        setValue={setValue}
-                        contentIndex={index}
-                        errors={errors}
+                        index={index}
+                        appendLesson={appendLesson}
+                        lessons={content.subTopics}
+                        handleLessonDataChange={handleLessonDataChange}
+                        markLessonIsVideo={markLessonIsVideo}
+                        removeLesson={removeLesson}
                       />
                     </div>
                   </div>
                 </div>
               ))}
-              {contentFields.length === 0 && (
-                <div className="text-center py-12 border-2 border-dashed border-border rounded-xl">
-                  <p className="text-muted-foreground mb-4">
-                    No sections added yet.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      appendContent({
-                        mainTopic: "",
-                        description: "",
-                        subTopics: [
-                          { title: "", contentURI: "", isVideo: false },
-                        ],
-                      })
-                    }
-                  >
-                    Add First Section
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -413,87 +334,22 @@ export default function CourseForm() {
               <div>
                 <Label>Obtainable Skills</Label>
                 <Input
-                  {...register("skills")}
+                  onChange={handleInputChange}
                   className="mt-1.5 bg-background/50"
                   placeholder="e.g. Advanced React Patterns"
+                  name="skills"
+                  value={
+                    isEdit && Array.isArray(formData?.skills)
+                      ? convertSkillsToString(formData?.skills)
+                      : formData?.skills
+                  }
                 />
-                {errors.name && (
+                {/* {errors.name && (
                   <p className="text-xs text-destructive mt-1">
                     {errors.name.skills}
                   </p>
-                )}
+                )} */}
               </div>
-
-              {/* <div>
-                <Label>Description</Label>
-                <Textarea
-                  {...register("description")}
-                  className="mt-1.5 bg-background/50 min-h-[100px]"
-                  placeholder="What will students learn?"
-                />
-                {errors.description && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div> */}
-
-              {/* <div>
-                <Label>Cover Image URL (Optional)</Label>
-                <Input
-                  {...register("image")}
-                  className="mt-1.5 bg-background/50"
-                  placeholder="https://..."
-                />
-                {errors.image && (
-                  <p className="text-xs text-destructive mt-1">
-                    {errors.image.message}
-                  </p>
-                )}
-              </div> */}
-
-              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <Label>Price ($)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register("price")}
-                    className="mt-1.5 bg-background/50"
-                  />
-                  {errors.price && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.price.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>Duration (Weeks)</Label>
-                  <Input
-                    type="number"
-                    {...register("requiredDuration")}
-                    className="mt-1.5 bg-background/50"
-                  />
-                  {errors.requiredDuration && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.requiredDuration.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <Label>Total Topics (Est.)</Label>
-                  <Input
-                    type="number"
-                    {...register("totalTopics")}
-                    className="mt-1.5 bg-background/50"
-                  />
-                  {errors.totalTopics && (
-                    <p className="text-xs text-destructive mt-1">
-                      {errors.totalTopics.message}
-                    </p>
-                  )}
-                </div>
-              </div> */}
             </div>
           </div>
         </form>
@@ -503,18 +359,29 @@ export default function CourseForm() {
 }
 
 function SubTopicsField({
-  control,
-  register,
-  watch,
-  setValue,
-  contentIndex,
-  errors,
-}: any) {
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: `contents.${contentIndex}.subTopics`,
-  });
+  index,
+  appendLesson,
+  lessons,
+  handleLessonDataChange,
+  markLessonIsVideo,
+  removeLesson,
+}: {
+  index: number;
+  appendLesson: (lesson: any, index: number) => void;
+  lessons: any[];
+  handleLessonDataChange: (
+    event: ChangeEvent<HTMLInputElement>,
+    contentIndex: number,
+    lessonIndex: number,
+  ) => void;
 
+  markLessonIsVideo: (
+    isVideo: boolean,
+    contentIndex: number,
+    lessonIndex: number,
+  ) => void;
+  removeLesson: (contentIndex: number, lessonIndex: number) => void;
+}) {
   return (
     <div className="mt-6 pt-4 border-t border-white/5">
       <div className="flex items-center justify-between mb-4">
@@ -523,24 +390,23 @@ function SubTopicsField({
         </Label>
       </div>
       <div className="space-y-3">
-        {fields.map((subField, subIndex) => {
-          const isVideoVal = watch(
-            `contents.${contentIndex}.subTopics.${subIndex}.isVideo`,
-          );
+        {lessons.map((subField, subIndex) => {
           return (
             <div
-              key={subField.id}
+              key={subIndex}
               className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-card/40 p-3 rounded-lg border border-white/5"
             >
               <div className="flex-1 w-full space-y-1">
                 <Input
-                  {...register(
-                    `contents.${contentIndex}.subTopics.${subIndex}.title`,
-                  )}
+                  name="title"
+                  value={subField?.title}
+                  onChange={(event) =>
+                    handleLessonDataChange(event, index, subIndex)
+                  }
                   placeholder="Lesson Title"
                   className="h-9 bg-background/50 text-sm"
                 />
-                {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
+                {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
                   ?.title && (
                   <p className="text-[10px] text-destructive">
                     {
@@ -548,18 +414,20 @@ function SubTopicsField({
                         .message
                     }
                   </p>
-                )}
+                )} */}
               </div>
 
               <div className="flex-1 w-full space-y-1">
                 <Input
-                  {...register(
-                    `contents.${contentIndex}.subTopics.${subIndex}.contentURI`,
-                  )}
+                  onChange={(event) =>
+                    handleLessonDataChange(event, index, subIndex)
+                  }
+                  name="contentURI"
+                  value={subField?.contentURI}
                   placeholder="URL to content or video"
                   className="h-9 bg-background/50 text-sm"
                 />
-                {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
+                {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
                   ?.contentURI && (
                   <p className="text-[10px] text-destructive">
                     {
@@ -567,19 +435,16 @@ function SubTopicsField({
                         .contentURI.message
                     }
                   </p>
-                )}
+                )} */}
               </div>
 
               <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-background/50 rounded-md border border-white/5">
                   <Switch
-                    checked={!!isVideoVal}
-                    onCheckedChange={(val) =>
-                      setValue(
-                        `contents.${contentIndex}.subTopics.${subIndex}.isVideo`,
-                        val,
-                      )
+                    onCheckedChange={(val: boolean) =>
+                      markLessonIsVideo(val, index, subIndex)
                     }
+                    checked={subField?.isVideo}
                   />
                   <Label className="text-xs flex items-center gap-1 cursor-pointer">
                     <Video className="w-3 h-3" /> Video
@@ -591,7 +456,7 @@ function SubTopicsField({
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0"
-                  onClick={() => remove(subIndex)}
+                  onClick={() => removeLesson(index, subIndex)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -604,8 +469,10 @@ function SubTopicsField({
         type="button"
         variant="ghost"
         size="sm"
-        className="mt-3 text-xs text-muted-foreground hover:text-primary"
-        onClick={() => append({ title: "", contentURI: "", isVideo: false })}
+        className="mt-3 text-xs cursor-pointer text-muted-foreground hover:text-primary"
+        onClick={() =>
+          appendLesson({ title: "", contentURI: "", isVideo: false }, index)
+        }
       >
         <Plus className="w-3 h-3 mr-1" /> Add Lesson
       </Button>
