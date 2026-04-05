@@ -15,7 +15,10 @@ import { Label } from "../../components/ui/label";
 import { Switch } from "../../components/ui/switch";
 import { useToast } from "../../hooks/use-toast";
 import { useCourses } from "../../hooks/use-courses";
-import { useCreateNewCourseMutation } from "../../lib/apis/course-apis";
+import {
+  useCreateNewCourseMutation,
+  useUpdateCourseMutation,
+} from "../../lib/apis/course-apis";
 import Loader from "../../components/ui/loader";
 import {
   ArrowLeft,
@@ -32,9 +35,20 @@ export default function CourseForm() {
   const courseId = params?.id;
   const [createCourseMutation, { isLoading, isSuccess, error, isError }] =
     useCreateNewCourseMutation();
+
+  const [
+    updateCourse,
+    {
+      isSuccess: isUpdateSuccess,
+      error: updateError,
+      isLoading: isUpdateLoading,
+      isError: isUpdateError,
+    },
+  ] = useUpdateCourseMutation();
+
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { getCourse } = useCourses();
+  const { getCourse, updateCourse: updateLocalCourse } = useCourses();
 
   const {
     formData,
@@ -54,13 +68,24 @@ export default function CourseForm() {
 
   useEffect(() => {
     if (isEdit && courseId && courseData) {
-      updateFormDataForContentUpdate(courseData);
+      const { _id, __v, createdAt, updatedAt, ...rest } = courseData;
+      updateFormDataForContentUpdate(rest);
     }
   }, [isEdit, courseId, courseData]);
 
   const onSubmit = () => {
     if (isEdit && courseId) {
-      // updateCourse(courseId, payload);
+      updateCourse({
+        courseData: {
+          ...formData,
+          // skills: convertSkillsToArray(formData.skills),
+          price: +formData.price,
+          totalTopics: +formData.totalTopics,
+          requiredDuration: +formData.requiredDuration,
+          rating: formData.rating.toString(),
+        },
+        id: courseId,
+      });
     } else {
       createCourseMutation({
         ...formData,
@@ -92,7 +117,24 @@ export default function CourseForm() {
         title: message,
       });
     }
-  }, [isSuccess, isError]);
+
+    if (isUpdateSuccess) {
+      toast({ title: "Course updated successfully", variant: "default" });
+      updateLocalCourse(courseId!, formData);
+      setLocation("/dashboard/courses");
+    }
+
+    if (isUpdateError) {
+      const message =
+        updateError && "data" in updateError
+          ? (updateError.data as any)?.message
+          : "Something went wrong";
+      toast({
+        variant: "destructive",
+        title: message,
+      });
+    }
+  }, [isSuccess, isError, isUpdateSuccess, isUpdateError]);
 
   return (
     <DashboardLayout>
@@ -150,7 +192,7 @@ export default function CourseForm() {
                 )}
               </div>
 
-              {isLoading && <Loader />}
+              {isLoading || (isUpdateLoading && <Loader />)}
 
               <div>
                 <Label>Description</Label>

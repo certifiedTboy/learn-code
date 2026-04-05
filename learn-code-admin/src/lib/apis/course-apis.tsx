@@ -32,8 +32,27 @@ export const courseApis = createApi({
         body: payload,
       }),
     }),
+
+    updateCourse: builder.mutation({
+      query: (payload) => ({
+        url: `/courses/${payload.id}/update`,
+        method: "PUT",
+        body: payload.courseData,
+      }),
+    }),
+
+    deleteCourse: builder.mutation({
+      query: (payload) => ({
+        url: `/courses/${payload}/delete`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
-export const { useCreateNewCourseMutation, useGetAllCoursesMutation } =
-  courseApis;
+export const {
+  useCreateNewCourseMutation,
+  useGetAllCoursesMutation,
+  useUpdateCourseMutation,
+  useDeleteCourseMutation,
+} = courseApis;

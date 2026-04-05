@@ -35,4 +35,28 @@ export class CourseServices {
 
     return await course.save();
   }
+
+  /**
+   * @method updateCourseById
+   * @description handles course update by the provided id
+   */
+  async updateCourseById(courseData: CreateCourseDto, id: string) {
+    const updatedCourse = await this.courseModel.findByIdAndUpdate(
+      id,
+      courseData,
+      { new: true },
+    );
+
+    return updatedCourse;
+  }
+
+  /**
+   * @method deleteCourseById
+   * @description handles deletion of course by the provided id
+   */
+  async deleteCourseById(id: string) {
+    const deletedCourse = await this.courseModel.findByIdAndDelete(id);
+
+    return deletedCourse;
+  }
 }

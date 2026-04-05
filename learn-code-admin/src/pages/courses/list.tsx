@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "../../components/layout";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,11 +31,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
+import Loader from "../../components/ui/loader";
+import { useDeleteCourseMutation } from "../../lib/apis/course-apis";
 import { useToast } from "../../hooks/use-toast";
 import { useCourses } from "../../hooks/use-courses";
 
 export default function CoursesList() {
-  const { courses, deleteCourse } = useCourses();
+  const [deleteCourse, { isLoading, isSuccess, error, isError }] =
+    useDeleteCourseMutation();
+  const { courses, deleteCourse: deleteLocalCourse } = useCourses();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -49,9 +53,26 @@ export default function CoursesList() {
   const handleDelete = () => {
     if (!deleteId) return;
     deleteCourse(deleteId);
-    toast({ title: "Course deleted successfully" });
-    setDeleteId(null);
   };
+
+  useEffect(() => {
+    if (isSuccess) {
+      deleteLocalCourse(deleteId!);
+      toast({ title: "Course deleted successfully" });
+      setDeleteId(null);
+    }
+
+    if (isError) {
+      const message =
+        error && "data" in error
+          ? (error.data as any)?.message
+          : "Something went wrong";
+      toast({
+        variant: "destructive",
+        title: message,
+      });
+    }
+  }, [isSuccess, isError]);
 
   return (
     <DashboardLayout>
@@ -204,6 +225,7 @@ export default function CoursesList() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
       >
+        {isLoading && <Loader />}
         <AlertDialogContent className="glass-panel border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

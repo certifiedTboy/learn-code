@@ -1,4 +1,13 @@
-import { Controller, UseGuards, Req, Get, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Req,
+  Get,
+  Post,
+  Body,
+  Put,
+  Delete,
+} from '@nestjs/common';
 import { Request } from 'express';
 import {
   BadRequestException,
@@ -43,7 +52,6 @@ export class CourseControllers {
   @Post('create')
   @UseGuards(AdminGuard)
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
-    console.log(createCourseDto);
     try {
       const createdCourse =
         await this.courseService.createCourse(createCourseDto);
@@ -56,6 +64,58 @@ export class CourseControllers {
         );
       }
     } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new BadRequestException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+      throw new InternalServerErrorException('An unexpected error occurred');
+    }
+  }
+
+  @Put(':id/update')
+  @UseGuards(AdminGuard)
+  async updateCourse(
+    @Body() createCourseDto: CreateCourseDto,
+    @Req() req: Request,
+  ) {
+    const { id } = req.params;
+    try {
+      const updatedCourse = await this.courseService.updateCourseById(
+        createCourseDto,
+        id,
+      );
+
+      if (updatedCourse) {
+        return ResponseHandler.ok(
+          200,
+          'Course updated successfully',
+          updatedCourse,
+        );
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new BadRequestException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+      throw new InternalServerErrorException('An unexpected error occurred');
+    }
+  }
+
+  @Delete(':id/delete')
+  @UseGuards(AdminGuard)
+  async deleteCourse(@Req() req: Request) {
+    const { id } = req.params;
+    console.log(req.params);
+    try {
+      await this.courseService.deleteCourseById(id);
+
+      return ResponseHandler.ok(200, 'Course deleted successfully', {});
+    } catch (error: unknown) {
+      // console.log(error);
       if (error instanceof Error) {
         throw new BadRequestException('', {
           cause: error.cause,

@@ -22,4 +22,8 @@ export interface Course {
   rating: number;
   skills: string | string[];
   contents: CourseContent[];
+  _id?: string;
+  __v?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
