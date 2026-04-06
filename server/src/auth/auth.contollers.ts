@@ -115,7 +115,7 @@ export class AuthControllers {
    * @description Handles requests to generate a new token for the user.
    * @param {RefreshTokenDto} refreshTokenDto - The data transfer object containing user credentials.
    */
-  @Post('new-token')
+  @Get('new-token')
   async getNewtoken(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -131,12 +131,12 @@ export class AuthControllers {
       }
       const result = await this.authService.generateNewToken(refreshToken);
 
-      res.cookie('accessToken', result.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: 60 * 60 * 1000, // 1 hour
-      });
+      // res.cookie('accessToken', result.accessToken, {
+      //   httpOnly: true,
+      //   secure: true,
+      //   sameSite: 'none',
+      //   maxAge: 60 * 60 * 1000, // 1 hour
+      // });
 
       return ResponseHandler.ok(
         200,

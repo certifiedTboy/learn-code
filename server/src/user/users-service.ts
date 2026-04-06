@@ -337,6 +337,7 @@ export class UsersService {
         password: hashedPassword,
         passwordResetCode: null,
         passwordResetCodeExpiresIn: null,
+        isVerified: true,
       },
       { new: true },
     );

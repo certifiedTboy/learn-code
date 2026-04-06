@@ -109,7 +109,7 @@ export class CourseControllers {
   @UseGuards(AdminGuard)
   async deleteCourse(@Req() req: Request) {
     const { id } = req.params;
-    console.log(req.params);
+
     try {
       await this.courseService.deleteCourseById(id);
 

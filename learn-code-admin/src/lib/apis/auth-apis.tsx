@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getToken } from "../../helpers/user-session";
+import { updateToken } from "../../helpers/user-session";
 import { setCurrentUser } from "../../redux/slice/auth-slice";
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
@@ -9,7 +9,7 @@ export const authApis = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: async (headers) => {
-      const token = await getToken();
+      const token = localStorage.getItem("token");
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -53,21 +53,53 @@ export const authApis = createApi({
       },
     }),
 
-    getAdminProfile: builder.mutation({
+    getNewToken: builder.mutation({
       query: () => ({
-        url: "/auth/me",
+        url: `/auth/new-token`,
         method: "GET",
       }),
+
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
 
-          // console.log(data?.data);
-          dispatch(setCurrentUser(data.data));
+          if (data) {
+            const { accessToken, user } = data.data;
+
+            if (accessToken && user) {
+              await updateToken(accessToken);
+
+              dispatch(setCurrentUser({ currentUser: user }));
+            }
+          }
         } catch (error) {
-          // console.log(error);
+          console.log(error);
         }
       },
+    }),
+
+    getNewVerificationCode: builder.mutation({
+      query: (payload) => ({
+        url: `/users/new-verification-code`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    requestPasscodeReset: builder.mutation({
+      query: (payload) => ({
+        url: `/users/password/reset`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
+    updatePasscode: builder.mutation({
+      query: (payload) => ({
+        url: `/users/password/reset/update`,
+        method: "PATCH",
+        body: payload,
+      }),
     }),
   }),
 });
@@ -76,5 +108,8 @@ export const {
   useCreateAdminAccountMutation,
   useVerifyAdminAccountMutation,
   useLoginAdminAccountMutation,
-  useGetAdminProfileMutation,
+  useGetNewTokenMutation,
+  useGetNewVerificationCodeMutation,
+  useRequestPasscodeResetMutation,
+  useUpdatePasscodeMutation,
 } = authApis;

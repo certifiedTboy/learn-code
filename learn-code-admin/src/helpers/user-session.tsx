@@ -1,13 +1,12 @@
 import { db } from "./firebase";
 import {
   doc,
-  collection,
-  addDoc,
   setDoc,
   getDoc,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore/lite";
-import { onSnapshot } from "firebase/firestore";
+
 // import { signInAnonymously } from "firebase/auth";
 
 /**
@@ -71,5 +70,24 @@ export const deleteToken = async () => {
     }
   } catch (error) {
     console.error(error);
+  }
+};
+
+/**
+ * update token on fire store
+ */
+export const updateToken = async (token: string) => {
+  try {
+    const id = localStorage.getItem("id");
+
+    if (id) {
+      const docRef = doc(db, "authData", id);
+
+      await updateDoc(docRef, {
+        token,
+      });
+    }
+  } catch (error) {
+    console.log(error);
   }
 };

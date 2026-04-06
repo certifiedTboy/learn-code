@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { authApis } from "../../lib/apis/auth-apis";
 import { courseApis } from "../../lib/apis/course-apis";
+import { userApis } from "../../lib/apis/user-apis";
 import { authSlice } from "../slice/auth-slice";
 
 export const store = configureStore({
@@ -9,12 +10,17 @@ export const store = configureStore({
     authState: authSlice.reducer,
     [authApis.reducerPath]: authApis.reducer,
     [courseApis.reducerPath]: courseApis.reducer,
+    [userApis.reducerPath]: userApis.reducer,
   },
 
   devTools: import.meta.env.NODE_ENV !== "production",
 
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApis.middleware, courseApis.middleware),
+    getDefaultMiddleware().concat(
+      authApis.middleware,
+      courseApis.middleware,
+      userApis.middleware,
+    ),
 });
 
 // optional, but required for refetchOnFocus/refetchOnReconnect behaviors

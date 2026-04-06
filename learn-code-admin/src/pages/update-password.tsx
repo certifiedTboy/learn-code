@@ -1,50 +1,45 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowRight, Mail, Lock } from "lucide-react";
+import { GraduationCap, ArrowRight, Lock } from "lucide-react";
 import { Button } from "../components/ui/button";
 import Loader from "../components/ui/loader";
 import { useToast } from "../hooks/use-toast";
 import useForm from "../hooks/useForm";
 import { Input } from "../components/ui/input";
-import { loginSchema } from "../helpers/data-validator-schema";
-import { useLoginAdminAccountMutation } from "../lib/apis/auth-apis";
-import { useAuth } from "../hooks/use-auth";
-import { storeToken } from "../helpers/user-session";
+import { updatePasswordResetSchema } from "../helpers/data-validator-schema";
+import { useUpdatePasscodeMutation } from "../lib/apis/auth-apis";
 
-export default function Login() {
+export default function UpdatePassword() {
   const {
     formData,
     error,
-    inputType,
-    handlePasswordTypeChange,
     handleInputChange,
-  } = useForm(loginSchema);
+    handlePasswordTypeChange,
+    inputType,
+  } = useForm(updatePasswordResetSchema);
   const [, setLocation] = useLocation();
-
-  const { isAuthenticated } = useAuth();
 
   const { toast } = useToast();
 
   const [
-    loginAdminAccount,
-    { isLoading, error: errorResponse, isSuccess, isError, data },
-  ] = useLoginAdminAccountMutation();
+    updatePasscode,
+    { isLoading, error: errorResponse, isSuccess, isError },
+  ] = useUpdatePasscodeMutation();
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
     if (Object.values(error)[0]) return;
-    loginAdminAccount(formData);
+    updatePasscode({
+      ...formData,
+      passwordResetCode: formData.passwordResetCode.slice(0, 5),
+    });
   };
 
   useEffect(() => {
     if (isSuccess) {
-      (async () => {
-        await storeToken(data?.data?.accessToken);
-        localStorage.setItem("token", data?.data?.refreshToken);
-        setLocation("/dashboard");
-      })();
+      setLocation("/login");
     }
 
     if (isError) {
@@ -57,11 +52,7 @@ export default function Login() {
         title: message,
       });
     }
-
-    if (isAuthenticated) {
-      setLocation("/dashboard");
-    }
-  }, [isSuccess, isError, isAuthenticated]);
+  }, [isSuccess, isError]);
 
   return (
     <div className="min-h-screen w-full flex bg-background">
@@ -112,10 +103,10 @@ export default function Login() {
         >
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-display font-bold tracking-tight mb-2">
-              Welcome back
+              Reset Password
             </h2>
             <p className="text-muted-foreground">
-              Sign in to your admin dashboard
+              Provide your email to reset your password
             </p>
           </div>
 
@@ -126,18 +117,18 @@ export default function Login() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
-                    Email
+                    Password Reset Code
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
                       onChange={handleInputChange}
-                      name="email"
-                      placeholder="admin@example.com"
+                      name="passwordResetCode"
+                      placeholder="123456"
                       className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
                     />
                   </div>
-                  {error.field === "email" && (
+                  {error.field === "passwordResetCode" && (
                     <p className="text-xs text-destructive">{error.message}</p>
                   )}
                 </div>
@@ -167,22 +158,45 @@ export default function Login() {
                     <p className="text-xs text-destructive">{error.message}</p>
                   )}
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      onChange={handleInputChange}
+                      type={inputType.confirmPasswordType}
+                      name="confirmPassword"
+                      placeholder="••••••••"
+                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
+                    />
+
+                    <span
+                      onClick={() =>
+                        handlePasswordTypeChange("confirmPasswordType")
+                      }
+                      className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+                    >
+                      {inputType.confirmPasswordType === "password"
+                        ? "👁️"
+                        : "🙈"}
+                    </span>
+                  </div>
+                  {error.field === "confirmPassword" && (
+                    <p className="text-xs text-destructive">{error.message}</p>
+                  )}
+                </div>
               </div>
 
               <Button
                 type="submit"
                 className="w-full cursor-pointer h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
               >
-                Sign In
+                Update Password
               </Button>
             </form>
-
-            <Link
-              href="/reset-password"
-              className="text-sm mt-5 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              Forgot password? <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </motion.div>
       </div>

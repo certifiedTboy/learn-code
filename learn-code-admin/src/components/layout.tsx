@@ -26,7 +26,7 @@ export function DashboardLayout({ children }: LayoutProps) {
   const navItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ];
 
   const onLogoutUser = async () => {

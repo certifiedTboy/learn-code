@@ -6,10 +6,13 @@ import NotFound from "../pages/not-found";
 import Login from "../pages/login";
 import Register from "../pages/register";
 import VerifyAccount from "../pages/verifyAccount";
+import ResetPassword from "../pages/reset-password";
+import UpdatePassword from "../pages/update-password";
 import Dashboard from "../pages/dashboard";
 import CoursesList from "../pages/courses/list";
 import CourseForm from "../pages/courses/form";
 import CourseView from "../pages/courses/view";
+import UserProfile from "../pages/user-profile";
 
 import Redirect from "./redirect";
 
@@ -21,8 +24,11 @@ const AppRoutes = () => {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/verify-acount" component={VerifyAccount} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/reset-password/update" component={UpdatePassword} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/courses" component={CoursesList} />
+      <Route path="/dashboard/profile" component={UserProfile} />
       <Route path="/dashboard/courses/new" component={CourseForm} />
       <Route path="/dashboard/courses/:id/edit" component={CourseForm} />
       <Route path="/courses/:id" component={CourseView} />
