@@ -21,7 +21,7 @@ const MENU_ITEMS = [
   { id: "2", label: "Payment Option", icon: "card-outline" },
   { id: "3", label: "Terms & Conditions", icon: "document-text-outline" },
   { id: "4", label: "Help Center", icon: "headset-outline" },
-  { id: "5", label: "Invite Friends", icon: "share-social-outline" },
+  // { id: "5", label: "Invite Friends", icon: "share-social-outline" },
   { id: "6", label: "Logout", icon: "log-out-outline" },
 ];
 

@@ -33,6 +33,26 @@ export const createCourseTable = async () => {
 };
 
 /**
+ * create a table for registered courses
+ */
+export const createRegisteredCourseTable = async () => {
+  try {
+    const db = await getDatabase();
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS registered_course_new2 (
+        _id TEXT PRIMARY KEY NOT NULL,
+        dateRegistered TEXT NOT NULL,
+        completion TEXT NOT NULL
+      );
+    `);
+
+    console.log("Registered Course table created");
+  } catch (error) {
+    console.log("Error creating table:", error);
+  }
+};
+
+/**
  * Inserts or updates a user profile in the user_profile table.
  */
 export const upsertCourse = async (course: {
@@ -172,6 +192,73 @@ export const getAllCourse = async () => {
       skills: row.skills ? JSON.parse(row.skills) : [], // Parse skills JSON string into an array
       image: row.course_image,
     }));
+  } catch (error) {
+    console.log("Error getting courses:", error);
+  }
+};
+
+/**
+ * Inserts or updates a user profile in the user_profile table.
+ */
+export const upsertRegisteredCourse = async (course: {
+  _id: string;
+  dateRegistered: string;
+  completion: string;
+}) => {
+  try {
+    const db = await getDatabase();
+
+    await db.runAsync(
+      `
+      INSERT INTO registered_course_new2 (
+        _id,
+       dateRegistered,
+       completion
+      )
+      VALUES (?, ?, ?)
+      ON CONFLICT(_id) DO UPDATE SET
+        dateRegistered = excluded.dateRegistered,
+        completion = excluded.completion
+      `,
+      [course._id, course.dateRegistered, course.completion],
+    );
+
+    console.log("Registered Course upserted:", course._id);
+  } catch (error) {
+    console.log("Error upserting registered course:", error);
+  }
+};
+
+/**
+ * get all registered courses
+ */
+export const getAllRegisteredCourse = async () => {
+  try {
+    const db = await getDatabase();
+
+    const allCourserows = await db.getAllAsync(`
+      SELECT * FROM new_course
+    `);
+
+    const registeredCourserows = await db.getAllAsync(`
+      SELECT * FROM registered_course_new2
+    `);
+
+    return registeredCourserows.map((course: any) => {
+      const matchedCourse = allCourserows.find(
+        (newCourse: any) => newCourse?._id === course._id,
+      );
+
+      if (matchedCourse) {
+        return {
+          ...matchedCourse,
+          completion: course?.completion,
+          dateRegistered: course?.dateRegistered,
+        };
+      }
+
+      return null; // or course, depending on your use case
+    });
   } catch (error) {
     console.log("Error getting courses:", error);
   }

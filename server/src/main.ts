@@ -42,7 +42,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.use(
-    '/products/payment/webhook',
+    '/courses/stripe/payment/webhook',
     express.raw({ type: 'application/json' }),
   );
 

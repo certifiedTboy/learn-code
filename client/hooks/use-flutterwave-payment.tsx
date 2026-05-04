@@ -8,11 +8,25 @@ interface RedirectParams {
   tx_ref: string;
 }
 
+interface FlutterwavePaymentMeta {
+  [k: string]: any;
+}
+
 const useFlutterwavePayment = () => {
   /**
    * flutterwave payment custom component that can be used to initiate a payment process. It uses the PayWithFlutterwave component from the flutterwave-react-native library and handles the onRedirect event to log the payment status and transaction details.
    */
-  const FlutterwavePayment = () => {
+  const FlutterwavePayment = ({
+    email,
+    amount,
+    userId,
+    courseId,
+  }: {
+    email: string;
+    amount: number;
+    userId: string;
+    courseId: string;
+  }) => {
     const handleOnRedirect = (data: RedirectParams) => {
       console.log(data);
     };
@@ -24,11 +38,16 @@ const useFlutterwavePayment = () => {
           tx_ref: generatePaymentReference(),
           authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "",
           customer: {
-            email: "etosin70@gmail.com",
+            email,
           },
-          amount: 2000,
+          amount,
           currency: "NGN",
           payment_options: "card",
+          meta: {
+            courseId,
+            userId,
+            email,
+          },
         }}
         // style={styles.button}
         customButton={(props) => (

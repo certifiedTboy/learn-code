@@ -7,7 +7,7 @@ import { Colors } from "@/constants/Colors";
 import { validateRegform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useCreateNewUserMutation } from "@/lib/apis/user-apis";
+import { useCreateNewUserMutation } from "@/lib/apis/auth-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useEffect, useState } from "react";

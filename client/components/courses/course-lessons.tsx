@@ -3,7 +3,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import React, { useContext } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text } from "react-native";
-import CourseItem from "./course-item";
+import CourseItem2 from "./course-item2";
 
 const { width } = Dimensions.get("window");
 
@@ -22,13 +22,9 @@ const CourseLessons = () => {
       showsVerticalScrollIndicator={false}
     >
       {course?.contents?.map((chapter: any, index: number) => (
-        <CourseItem
-          key={index}
-          title={chapter?.mainTopic}
-          isCheckedList={chapter.isCheckedList}
-        >
+        <CourseItem2 key={index} title={chapter?.mainTopic}>
           <Text style={styles.contentText}>{chapter?.description}</Text>
-        </CourseItem>
+        </CourseItem2>
       ))}
     </ScrollView>
   );

@@ -3,11 +3,18 @@ import { Colors } from "@/constants/Colors";
 import useFlutterwavePayment from "@/hooks/use-flutterwave-payment";
 import usePaystackPayment from "@/hooks/use-paystack-payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useContext } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSelector } from "react-redux";
 
 const PaymentOptionsScreen = () => {
   const navigation = useNavigation<NavigationProp<any>>();
+
+  const { course } = useContext(CourseDetailsContext);
+
+  const { currentUser } = useSelector((state: any) => state.authState);
 
   const { payNow, paymentSucess, paymentError, resetPaymentStatus } =
     usePaystackPayment();
@@ -56,13 +63,18 @@ const PaymentOptionsScreen = () => {
           style={styles.button}
           onPress={() => {
             resetPaymentStatus();
-            payNow();
+            payNow(course?._id, +course?.price);
           }}
         >
           <Text style={styles.buttonText}>Pay with Paystack</Text>
         </TouchableOpacity>
 
-        <FlutterwavePayment />
+        <FlutterwavePayment
+          courseId={course?._id}
+          amount={+course?.price}
+          email={currentUser?.email}
+          userId={currentUser?._id}
+        />
 
         <Text style={styles.securityText}>
           All payments are secure and encrypted.

@@ -2,14 +2,16 @@ import OnboardingSwiper from "@/components/onboarding/onboarding-swiper";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
 import {
+  createCourseTable,
+  createRegisteredCourseTable,
+} from "@/helpers/db/course-db";
+import { createUserProfileTable } from "@/helpers/db/user-db";
+import {
   NavigationProp,
   useFocusEffect,
   useNavigation,
 } from "@react-navigation/native";
 import { useCallback, useRef, useState } from "react";
-
-import { createCourseTable } from "@/helpers/db/course-db";
-import { createUserProfileTable } from "@/helpers/db/user-db";
 import {
   Dimensions,
   FlatList,
@@ -68,6 +70,7 @@ const OnboardingScreen = () => {
       (async () => {
         await createUserProfileTable();
         await createCourseTable();
+        await createRegisteredCourseTable();
       })();
     }, []),
   );

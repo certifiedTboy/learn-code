@@ -7,8 +7,13 @@ import {
   Body,
   Put,
   Delete,
+  Res,
+  // Headers,
+  // RawBodyRequest,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { createHmac } from 'crypto';
+import { Request, Response } from 'express';
 import {
   BadRequestException,
   InternalServerErrorException,
@@ -16,6 +21,7 @@ import {
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { CourseServices } from './course-services';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { FlutterwavePaymentDto } from './dto/flutterwave-payment.dto';
 import { AdminGuard, AuthGuard } from '../guard/auth-guard';
 
 /**
@@ -27,11 +33,14 @@ import { AdminGuard, AuthGuard } from '../guard/auth-guard';
   path: 'courses',
   version: '1',
 })
-@UseGuards(AuthGuard)
 export class CourseControllers {
-  constructor(private readonly courseService: CourseServices) {}
+  constructor(
+    private readonly courseService: CourseServices,
+    private configService: ConfigService,
+  ) {}
 
   @Get('')
+  @UseGuards(AuthGuard)
   async getAllCourses(@Req() req: Request) {
     try {
       // const { limit, skip } = ChatHelpers.getPaginationParams(page);
@@ -123,6 +132,97 @@ export class CourseControllers {
         });
       }
       throw new InternalServerErrorException('An unexpected error occurred');
+    }
+  }
+
+  /**
+   * @method handleSuccessPayment
+   * @description Handles successful payment for a project.
+   */
+  @Post('payment/webhook')
+  async paystackSuccessPayment(@Req() req: Request, @Res() res: Response) {
+    try {
+      const signature = req.headers['x-paystack-signature'] as string;
+      const result = await this.courseService.verifyPaystackPayment(
+        req.body,
+        signature,
+      );
+
+      ResponseHandler.ok(200, 'Payment verified successfully', result);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
+      });
+    }
+  }
+
+  /**
+   * @method handleSuccessPayment
+   * @description Handles successful payment for a project.
+   */
+  @Post('payment/flutterwave/webhook')
+  async handleFlutterwaveSuccessPayment(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      console.log(req.body);
+
+      res.sendStatus(200);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
+      });
+    }
+  }
+
+  /**
+   * @method verifyFullterwavePaymet
+   * @description Verifies Flutterwave payment (To be implemented)
+   */
+  @Post('payment/verify-flutterwave-payment')
+  @UseGuards(AuthGuard)
+  async flutterwavePaymentSuccess(
+    @Body() flutterwavePaymentDto: FlutterwavePaymentDto,
+  ) {
+    try {
+      const response = await this.courseService.verifyFlutterwavePayment(
+        flutterwavePaymentDto,
+      );
+
+      ResponseHandler.ok(
+        200,
+        'Flutterwave payment verified successfully',
+        response,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
+      });
     }
   }
 }

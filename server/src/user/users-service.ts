@@ -266,7 +266,10 @@ export class UsersService {
    * @param {object} query - The query object to search for the user.
    */
   async checkIfUserExist(query: object): Promise<UserDocument | null> {
-    return this.userModel.findOne(query).select('-__v');
+    return this.userModel
+      .findOne(query)
+      .select('-__v')
+      .populate('registeredCourses.course');
   }
 
   /**

@@ -1,10 +1,13 @@
 import { generatePaymentReference } from "@/helpers/payment";
 import { useState } from "react";
 import { usePaystack } from "react-native-paystack-webview";
+import { useSelector } from "react-redux";
 
 const usePaystackPayment = () => {
   const [paymentSucess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState(false);
+
+  const { currentUser } = useSelector((state: any) => state.authState);
 
   const resetPaymentStatus = () => {
     setPaymentSuccess(false);
@@ -13,12 +16,15 @@ const usePaystackPayment = () => {
 
   const { popup } = usePaystack();
 
-  const payNow = () => {
+  const payNow = (courseId: string, amount: number) => {
     popup.checkout({
-      email: "jane.doe@example.com",
-      amount: 5000,
+      email: currentUser?.email,
+      amount: amount,
       reference: generatePaymentReference(),
+
       metadata: {
+        userId: currentUser?._id,
+        courseId,
         custom_fields: [
           {
             display_name: "Order ID",

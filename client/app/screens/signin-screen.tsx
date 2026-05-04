@@ -3,7 +3,7 @@ import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useLoginUserMutation } from "@/lib/apis/user-apis";
+import { useLoginUserMutation } from "@/lib/apis/auth-apis";
 import { AuthContext } from "@/lib/context/auth-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
@@ -72,10 +72,20 @@ const SignInScreen = () => {
 
   useEffect(() => {
     if (isSuccess) {
+      const userData = {
+        _id: data?.data?.user?._id,
+        email: data?.data?.user?.email,
+        firstName: data?.data?.user?.firstName,
+        lastName: data?.data?.user?.lastName,
+        profilePicture: data?.data?.user?.profilePicture,
+        isVerified: data?.data?.user?.isVerified,
+      };
+
       updateAuthenticatedState(
         data?.data?.refreshToken,
         data?.data?.accessToken,
-        data?.data?.user,
+        userData,
+        data?.data?.user?.registeredCourses,
       );
       navigation.navigate("CoursesScreen");
     }

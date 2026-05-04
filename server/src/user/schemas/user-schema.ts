@@ -39,6 +39,23 @@ export class User {
 
   @Prop()
   password: string;
+
+  @Prop({
+    type: [
+      {
+        course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        dateRegistered: { type: Date },
+        paymentId: { type: mongoose.Schema.Types.Mixed },
+        completion: { type: String },
+      },
+    ],
+  })
+  registeredCourses: {
+    course: mongoose.Types.ObjectId;
+    paymentId: number | string;
+    dateRegistered: Date;
+    completion: string;
+  }[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

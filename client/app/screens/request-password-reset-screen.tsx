@@ -6,7 +6,7 @@ import { Colors } from "@/constants/Colors";
 import { validatePasswordResetRequestForm } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useRequestPasscodeResetMutation } from "@/lib/apis/user-apis";
+import { useRequestPasscodeResetMutation } from "@/lib/apis/auth-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useEffect, useState } from "react";
