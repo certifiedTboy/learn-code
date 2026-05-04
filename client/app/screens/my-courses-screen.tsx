@@ -25,6 +25,7 @@ const MyCoursesScreen = () => {
         courses?.map((course: any) => (
           <CourseCard
             key={course?._id}
+            id={course?._id}
             title={course?.name}
             author="By Emmanuel Tosin"
             progress={Number(

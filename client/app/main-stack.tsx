@@ -58,7 +58,7 @@ const MainStack = () => {
       />
 
       <Stack.Screen
-        name="MainCourseScreen"
+        name="main-course-screen"
         component={MainCourseScreen}
         options={() => ({
           animation: "slide_from_right",

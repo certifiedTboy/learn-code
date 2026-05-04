@@ -74,6 +74,10 @@ export const upsertCourse = async (course: {
   try {
     const db = await getDatabase();
 
+    // 🔥 Step 1: Delete all existing records
+    await db.runAsync(`DELETE FROM new_course`);
+
+    // 🔥 Step 2: Insert fresh record
     await db.runAsync(
       `
       INSERT INTO new_course (
@@ -93,19 +97,6 @@ export const upsertCourse = async (course: {
         course_image
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(_id) DO UPDATE SET
-        name = excluded.name,
-        description = excluded.description,
-        price = excluded.price,
-        rating = excluded.rating,
-        completed = excluded.completed,
-        subscribers = excluded.subscribers,
-        totalTopics = excluded.totalTopics,
-        requiredDuration = excluded.requiredDuration,
-        contents = excluded.contents,
-        updatedAt = excluded.updatedAt,
-        skills = excluded.skills,
-        course_image = excluded.course_image
       `,
       [
         course._id,
@@ -125,9 +116,9 @@ export const upsertCourse = async (course: {
       ],
     );
 
-    console.log("Course upserted:", course.name);
+    console.log("Course replaced:", course.name);
   } catch (error) {
-    console.log("Error upserting course:", error);
+    console.log("Error replacing course:", error);
   }
 };
 
@@ -257,7 +248,7 @@ export const getAllRegisteredCourse = async () => {
         };
       }
 
-      return null; // or course, depending on your use case
+      return []; // or course, depending on your use case
     });
   } catch (error) {
     console.log("Error getting courses:", error);

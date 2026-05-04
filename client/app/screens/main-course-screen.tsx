@@ -1,19 +1,47 @@
-import CourseCheckedItem from "@/components/courses/CourseCheckedItem";
 import CourseItem from "@/components/courses/course-item";
 import { Colors } from "@/constants/Colors";
+import { getCourseById } from "@/helpers/db/course-db";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { courses } from "@/lib/apis/course-apis";
-
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+// import CourseCheckedItem from "@/components/courses/CourseCheckedItem";
+import { useCallback, useEffect, useState } from "react";
 import { Dimensions, ScrollView, StyleSheet, Text } from "react-native";
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 const { width } = Dimensions.get("window");
 
-const MainCourseScreen = () => {
+const MainCourseScreen = ({ route }: { route: any }) => {
+  const [contents, setContents] = useState<any[]>([]);
+
+  const navigation = useNavigation();
+
+  const { id, name } = route.params;
+
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
   );
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: name,
+        headerTitleStyle: {
+          fontSize: 18,
+          fontWeight: "600",
+          marginLeft: -100,
+        },
+      });
+    }, []),
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (id) {
+        const course = await getCourseById(id);
+        setContents(course?.contents);
+      }
+    })();
+  }, [id, name]);
 
   return (
     <ScrollView
@@ -21,21 +49,38 @@ const MainCourseScreen = () => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {courses.map((chapter, index) => (
+      {contents.map((chapter, index) => (
         <CourseItem
           key={index}
-          title={chapter.title}
-          isCheckedList={chapter.isCheckedList}
+          title={chapter?.mainTopic}
+          isCheckedList={chapter?.isCheckedList}
         >
-          {chapter.isCheckedList ? (
+          {chapter?.subTopics?.map((topic: any, index: number) => {
+            return (
+              <Text
+                key={index}
+                style={styles.contentText}
+                onPress={() =>
+                  // @ts-ignore
+                  navigation.navigate("course-content", {
+                    topic: topic?.title,
+                    contentUri: topic?.contentURI,
+                  })
+                }
+              >
+                {topic?.title}
+              </Text>
+            );
+          })}
+          {/* {chapter.isCheckedList ? (
             chapter?.items?.map((item, itemIndex) => (
               <CourseCheckedItem key={itemIndex} checked={item.checked}>
                 {item.text}
               </CourseCheckedItem>
             ))
-          ) : (
-            <Text style={styles.contentText}>{chapter.content}</Text>
-          )}
+          ) : ( */}
+          {/* <Text style={styles.contentText}>{chapter.description}</Text> */}
+          {/* )} */}
         </CourseItem>
       ))}
     </ScrollView>

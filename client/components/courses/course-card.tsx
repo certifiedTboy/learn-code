@@ -12,11 +12,13 @@ import {
 } from "react-native";
 
 const CourseCard = ({
+  id,
   title,
   author,
   progress,
   image,
 }: {
+  id: string;
   title: string;
   author: string;
   progress: number;
@@ -31,7 +33,13 @@ const CourseCard = ({
   return (
     <TouchableOpacity
       style={[styles.card, { width: width - 32 }]}
-      onPress={() => navigation.navigate("MainCourseScreen")}
+      onPress={() =>
+        // @ts-ignore
+        navigation.navigate("main-course-screen", {
+          id,
+          name: title,
+        })
+      }
     >
       <Image source={image} style={styles.image} />
 

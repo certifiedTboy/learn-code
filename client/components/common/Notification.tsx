@@ -10,7 +10,7 @@ const Notification = () => {
   );
 
   const successBorderColor = useThemeColor(
-    { light: "#4BB543", dark: "#4BB543" },
+    { light: "#5F6F8F", dark: "#5F6F8F" },
     "background",
   );
 

@@ -1,7 +1,6 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useNavigation } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   Animated,
@@ -27,8 +26,6 @@ const CourseItem = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
-
-  const navigation = useNavigation<{ navigate: (arg0: string) => void }>();
 
   const backgroundColor = useThemeColor(
     { light: "#EAF0FF", dark: "#EAF0FF" },
@@ -90,7 +87,8 @@ const CourseItem = ({
                 <TouchableOpacity
                   key={index}
                   style={styles.checklistItem}
-                  onPress={() => navigation.navigate("course-content")}
+                  // @ts-ignore
+                  onPress={() => child?.props?.onPress()}
                 >
                   <View
                     style={[

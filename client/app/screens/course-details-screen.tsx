@@ -2,7 +2,8 @@ import CourseDetailsTab from "@/components/courses/course-details-tab";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
-import { getCourseById } from "@/helpers/db/course-db";
+import { getAllRegisteredCourse, getCourseById } from "@/helpers/db/course-db";
+import { isAtLeast31DaysAgo } from "@/helpers/payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import {
@@ -57,9 +58,25 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
   useEffect(() => {
     if (id) {
       (async () => {
+        const courses = await getAllRegisteredCourse();
+
         const course = await getCourseById(id);
         if (course) {
-          setCourse(course);
+          const courseIsRegistered = courses?.find(
+            (myCourse: any) => myCourse._id === course?._id,
+          );
+
+          if (courseIsRegistered) {
+            setCourse({
+              ...course,
+              isRegistered: true,
+              paymentIsExpired: isAtLeast31DaysAgo(
+                (courseIsRegistered as any)?.dateRegistered,
+              ),
+            });
+          } else {
+            setCourse(course);
+          }
         }
       })();
     }
@@ -82,12 +99,37 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
 
       {/* Enroll Button */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.enrollBtn}
-          onPress={() => navigation.navigate("payment-options")}
-        >
-          <Text style={styles.enrollText}>GET ENROLLED</Text>
-        </TouchableOpacity>
+        {!course?.isRegistered && (
+          <TouchableOpacity
+            style={styles.enrollBtn}
+            onPress={() => navigation.navigate("payment-options")}
+          >
+            <Text style={styles.enrollText}>GET ENROLLED</Text>
+          </TouchableOpacity>
+        )}
+
+        {course?.isRegistered && !course.paymentIsExpired && (
+          <TouchableOpacity
+            style={styles.enrollBtn}
+            onPress={() =>
+              navigation.navigate("main-course-screen", {
+                id: course?._id,
+                name: course?.name,
+              })
+            }
+          >
+            <Text style={styles.enrollText}>Continue Learning</Text>
+          </TouchableOpacity>
+        )}
+
+        {course?.isRegistered && course.paymentIsExpired && (
+          <TouchableOpacity
+            style={styles.enrollBtn}
+            onPress={() => navigation.navigate("payment-options")}
+          >
+            <Text style={styles.enrollText}>Update Payment</Text>
+          </TouchableOpacity>
+        )}
       </View>
       {/* </ScrollView> */}
     </ThemedView>

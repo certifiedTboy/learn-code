@@ -1,24 +1,53 @@
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { Colors } from "@/constants/Colors";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useCallback } from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { WebView } from "react-native-webview";
 
-const CourseContentScreen = () => {
-  const docUrl =
-    "https://docs.google.com/document/d/1rAvbQ7G9h8-LHorbSthKrnrV8UefKTlHTp5esZOV7y0/edit?usp=sharing";
+const CourseContentScreen = ({ route }: { route: any }) => {
+  const navigation = useNavigation();
 
-  // const docUrl =
-  //   "https://learning-code-app.s3.eu-west-2.amazonaws.com/module+1/Module+1_+Core+Foundation+-+Week+1+-+7.docx";
+  const { topic, contentUri } = route.params;
+
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: topic,
+        headerTitleStyle: {
+          fontSize: 18,
+          fontWeight: "600",
+          marginLeft: -100,
+        },
+      });
+    }, []),
+  );
 
   return (
     <View style={styles.container}>
       <WebView
         originWhitelist={["*"]}
         source={{
-          uri: docUrl,
+          uri: contentUri,
           cache: true,
         }}
         startInLoadingState
         renderLoading={() => <ActivityIndicator size="large" color="red" />}
       />
+
+      <View style={styles.bottomContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => console.log("mark as completed")}
+        >
+          <Text style={styles.buttonText}>Mark as Completed</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -29,5 +58,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: -50,
+  },
+  webview: {
+    flex: 1,
+  },
+  bottomContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  button: {
+    backgroundColor: Colors.dark.generalBg,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
