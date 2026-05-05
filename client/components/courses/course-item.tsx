@@ -90,18 +90,12 @@ const CourseItem = ({
                   // @ts-ignore
                   onPress={() => child?.props?.onPress()}
                 >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      // @ts-ignore
-                      child?.props?.checked && styles.checkboxChecked,
-                    ]}
-                  >
-                    {/* @ts-ignore */}
-                    {child?.props?.checked && (
-                      <Icon name="checkmark-done" size={12} color="#ffffff" />
-                    )}
-                  </View>
+                  {/* @ts-ignore */}
+                  {child?.props?.style[1] ? (
+                    <Icon name="book" size={20} color="#000000" />
+                  ) : (
+                    <Icon name="videocam" size={20} color="#000000" />
+                  )}
                   <Text style={styles.checklistText}>
                     {/* @ts-ignore */}
                     {child?.props?.children}

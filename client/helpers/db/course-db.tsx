@@ -254,3 +254,104 @@ export const getAllRegisteredCourse = async () => {
     console.log("Error getting courses:", error);
   }
 };
+
+/**
+ * mark a subtopic has been completed
+ */
+// generate a function to mark a particular subtopic has being completed
+export const markSubTopicAsCompleted = async (
+  courseId: string,
+  mainTopic: string,
+  subTopicTitle: string,
+) => {
+  console.log(courseId, mainTopic, subTopicTitle);
+  try {
+    const db = await getDatabase();
+
+    const course = await getCourseById(courseId);
+    if (!course) return;
+
+    let totalSubTopics = 0;
+    let completedSubTopics = 0;
+    let foundSubTopic = false;
+
+    const updatedContents = course.contents.map((chapter: any) => {
+      const updatedSubTopics = chapter.subTopics.map((sub: any) => {
+        totalSubTopics++;
+
+        const isTargetSubTopic =
+          chapter.mainTopic === mainTopic && sub.title === subTopicTitle;
+
+        const isCompleted = isTargetSubTopic ? true : Boolean(sub.isCompleted);
+
+        if (isTargetSubTopic) {
+          foundSubTopic = true;
+        }
+
+        if (isCompleted) {
+          completedSubTopics++;
+        }
+
+        return {
+          ...sub,
+          isCompleted,
+        };
+      });
+
+      return {
+        ...chapter,
+        subTopics: updatedSubTopics,
+      };
+    });
+
+    if (!foundSubTopic) {
+      console.log("Subtopic not found");
+      return;
+    }
+
+    const completionPercentage =
+      totalSubTopics > 0
+        ? Math.round((completedSubTopics / totalSubTopics) * 100)
+        : 0;
+
+    await db.runAsync(
+      `
+  UPDATE new_course
+  SET contents = ?
+  WHERE _id = ?
+  `,
+      [
+        JSON.stringify(
+          course.contents.map((chapter: any) => ({
+            ...chapter,
+            subTopics: chapter.subTopics.map((sub: any) => ({
+              ...sub,
+              isCompleted:
+                chapter.mainTopic === mainTopic && sub.title === subTopicTitle
+                  ? true
+                  : sub.isCompleted,
+            })),
+          })),
+        ),
+        courseId,
+      ],
+    );
+
+    await db.runAsync(
+      `
+      UPDATE registered_course_new2 
+      SET completion = ? 
+      WHERE _id = ?
+      `,
+      [`${completionPercentage}%`, courseId],
+    );
+
+    console.log(
+      `Subtopic "${subTopicTitle}" marked as completed. Progress: ${completionPercentage}%`,
+    );
+
+    return completionPercentage;
+  } catch (error) {
+    console.log("Error marking subtopic as completed:", error);
+  }
+};

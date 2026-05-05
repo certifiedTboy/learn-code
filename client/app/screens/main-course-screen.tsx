@@ -12,6 +12,10 @@ const { width } = Dimensions.get("window");
 
 const MainCourseScreen = ({ route }: { route: any }) => {
   const [contents, setContents] = useState<any[]>([]);
+  const [courseDetails, setCourseDetails] = useState<{
+    _id: string;
+    name: string;
+  }>({ _id: "", name: "" });
 
   const navigation = useNavigation();
 
@@ -39,6 +43,7 @@ const MainCourseScreen = ({ route }: { route: any }) => {
       if (id) {
         const course = await getCourseById(id);
         setContents(course?.contents);
+        setCourseDetails({ _id: course?._id!, name: course?.name! });
       }
     })();
   }, [id, name]);
@@ -49,40 +54,50 @@ const MainCourseScreen = ({ route }: { route: any }) => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {contents.map((chapter, index) => (
-        <CourseItem
-          key={index}
-          title={chapter?.mainTopic}
-          isCheckedList={chapter?.isCheckedList}
-        >
-          {chapter?.subTopics?.map((topic: any, index: number) => {
-            return (
-              <Text
-                key={index}
-                style={styles.contentText}
-                onPress={() =>
-                  // @ts-ignore
-                  navigation.navigate("course-content", {
-                    topic: topic?.title,
-                    contentUri: topic?.contentURI,
-                  })
-                }
-              >
-                {topic?.title}
-              </Text>
-            );
-          })}
-          {/* {chapter.isCheckedList ? (
+      {contents &&
+        contents?.length > 0 &&
+        contents?.map((chapter, index) => (
+          <CourseItem
+            key={index}
+            title={chapter?.mainTopic}
+            isCheckedList={chapter?.isCheckedList}
+          >
+            {chapter?.subTopics &&
+              chapter?.subTopics?.length > 0 &&
+              chapter?.subTopics?.map((topic: any, index: number) => {
+                return (
+                  <Text
+                    key={index}
+                    style={[
+                      styles.contentText,
+                      !topic?.isVideo && { color: "#ff0000" },
+                    ]}
+                    onPress={() =>
+                      // @ts-ignore
+                      navigation.navigate("course-content", {
+                        topic: topic?.title,
+                        contentUri: topic?.contentURI,
+                        name: chapter?.mainTopic,
+                        id: courseDetails?._id,
+                        isCompleted: topic?.isCompleted,
+                      })
+                    }
+                  >
+                    {topic?.title}
+                  </Text>
+                );
+              })}
+            {/* {chapter.isCheckedList ? (
             chapter?.items?.map((item, itemIndex) => (
               <CourseCheckedItem key={itemIndex} checked={item.checked}>
                 {item.text}
               </CourseCheckedItem>
             ))
           ) : ( */}
-          {/* <Text style={styles.contentText}>{chapter.description}</Text> */}
-          {/* )} */}
-        </CourseItem>
-      ))}
+            {/* <Text style={styles.contentText}>{chapter.description}</Text> */}
+            {/* )} */}
+          </CourseItem>
+        ))}
     </ScrollView>
   );
 };

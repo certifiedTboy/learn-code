@@ -1,4 +1,6 @@
+import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { markSubTopicAsCompleted } from "@/helpers/db/course-db";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback } from "react";
 import {
@@ -13,7 +15,7 @@ import { WebView } from "react-native-webview";
 const CourseContentScreen = ({ route }: { route: any }) => {
   const navigation = useNavigation();
 
-  const { topic, contentUri } = route.params;
+  const { topic, contentUri, name, id, isCompleted } = route.params;
 
   useFocusEffect(
     useCallback(() => {
@@ -28,6 +30,13 @@ const CourseContentScreen = ({ route }: { route: any }) => {
     }, []),
   );
 
+  const handleMarkAsCompleted = async () => {
+    const completionPercentage = await markSubTopicAsCompleted(id, name, topic);
+
+    console.log("Completion percentage:", completionPercentage);
+  };
+
+  console.log(isCompleted);
   return (
     <View style={styles.container}>
       <WebView
@@ -41,12 +50,33 @@ const CourseContentScreen = ({ route }: { route: any }) => {
       />
 
       <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => console.log("mark as completed")}
-        >
-          <Text style={styles.buttonText}>Mark as Completed</Text>
-        </TouchableOpacity>
+        {!isCompleted ? (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { flexDirection: "row", justifyContent: "center" },
+            ]}
+            onPress={handleMarkAsCompleted}
+          >
+            <Icon
+              name="checkmark-done-circle-outline"
+              size={20}
+              color="#ffffff"
+            />
+            <Text style={styles.buttonText}>Mark as Completed</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { flexDirection: "row", justifyContent: "center", gap: 3 },
+            ]}
+          >
+            <Icon name="checkmark-done-circle" size={20} color="#ffffff" />
+
+            <Text style={styles.buttonText}>Completed</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
