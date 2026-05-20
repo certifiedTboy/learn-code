@@ -6,7 +6,7 @@ import { useTimeCountdown } from "@/hooks/use-time-countdown";
 import {
   useRequestPasscodeResetMutation,
   useVerifyUserAccountMutation,
-} from "@/lib/apis/user-apis";
+} from "@/lib/apis/auth-apis";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,

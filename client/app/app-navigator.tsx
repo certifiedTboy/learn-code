@@ -1,4 +1,5 @@
 import FloatingBtn from "@/components/ui/float-btn";
+import useBackup from "@/hooks/use-backup";
 import { AuthContext } from "@/lib/context/auth-context";
 import ChatContextProvider from "@/lib/context/chat-context";
 import { useContext, useEffect } from "react";
@@ -8,6 +9,8 @@ import MainStack from "./main-stack";
 import OnboardingStack from "./onboarding-stack";
 const AppNavigator = () => {
   const { checkUserIsAuthenticated, isAuthenticated } = useContext(AuthContext);
+
+  const { writeToCloud, readFromCloud, cloudAvailable } = useBackup();
 
   useEffect(() => {
     checkUserIsAuthenticated();
@@ -20,9 +23,10 @@ const AppNavigator = () => {
       ) : (
         <ChatContextProvider>
           <MainStack />
+
           <FloatingBtn
             iconName="sync-circle"
-            onNavigate={() => {}}
+            onNavigate={readFromCloud}
             style={styles.floatingBtn}
           />
         </ChatContextProvider>

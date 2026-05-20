@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   Length,
   IsEnum,
-  IsAlpha,
   IsLowercase,
 } from 'class-validator';
 
@@ -21,25 +20,28 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsAlpha()
-  @Length(2, 50)
-  readonly firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsAlpha()
-  @Length(2, 50)
-  readonly lastName: string;
-
-  @IsString()
-  @IsNotEmpty()
   readonly password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  readonly confirmPassword: string;
 
   @IsEnum(RoleEnum)
   @IsNotEmpty()
   readonly role: RoleEnum;
+}
+
+export class CreateGoogleUserDto {
+  @IsEmail()
+  @IsNotEmpty()
+  @IsLowercase()
+  readonly email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly firstName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  readonly lastName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly profilePicture: string;
 }

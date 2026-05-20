@@ -7,10 +7,10 @@ export type UserDocument = mongoose.HydratedDocument<User>;
 export class User {
   _id: mongoose.Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop()
   firstName: string;
 
-  @Prop({ required: true })
+  @Prop()
   lastName: string;
 
   @Prop({ required: true, unique: true })

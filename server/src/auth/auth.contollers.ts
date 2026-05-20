@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth-services';
-import { AuthDto } from './dto/auth.dto';
+import { AuthDto, GoogleAuthDto } from './dto/auth.dto';
 import { AuthGuard } from '../guard/auth-guard';
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { UsersService } from '../user/users-service';
@@ -46,6 +46,28 @@ export class AuthControllers {
       const { password, email } = authDto;
 
       const result = await this.authService.signIn(password, email);
+
+      return ResponseHandler.ok(200, 'login successful', result);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new BadRequestException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+    }
+  }
+
+  /**
+   * @method loginWithGoodle
+   * @param {GoogleAuthDto} authDto - The data transfer object containing user credentials.
+   */
+  @Post('google/login')
+  async loginWithGoogle(@Body() authDto: GoogleAuthDto) {
+    try {
+      const { email, profilePicture } = authDto;
+
+      const result = await this.authService.googleSignin(email, profilePicture);
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {

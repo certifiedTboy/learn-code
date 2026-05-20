@@ -1,13 +1,17 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { showNotification } from "@/helpers/notification";
+import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useLoginUserMutation } from "@/lib/apis/auth-apis";
+import {
+  useLoginUserMutation,
+  useLoginWithGoogleMutation,
+} from "@/lib/apis/auth-apis";
 import { AuthContext } from "@/lib/context/auth-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
-
 import {
   ActivityIndicator,
   Dimensions,
@@ -33,7 +37,20 @@ const SignInScreen = () => {
   const [loginUser, { isLoading, isError, error, isSuccess, data }] =
     useLoginUserMutation();
 
+  const [
+    loginWithGoogle,
+    {
+      isLoading: isGoogleLoading,
+      isError: isGoogleError,
+      error: googleError,
+      isSuccess: isGoogleSuccess,
+      data: googleData,
+    },
+  ] = useLoginWithGoogleMutation();
+
   const { updateAuthenticatedState } = useContext(AuthContext);
+
+  const { handleGoogleSignIn, userData } = useGoogleAuth();
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -71,6 +88,30 @@ const SignInScreen = () => {
   }, [isError]);
 
   useEffect(() => {
+    if (isGoogleError) {
+      showNotification({
+        type: "error",
+        title: "Login Failed",
+        message:
+          googleError &&
+          "data" in googleError &&
+          (googleError as any).data?.message
+            ? (googleError as any).data.message
+            : "Something went wrong",
+      });
+    }
+  }, [isGoogleError]);
+
+  useEffect(() => {
+    if (userData) {
+      loginWithGoogle({
+        email: userData?.email,
+        profilePicture: userData?.profilePicture,
+      });
+    }
+  }, [userData]);
+
+  useEffect(() => {
     if (isSuccess) {
       const userData = {
         _id: data?.data?.user?._id,
@@ -91,6 +132,27 @@ const SignInScreen = () => {
     }
   }, [isSuccess]);
 
+  useEffect(() => {
+    if (isGoogleSuccess) {
+      const userData = {
+        _id: googleData?.data?.user?._id,
+        email: googleData?.data?.user?.email,
+        firstName: googleData?.data?.user?.firstName,
+        lastName: googleData?.data?.user?.lastName,
+        profilePicture: googleData?.data?.user?.profilePicture,
+        isVerified: googleData?.data?.user?.isVerified,
+      };
+
+      updateAuthenticatedState(
+        googleData?.data?.refreshToken,
+        googleData?.data?.accessToken,
+        userData,
+        googleData?.data?.user?.registeredCourses,
+      );
+      navigation.navigate("CoursesScreen");
+    }
+  }, [isGoogleSuccess]);
+
   return (
     <ThemedView
       style={styles.container}
@@ -110,7 +172,6 @@ const SignInScreen = () => {
             <ThemedText style={styles.subtitle}>
               Please sign in with your account
             </ThemedText>
-
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Email Here</ThemedText>
               <TextInput
@@ -122,7 +183,6 @@ const SignInScreen = () => {
                 onChangeText={(value) => handleLoginInputchange("email", value)}
               />
             </View>
-
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>Password</ThemedText>
               <View style={styles.passwordWrapper}>
@@ -144,14 +204,12 @@ const SignInScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
-
             <TouchableOpacity
               style={styles.forgotContainer}
               onPress={() => navigation.navigate("RequestPasswordResetScreen")}
             >
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.signInButton}
               onPress={handleSubmit}
@@ -159,23 +217,25 @@ const SignInScreen = () => {
               <Text style={styles.signInText}>SIGN IN</Text>
               {isLoading && <ActivityIndicator size="small" color="#FFF" />}
             </TouchableOpacity>
-
             <View style={styles.dividerContainer}>
               <View style={styles.divider} />
               <Text style={styles.dividerText}>Or Sign in with</Text>
               <View style={styles.divider} />
             </View>
-
-            <TouchableOpacity style={styles.googleBtn}>
+            <TouchableOpacity
+              onPress={handleGoogleSignIn}
+              style={styles.googleBtn}
+            >
+              <Icon
+                name="logo-google"
+                size={24}
+                color={Colors.dark.generalBg}
+              />
               <Text style={styles.googleText}>Sign in with Google</Text>
+              {isGoogleLoading && (
+                <ActivityIndicator size="small" color="#FFF" />
+              )}
             </TouchableOpacity>
-
-            {/* <GoogleSigninButton
-              style={{ width: 192, height: 48 }}
-              size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Dark}
-              //   onPress={signInWithGoogle}
-            /> */}
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don&apos;t have an account?</Text>
@@ -295,7 +355,10 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.018,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: height * 0.04,
+    marginBottom: height * 0.03,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 5,
   },
   googleText: {
     color: Colors.dark.generalBg,

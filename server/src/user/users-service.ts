@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { PasscodeHashing } from '../helpers/passcode-hashing';
 import { User } from './schemas/user-schema';
 import { UserDocument } from './schemas/user-schema';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, CreateGoogleUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CodeGenerator } from '../helpers/code-generator';
 import { AccessJwtService } from '../common/jwt/access-jwt.service';
@@ -66,7 +66,7 @@ export class UsersService {
               email: updatedUser!.email,
               subject: 'Learn Code Account Verification',
               verificationCode: otp,
-              firstName: updatedUser!.firstName,
+              firstName: updatedUser!.firstName || updatedUser!.email,
             },
             10000,
           );
@@ -92,7 +92,8 @@ export class UsersService {
               email: userWithEmailExist.email,
               subject: 'Learn Code Account Verification',
               verificationCode: otp,
-              firstName: userWithEmailExist.firstName,
+              firstName:
+                userWithEmailExist!.firstName || userWithEmailExist!.email,
             },
             10000,
           );
@@ -112,6 +113,101 @@ export class UsersService {
       verificationCode: otp.split('').slice(0, -1).join(''),
       verificationCodeExpiresIn: verificationCodeExpiresIn,
       password: await PasscodeHashing.hashPassword(createUserDto.password),
+    });
+    const user = await createdUser.save();
+
+    await this.queueService.addJob(
+      'email-verification',
+      {
+        email: user.email,
+        subject: 'Learn Code Account Verification',
+        verificationCode: otp,
+        firstName: user.firstName,
+      },
+      10000,
+    );
+
+    return user;
+  }
+
+  /**
+   * @method createGoogleUser
+   * @description Creates a new user with google credentials
+   * @param {CreateGoogleUserDto} createGoogleUserDto - The data transfer object containing user details.
+   */
+  async createGoogleUser(createUserDto: CreateGoogleUserDto) {
+    // check if user with the same email or phone number already exists
+    const userWithEmailExist = await this.checkIfUserExist({
+      email: createUserDto.email,
+    });
+
+    const otp = CodeGenerator.generateOtp();
+    const verificationCodeExpiresIn = Time.getTimeInOneHour();
+
+    if (
+      userWithEmailExist &&
+      !userWithEmailExist?.isVerified &&
+      Time.checkIfTimeIsExpired(userWithEmailExist.verificationCodeExpiresIn)
+    ) {
+      // Check if the verification code has expired and update accordingly
+
+      const updatedUser = await this.userModel.findOneAndUpdate(
+        { email: userWithEmailExist.email },
+        {
+          verificationCode: otp.split('').slice(0, -1).join(''),
+          isVerified: false,
+          verificationCodeExpiresIn,
+        },
+        { new: true },
+      );
+
+      await this.queueService.addJob(
+        'email-verification',
+        {
+          email: updatedUser!.email,
+          subject: 'Learn Code Account Verification',
+          verificationCode: otp,
+          firstName: updatedUser!.firstName || updatedUser!.email,
+        },
+        10000,
+      );
+
+      return updatedUser;
+    }
+
+    if (
+      userWithEmailExist &&
+      !userWithEmailExist?.isVerified &&
+      !Time.checkIfTimeIsExpired(userWithEmailExist.verificationCodeExpiresIn)
+    ) {
+      await this.userModel.findOneAndUpdate(
+        { email: userWithEmailExist.email },
+        {
+          verificationCode: otp.split('').slice(0, -1).join(''),
+          isVerified: false,
+          verificationCodeExpiresIn,
+        },
+        { new: true },
+      );
+
+      await this.queueService.addJob(
+        'email-verification',
+        {
+          email: userWithEmailExist.email,
+          subject: 'Learn Code Account Verification',
+          verificationCode: otp,
+          firstName: userWithEmailExist!.firstName || userWithEmailExist!.email,
+        },
+        10000,
+      );
+
+      return userWithEmailExist;
+    }
+
+    const createdUser = new this.userModel({
+      ...createUserDto,
+      verificationCode: otp.split('').slice(0, -1).join(''),
+      verificationCodeExpiresIn: verificationCodeExpiresIn,
     });
     const user = await createdUser.save();
 
@@ -175,7 +271,7 @@ export class UsersService {
         {
           email: updatedUser!.email,
           subject: 'Account Setup Successful',
-          firstName: updatedUser!.firstName,
+          firstName: updatedUser?.firstName || updatedUser!.email,
         },
         10000,
       );
@@ -252,7 +348,7 @@ export class UsersService {
         email: updatedUser!.email,
         subject: 'Learn Code Account Verification',
         verificationCode: otp,
-        firstName: updatedUser!.firstName,
+        firstName: updatedUser!.firstName || updatedUser!.email,
       },
       10000,
     );
@@ -284,20 +380,6 @@ export class UsersService {
       .select(
         '-passcode -verificationCode -verificationCodeExpiresIn -__v -passwordResetToken -passwordResetTokenExpiresIn',
       );
-  }
-
-  /**
-   * @method findUserByVerificationCode
-   * @description Finds a user by their verification code.
-   * @param {string} verificationCode - The verification code to search for.
-   * @returns {Promise<UserDocument | null>} - The user object or null if not found.
-   * @throws {Error} - Throws an error if the search process fails.
-   * @private
-   */
-  private async findUserByVerificationCode(
-    verificationCode: string,
-  ): Promise<UserDocument | null> {
-    return await this.userModel.findOne({ verificationCode });
   }
 
   /**

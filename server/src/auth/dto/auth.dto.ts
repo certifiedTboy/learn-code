@@ -9,3 +9,13 @@ export class AuthDto {
   @IsNotEmpty()
   readonly email: string;
 }
+
+export class GoogleAuthDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly profilePicture: string;
+}

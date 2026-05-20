@@ -33,9 +33,42 @@ export const authApis = createApi({
       }),
     }),
 
+    createGoogleAccount: builder.mutation({
+      query: (payload) => ({
+        url: `/users/google/create`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
     loginUser: builder.mutation({
       query: (payload) => ({
         url: `/auth/login`,
+        method: "POST",
+        body: payload,
+      }),
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          if (data) {
+            const { accessToken, refreshToken, user } = data.data;
+
+            await AsyncStorage.setItem("accessToken", accessToken);
+            await AsyncStorage.setItem("refreshToken", refreshToken);
+
+            dispatch(setCurrentUser({ currentUser: user }));
+          }
+        } catch (error) {
+          // console.log(error);
+        }
+      },
+    }),
+
+    loginWithGoogle: builder.mutation({
+      query: (payload) => ({
+        url: `/auth/google/login`,
         method: "POST",
         body: payload,
       }),
@@ -114,4 +147,6 @@ export const {
   useGetNewVerificationCodeMutation,
   useRequestPasscodeResetMutation,
   useUpdatePasscodeMutation,
+  useCreateGoogleAccountMutation,
+  useLoginWithGoogleMutation,
 } = authApis;

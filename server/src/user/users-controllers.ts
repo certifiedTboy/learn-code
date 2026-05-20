@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersService } from './users-service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, CreateGoogleUserDto } from './dto/create-user.dto';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { GenerateNewTokenDto } from './dto/generate-token.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
@@ -74,14 +74,37 @@ export class UsersController {
    */
   @Post('create')
   async createUser(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
-    console.log(req.headers['user-agent']);
-
+    const { source } = req.query;
     try {
-      const result = await this.usersService.create({
-        ...createUserDto,
-        firstName: covertToTitleCase(createUserDto.firstName),
-        lastName: covertToTitleCase(createUserDto.lastName),
+      const result = await this.usersService.create(createUserDto);
+
+      return ResponseHandler.ok(201, 'User created successfully', result || {});
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('Something went wrong', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
       });
+    }
+  }
+
+  /**
+   * @method createGoogleUser
+   * @param {CreateGoogleUserDto} createUserDto - The data transfer object containing user details.
+   */
+  @Post('google/create')
+  async createGoogleUser(
+    @Body() createUserDto: CreateGoogleUserDto,
+    @Req() req: Request,
+  ) {
+    try {
+      const result = await this.usersService.createGoogleUser(createUserDto);
 
       return ResponseHandler.ok(201, 'User created successfully', result || {});
     } catch (error) {

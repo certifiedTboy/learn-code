@@ -1,6 +1,7 @@
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { AuthContext } from "@/lib/context/auth-context";
 import { useContext } from "react";
@@ -28,6 +29,8 @@ const MENU_ITEMS = [
 const ProfileScreen = () => {
   const { logout } = useContext(AuthContext);
 
+  const { revokeAccess } = useGoogleAuth();
+
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
@@ -51,7 +54,12 @@ const ProfileScreen = () => {
             <TouchableOpacity
               style={styles.row}
               activeOpacity={0.7}
-              onPress={() => item.label === "Logout" && logout()}
+              onPress={() => {
+                if (item.label === "Logout") {
+                  logout();
+                  revokeAccess();
+                }
+              }}
             >
               <View style={styles.rowLeft}>
                 <Icon

@@ -72,6 +72,47 @@ export class AuthService {
   }
 
   /**
+   * @method googleSignin
+   * @description Handles user sign-in operation with google oauth.
+   * @param {string} password - The user's password.
+   * @param {string} email - The user's email address.
+   */
+  async googleSignin(email: string, profilePicture: string) {
+    const user = await this.usersService.checkIfUserExist({ email });
+
+    if (!user) {
+      throw new UnauthorizedException('', {
+        cause: `Invalid login credentials`,
+        description: 'No user with this email exists',
+      });
+    }
+
+    if (!user.isVerified) {
+      throw new UnauthorizedException('', {
+        cause: `Unverified account`,
+        description: 'Account is unverified.',
+      });
+    }
+    if (user && user.isVerified) {
+      user.profilePicture = profilePicture;
+      await user.save();
+
+      const payload = {
+        email: user.email,
+        _id: user._id.toString(),
+        role: user.role,
+        sub: user.email,
+      };
+
+      return {
+        accessToken: await this.accessJwtService.signToken(payload),
+        refreshToken: await this.refreshJwtService.signToken(payload),
+        user,
+      };
+    }
+  }
+
+  /**
    * @method generateNewToken
    * @description Generates a new access JWT token for the user.
    * @param {string} refreshToken - The user's refresh token.

@@ -6,8 +6,12 @@ import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { validateRegform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
+import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useCreateNewUserMutation } from "@/lib/apis/auth-apis";
+import {
+  useCreateGoogleAccountMutation,
+  useCreateNewUserMutation,
+} from "@/lib/apis/auth-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useEffect, useState } from "react";
@@ -39,7 +43,24 @@ const SignUpScreen = () => {
   const [createNewUser, { isLoading, error, isError, isSuccess, data }] =
     useCreateNewUserMutation();
 
+  const [
+    createGoogleAccount,
+    {
+      isLoading: googleAccountIsLoading,
+      error: googleAccountError,
+      isError: googleAccountIsError,
+      isSuccess: googleAccountIsSuccess,
+      data: googleAccountData,
+    },
+  ] = useCreateGoogleAccountMutation();
+
   const navigation = useNavigation<NavigationProp<any>>();
+
+  const {
+    handleGoogleSignIn,
+    userData,
+    isLoading: isGoogleLoading,
+  } = useGoogleAuth();
 
   const inputTextColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
@@ -54,13 +75,11 @@ const SignUpScreen = () => {
   const createNewUserHandler = async (values: {
     isValid: boolean;
     values: {
-      firstName: string;
-      lastName: string;
       email: string;
       password: string;
     };
   }) => {
-    const { firstName, lastName, email, password } = values.values;
+    const { email, password } = values.values;
 
     if (!values.isValid)
       return showNotification({
@@ -70,14 +89,23 @@ const SignUpScreen = () => {
       });
 
     await createNewUser({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
       email: email.trim(),
       password: password.trim(),
       confirmPassword: password.trim(),
       role: "user",
     });
   };
+
+  useEffect(() => {
+    if (userData) {
+      createGoogleAccount({
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profilePicture: userData.profilePicture,
+      });
+    }
+  }, [userData]);
 
   useEffect(() => {
     if (isError) {
@@ -96,6 +124,27 @@ const SignUpScreen = () => {
     }
   }, [isError, isSuccess]);
 
+  useEffect(() => {
+    if (googleAccountIsError) {
+      showNotification({
+        type: "error",
+        title: "Signup Failed",
+        message:
+          googleAccountError &&
+          "data" in googleAccountError &&
+          (googleAccountError as any).data?.message
+            ? (googleAccountError as any).data.message
+            : "Something went wrong",
+      });
+    }
+
+    if (googleAccountIsSuccess) {
+      setShowBottomSheetModal(true);
+    }
+  }, [googleAccountIsError, googleAccountIsSuccess]);
+
+  console.log(googleAccountError);
+
   return (
     <>
       <KeyboardAvoidingView
@@ -104,8 +153,6 @@ const SignUpScreen = () => {
       >
         <Formik
           initialValues={{
-            firstName: "",
-            lastName: "",
             email: "",
             password: "",
           }}
@@ -136,59 +183,6 @@ const SignUpScreen = () => {
                     Please sign up here
                   </ThemedText>
 
-                  <View style={styles.inputGroup}>
-                    <ThemedText style={styles.label}>First Name</ThemedText>
-                    <TextInput
-                      placeholder="Enter your first name"
-                      keyboardType="default"
-                      autoCapitalize="none"
-                      style={[styles.input, { color: inputTextColor }]}
-                      placeholderTextColor={placeHolderColor}
-                      onChangeText={handleChange("firstName")}
-                      onBlur={handleBlur("firstName")}
-                      value={values.firstName}
-                    />
-
-                    {errors?.firstName && (
-                      <View style={styles.errorTextContainer}>
-                        <Icon
-                          name="alert-circle"
-                          size={16}
-                          color={Colors.light.errorText}
-                        />
-                        <ThemedText style={styles.errorText}>
-                          {errors.firstName}
-                        </ThemedText>
-                      </View>
-                    )}
-                  </View>
-
-                  <View style={styles.inputGroup}>
-                    <ThemedText style={styles.label}>Last Name</ThemedText>
-                    <TextInput
-                      placeholder="Enter your last name"
-                      keyboardType="default"
-                      autoCapitalize="none"
-                      style={[styles.input, { color: inputTextColor }]}
-                      placeholderTextColor={placeHolderColor}
-                      onChangeText={handleChange("lastName")}
-                      onBlur={handleBlur("lastName")}
-                      value={values.lastName}
-                    />
-
-                    {errors?.lastName && (
-                      <View style={styles.errorTextContainer}>
-                        <Icon
-                          name="alert-circle"
-                          size={16}
-                          color={Colors.light.errorText}
-                        />
-                        <ThemedText style={styles.errorText}>
-                          {errors?.lastName}
-                        </ThemedText>
-                      </View>
-                    )}
-                  </View>
                   <View style={styles.inputGroup}>
                     <ThemedText style={styles.label}>Email Here</ThemedText>
                     <TextInput
@@ -270,16 +264,21 @@ const SignUpScreen = () => {
                     <View style={styles.divider} />
                   </View>
 
-                  <TouchableOpacity style={styles.googleBtn}>
+                  <TouchableOpacity
+                    style={styles.googleBtn}
+                    onPress={handleGoogleSignIn}
+                  >
+                    <Icon
+                      name="logo-google"
+                      size={24}
+                      color={Colors.dark.generalBg}
+                    />
                     <Text style={styles.googleText}>Sign up with Google</Text>
+                    {isLoading ||
+                      (googleAccountIsLoading && (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ))}
                   </TouchableOpacity>
-
-                  {/* <GoogleSigninButton
-              style={{ width: 192, height: 48 }}
-              size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Dark}
-              //   onPress={signInWithGoogle}
-            /> */}
 
                   <View style={styles.footer}>
                     <Text style={styles.footerText}>
@@ -302,7 +301,7 @@ const SignUpScreen = () => {
         <OTPBottomSheetModal
           isVisible={true}
           setIsVisibile={() => setShowBottomSheetModal(false)}
-          email={data?.data.email}
+          email={data?.data?.email || googleAccountData?.data?.email}
           onUserVerificationSuccess={() => {
             setShowBottomSheetModal(false);
             setShowModal(true);
@@ -319,7 +318,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.02,
+    paddingTop: height * 0.09,
   },
 
   title: {
@@ -328,6 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     lineHeight: width * 0.09,
   },
+
   subtitle: {
     fontSize: width * 0.038,
     color: "#666",
@@ -412,12 +412,16 @@ const styles = StyleSheet.create({
 
   googleBtn: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: Colors.dark.generalBg,
     paddingVertical: height * 0.018,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: height * 0.04,
+    marginBottom: height * 0.03,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 5,
   },
+
   googleText: {
     color: "#333",
     fontWeight: "600",
