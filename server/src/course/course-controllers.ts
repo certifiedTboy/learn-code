@@ -174,43 +174,11 @@ export class CourseControllers {
     @Res() res: Response,
   ) {
     try {
-      console.log(req.body);
-
-      res.sendStatus(200);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new InternalServerErrorException('', {
-          cause: error.cause,
-          description: error.message,
-        });
-      }
-
-      throw new InternalServerErrorException('Something went wrong', {
-        cause: 'Internal server error',
-        description: 'An unexpected error occurred',
-      });
-    }
-  }
-
-  /**
-   * @method verifyFullterwavePaymet
-   * @description Verifies Flutterwave payment (To be implemented)
-   */
-  @Post('payment/verify-flutterwave-payment')
-  @UseGuards(AuthGuard)
-  async flutterwavePaymentSuccess(
-    @Body() flutterwavePaymentDto: FlutterwavePaymentDto,
-  ) {
-    try {
-      const response = await this.courseService.verifyFlutterwavePayment(
-        flutterwavePaymentDto,
+      const result = await this.courseService.verifyFlutterwavePayment(
+        req.body.id,
       );
 
-      ResponseHandler.ok(
-        200,
-        'Flutterwave payment verified successfully',
-        response,
-      );
+      ResponseHandler.ok(200, 'Payment verified successfully', result);
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new InternalServerErrorException('', {

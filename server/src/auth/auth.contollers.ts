@@ -15,6 +15,7 @@ import { AuthDto, GoogleAuthDto } from './dto/auth.dto';
 import { AuthGuard } from '../guard/auth-guard';
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { UsersService } from '../user/users-service';
+import { CreateGoogleUserDto } from 'src/user/dto/create-user.dto';
 
 /**
  * @class AuthControllers
@@ -63,14 +64,13 @@ export class AuthControllers {
    * @param {GoogleAuthDto} authDto - The data transfer object containing user credentials.
    */
   @Post('google/login')
-  async loginWithGoogle(@Body() authDto: GoogleAuthDto) {
+  async loginWithGoogle(@Body() createUserDto: CreateGoogleUserDto) {
     try {
-      const { email, profilePicture } = authDto;
-
-      const result = await this.authService.googleSignin(email, profilePicture);
+      const result = await this.authService.googleSignin(createUserDto);
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {
+      console.log(error);
       if (error instanceof Error) {
         throw new BadRequestException('', {
           cause: error.cause,

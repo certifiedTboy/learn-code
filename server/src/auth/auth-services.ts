@@ -3,6 +3,7 @@ import { PasscodeHashing } from '../helpers/passcode-hashing';
 import { UsersService } from '../user/users-service';
 import { AccessJwtService } from '../common/jwt/access-jwt.service';
 import { RefreshJwtService } from 'src/common/jwt/refresh-jwt-service';
+import { CreateGoogleUserDto } from 'src/user/dto/create-user.dto';
 
 /**
  * @class AuthService
@@ -74,29 +75,12 @@ export class AuthService {
   /**
    * @method googleSignin
    * @description Handles user sign-in operation with google oauth.
-   * @param {string} password - The user's password.
-   * @param {string} email - The user's email address.
+   * @param {CreateGoogleUserDto} createUserDto - The user's password.
    */
-  async googleSignin(email: string, profilePicture: string) {
-    const user = await this.usersService.checkIfUserExist({ email });
+  async googleSignin(createUserDto: CreateGoogleUserDto) {
+    const user = await this.usersService.createGoogleUser(createUserDto);
 
-    if (!user) {
-      throw new UnauthorizedException('', {
-        cause: `Invalid login credentials`,
-        description: 'No user with this email exists',
-      });
-    }
-
-    if (!user.isVerified) {
-      throw new UnauthorizedException('', {
-        cause: `Unverified account`,
-        description: 'Account is unverified.',
-      });
-    }
     if (user && user.isVerified) {
-      user.profilePicture = profilePicture;
-      await user.save();
-
       const payload = {
         email: user.email,
         _id: user._id.toString(),

@@ -141,88 +141,27 @@ export class UsersService {
       email: createUserDto.email,
     });
 
-    const otp = CodeGenerator.generateOtp();
-    const verificationCodeExpiresIn = Time.getTimeInOneHour();
-
-    if (
-      userWithEmailExist &&
-      !userWithEmailExist?.isVerified &&
-      Time.checkIfTimeIsExpired(userWithEmailExist.verificationCodeExpiresIn)
-    ) {
-      // Check if the verification code has expired and update accordingly
-
-      const updatedUser = await this.userModel.findOneAndUpdate(
-        { email: userWithEmailExist.email },
-        {
-          verificationCode: otp.split('').slice(0, -1).join(''),
-          isVerified: false,
-          verificationCodeExpiresIn,
-        },
-        { new: true },
-      );
-
-      await this.queueService.addJob(
-        'email-verification',
-        {
-          email: updatedUser!.email,
-          subject: 'Learn Code Account Verification',
-          verificationCode: otp,
-          firstName: updatedUser!.firstName || updatedUser!.email,
-        },
-        10000,
-      );
-
-      return updatedUser;
-    }
-
-    if (
-      userWithEmailExist &&
-      !userWithEmailExist?.isVerified &&
-      !Time.checkIfTimeIsExpired(userWithEmailExist.verificationCodeExpiresIn)
-    ) {
-      await this.userModel.findOneAndUpdate(
-        { email: userWithEmailExist.email },
-        {
-          verificationCode: otp.split('').slice(0, -1).join(''),
-          isVerified: false,
-          verificationCodeExpiresIn,
-        },
-        { new: true },
-      );
-
-      await this.queueService.addJob(
-        'email-verification',
-        {
-          email: userWithEmailExist.email,
-          subject: 'Learn Code Account Verification',
-          verificationCode: otp,
-          firstName: userWithEmailExist!.firstName || userWithEmailExist!.email,
-        },
-        10000,
-      );
-
+    if (userWithEmailExist) {
       return userWithEmailExist;
+    } else {
+      const createdUser = new this.userModel({
+        ...createUserDto,
+        isVerified: true,
+      });
+      const user = await createdUser.save();
+
+      await this.queueService.addJob(
+        'email-account-setup-success',
+        {
+          email: user!.email,
+          subject: 'Account Setup Successful',
+          firstName: user?.firstName || user!.email,
+        },
+        10000,
+      );
+
+      return user;
     }
-
-    const createdUser = new this.userModel({
-      ...createUserDto,
-      verificationCode: otp.split('').slice(0, -1).join(''),
-      verificationCodeExpiresIn: verificationCodeExpiresIn,
-    });
-    const user = await createdUser.save();
-
-    await this.queueService.addJob(
-      'email-verification',
-      {
-        email: user.email,
-        subject: 'Learn Code Account Verification',
-        verificationCode: otp,
-        firstName: user.firstName,
-      },
-      10000,
-    );
-
-    return user;
   }
 
   /**

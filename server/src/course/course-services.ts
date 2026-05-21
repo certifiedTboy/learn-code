@@ -118,28 +118,10 @@ export class CourseServices {
     return deletedCourse;
   }
 
-  // /**
-  //  * @method verifyWebhookSignature
-  //  */
-  // verifyWebhookSignature(paymaneData: any, req: Request) {
-  //   const hash = createHmac('sha512', this.PAYSTACK_SECRET)
-  //     .update(JSON.stringify(paymaneData))
-  //     .digest('hex');
-  //   if (hash == req.headers['x-paystack-signature']) {
-  //     // Retrieve the request's body
-  //     const event = req.body;
-  //     // Do something with event
-
-  //     return event;
-  //   }
-  // }
-
   /**
    * @method verifyFlutterwavePayment
    */
-  async verifyFlutterwavePayment(flutterwavePaymentDto: FlutterwavePaymentDto) {
-    const { courseId, userId, transactionId } = flutterwavePaymentDto;
-
+  async verifyFlutterwavePayment(transactionId: string | number) {
     const url = `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`;
 
     interface FlutterwaveVerifyResponse {
@@ -160,9 +142,13 @@ export class CourseServices {
       throw new BadRequestException('Flutterwave payment verification failed');
     }
 
-    // const result = await this.handleSuccessPayment(courseId, userId);
+    const result = await this.handleSuccessPayment(
+      response?.data?.data?.meta?.courseId,
+      response?.data?.data?.meta?.userId,
+      response?.data?.data?.id,
+    );
 
-    return {};
+    return result;
   }
 
   /**
