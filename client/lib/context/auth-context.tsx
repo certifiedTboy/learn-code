@@ -1,4 +1,8 @@
-import { upsertRegisteredCourse } from "@/helpers/db/course-db";
+import {
+  deleteAllCourse,
+  deleteAllRegisteredCourses,
+  upsertRegisteredCourse,
+} from "@/helpers/db/course-db";
 import { deleteUserProfile, upsertUserProfile } from "@/helpers/db/user-db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useState } from "react";
@@ -84,6 +88,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     await deleteUserProfile(user?._id!);
+    await deleteAllCourse();
+    await deleteAllRegisteredCourses();
     checkUserIsAuthenticated();
   };
 

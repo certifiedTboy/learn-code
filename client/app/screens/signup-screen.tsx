@@ -9,12 +9,13 @@ import { showNotification } from "@/helpers/notification";
 import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
-  useCreateGoogleAccountMutation,
   useCreateNewUserMutation,
+  useLoginWithGoogleMutation,
 } from "@/lib/apis/auth-apis";
+import { AuthContext } from "@/lib/context/auth-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -44,23 +45,21 @@ const SignUpScreen = () => {
     useCreateNewUserMutation();
 
   const [
-    createGoogleAccount,
+    loginWithGoogle,
     {
-      isLoading: googleAccountIsLoading,
-      error: googleAccountError,
-      isError: googleAccountIsError,
-      isSuccess: googleAccountIsSuccess,
-      data: googleAccountData,
+      isLoading: isGoogleLoading,
+      isError: isGoogleError,
+      error: googleError,
+      isSuccess: isGoogleSuccess,
+      data: googleData,
     },
-  ] = useCreateGoogleAccountMutation();
+  ] = useLoginWithGoogleMutation();
 
   const navigation = useNavigation<NavigationProp<any>>();
 
-  const {
-    handleGoogleSignIn,
-    userData,
-    isLoading: isGoogleLoading,
-  } = useGoogleAuth();
+  const { handleGoogleSignIn, userData } = useGoogleAuth();
+
+  const { updateAuthenticatedState } = useContext(AuthContext);
 
   const inputTextColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
@@ -98,7 +97,7 @@ const SignUpScreen = () => {
 
   useEffect(() => {
     if (userData) {
-      createGoogleAccount({
+      loginWithGoogle({
         email: userData.email,
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -125,25 +124,38 @@ const SignUpScreen = () => {
   }, [isError, isSuccess]);
 
   useEffect(() => {
-    if (googleAccountIsError) {
+    if (isGoogleError) {
       showNotification({
         type: "error",
         title: "Signup Failed",
         message:
-          googleAccountError &&
-          "data" in googleAccountError &&
-          (googleAccountError as any).data?.message
-            ? (googleAccountError as any).data.message
+          googleError &&
+          "data" in googleError &&
+          (googleError as any).data?.message
+            ? (googleError as any).data.message
             : "Something went wrong",
       });
     }
 
-    if (googleAccountIsSuccess) {
-      setShowBottomSheetModal(true);
-    }
-  }, [googleAccountIsError, googleAccountIsSuccess]);
+    if (isGoogleSuccess) {
+      const userData = {
+        _id: googleData?.data?.user?._id,
+        email: googleData?.data?.user?.email,
+        firstName: googleData?.data?.user?.firstName,
+        lastName: googleData?.data?.user?.lastName,
+        profilePicture: googleData?.data?.user?.profilePicture,
+        isVerified: googleData?.data?.user?.isVerified,
+      };
 
-  console.log(googleAccountError);
+      updateAuthenticatedState(
+        googleData?.data?.refreshToken,
+        googleData?.data?.accessToken,
+        userData,
+        googleData?.data?.user?.registeredCourses,
+      );
+      navigation.navigate("CoursesScreen");
+    }
+  }, [isGoogleError, isGoogleSuccess]);
 
   return (
     <>
@@ -275,7 +287,7 @@ const SignUpScreen = () => {
                     />
                     <Text style={styles.googleText}>Sign up with Google</Text>
                     {isLoading ||
-                      (googleAccountIsLoading && (
+                      (isGoogleLoading && (
                         <ActivityIndicator size="small" color="#fff" />
                       ))}
                   </TouchableOpacity>
@@ -301,7 +313,7 @@ const SignUpScreen = () => {
         <OTPBottomSheetModal
           isVisible={true}
           setIsVisibile={() => setShowBottomSheetModal(false)}
-          email={data?.data?.email || googleAccountData?.data?.email}
+          email={data?.data?.email || googleData?.data?.email}
           onUserVerificationSuccess={() => {
             setShowBottomSheetModal(false);
             setShowModal(true);

@@ -105,8 +105,10 @@ const SignInScreen = () => {
   useEffect(() => {
     if (userData) {
       loginWithGoogle({
-        email: userData?.email,
-        profilePicture: userData?.profilePicture,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profilePicture: userData.profilePicture,
       });
     }
   }, [userData]);

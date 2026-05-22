@@ -13,13 +13,13 @@ import {
 
 const CourseCard = ({
   id,
-  title,
+  name,
   author,
   progress,
   image,
 }: {
   id: string;
-  title: string;
+  name: string;
   author: string;
   progress: number;
   image: any;
@@ -37,7 +37,7 @@ const CourseCard = ({
         // @ts-ignore
         navigation.navigate("main-course-screen", {
           id,
-          name: title,
+          name,
         })
       }
     >
@@ -45,7 +45,7 @@ const CourseCard = ({
 
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>
-          {title}
+          {name}
         </Text>
         <Text style={styles.author}>{author}</Text>
 

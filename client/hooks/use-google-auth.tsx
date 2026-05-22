@@ -21,15 +21,13 @@ const useGoogleAuth = () => {
 
       scopes: [
         "https://www.googleapis.com/auth/drive.appdata",
-        "https://www.googleapis.com/auth/drive.file",
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email",
-        "openid",
-        "profile",
-        "https://mail.google.com/",
-        "https://www.googleapis.com/auth/drive",
-        "email",
+        // "https://www.googleapis.com/auth/drive.file",
+        // "https://www.googleapis.com/auth/userinfo.profile",
+        // "openid",
+        // "profile",
+        // "email",
       ],
+      offlineAccess: true,
       profileImageSize: 150, // [iOS] The desired height (and width) of the profile image. Defaults to 120px
     });
   }, []);
@@ -39,6 +37,8 @@ const useGoogleAuth = () => {
       await GoogleSignin.hasPlayServices();
       const userInfo: any = await GoogleSignin.signIn();
 
+      const tokens = await GoogleSignin.getTokens();
+
       setUserData({
         firstName: userInfo?.data?.user?.givenName,
         lastName: userInfo?.data?.user?.familyName,
@@ -46,6 +46,8 @@ const useGoogleAuth = () => {
         token: userInfo?.data?.idToken,
         profilePicture: userInfo?.data?.user?.photo,
       });
+
+      return tokens?.accessToken;
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log("User cancelled sign in");
@@ -61,7 +63,7 @@ const useGoogleAuth = () => {
 
   const revokeAccess = async () => {
     try {
-      await GoogleSignin.revokeAccess();
+      // await GoogleSignin.revokeAccess();
       await GoogleSignin.signOut();
       setUserData(null);
     } catch (error) {

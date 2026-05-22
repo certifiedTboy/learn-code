@@ -26,7 +26,7 @@ const MyCoursesScreen = () => {
           <CourseCard
             key={course?._id}
             id={course?._id}
-            title={course?.name}
+            name={course?.name}
             author="By Emmanuel Tosin"
             progress={Number(
               course?.completion

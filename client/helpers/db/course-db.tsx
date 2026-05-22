@@ -264,7 +264,6 @@ export const markSubTopicAsCompleted = async (
   mainTopic: string,
   subTopicTitle: string,
 ) => {
-  console.log(courseId, mainTopic, subTopicTitle);
   try {
     const db = await getDatabase();
 
@@ -353,5 +352,31 @@ export const markSubTopicAsCompleted = async (
     return completionPercentage;
   } catch (error) {
     console.log("Error marking subtopic as completed:", error);
+  }
+};
+
+export const deleteAllRegisteredCourses = async () => {
+  try {
+    const db = await getDatabase();
+
+    await db.runAsync(`
+      DELETE FROM registered_course_new2
+    `);
+
+    console.log("All registered courses deleted successfully");
+  } catch (error) {
+    console.log("Error deleting registered courses:", error);
+  }
+};
+
+export const deleteAllCourse = async () => {
+  try {
+    const db = await getDatabase();
+
+    await db.runAsync(`DELETE FROM new_course`);
+
+    console.log("All registered courses deleted successfully");
+  } catch (error) {
+    console.log("error deleting courses:", error);
   }
 };

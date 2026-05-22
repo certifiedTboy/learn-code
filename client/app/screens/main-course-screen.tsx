@@ -77,9 +77,10 @@ const MainCourseScreen = ({ route }: { route: any }) => {
                       navigation.navigate("course-content", {
                         topic: topic?.title,
                         contentUri: topic?.contentURI,
-                        name: chapter?.mainTopic,
+                        mainTopic: chapter?.mainTopic,
                         id: courseDetails?._id,
                         isCompleted: topic?.isCompleted,
+                        name,
                       })
                     }
                   >

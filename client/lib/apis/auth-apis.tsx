@@ -33,14 +33,6 @@ export const authApis = createApi({
       }),
     }),
 
-    createGoogleAccount: builder.mutation({
-      query: (payload) => ({
-        url: `/users/google/create`,
-        method: "POST",
-        body: payload,
-      }),
-    }),
-
     loginUser: builder.mutation({
       query: (payload) => ({
         url: `/auth/login`,
@@ -147,6 +139,5 @@ export const {
   useGetNewVerificationCodeMutation,
   useRequestPasscodeResetMutation,
   useUpdatePasscodeMutation,
-  useCreateGoogleAccountMutation,
   useLoginWithGoogleMutation,
 } = authApis;

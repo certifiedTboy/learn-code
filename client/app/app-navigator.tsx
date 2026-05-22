@@ -10,7 +10,7 @@ import OnboardingStack from "./onboarding-stack";
 const AppNavigator = () => {
   const { checkUserIsAuthenticated, isAuthenticated } = useContext(AuthContext);
 
-  const { writeToCloud, readFromCloud, cloudAvailable } = useBackup();
+  const { writeToCloud, readFromCloud } = useBackup();
 
   useEffect(() => {
     checkUserIsAuthenticated();
@@ -26,7 +26,7 @@ const AppNavigator = () => {
 
           <FloatingBtn
             iconName="sync-circle"
-            onNavigate={readFromCloud}
+            onNavigate={writeToCloud}
             style={styles.floatingBtn}
           />
         </ChatContextProvider>

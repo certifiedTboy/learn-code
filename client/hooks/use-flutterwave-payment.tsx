@@ -1,5 +1,6 @@
 import { generatePaymentReference } from "@/helpers/payment";
 import { PayWithFlutterwave } from "flutterwave-react-native";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface RedirectParams {
@@ -13,6 +14,7 @@ interface FlutterwavePaymentMeta {
 }
 
 const useFlutterwavePayment = () => {
+  const [paymentSuccess, setPaymentSuccess] = useState<boolean>();
   /**
    * flutterwave payment custom component that can be used to initiate a payment process. It uses the PayWithFlutterwave component from the flutterwave-react-native library and handles the onRedirect event to log the payment status and transaction details.
    */
@@ -28,7 +30,12 @@ const useFlutterwavePayment = () => {
     courseId: string;
   }) => {
     const handleOnRedirect = (data: RedirectParams) => {
-      console.log(data);
+      // @ts-ignore
+      if (data && data?.status === "completed") {
+        setPaymentSuccess(true);
+      } else {
+        setPaymentSuccess(false);
+      }
     };
 
     return (
@@ -64,7 +71,7 @@ const useFlutterwavePayment = () => {
     );
   };
 
-  return { FlutterwavePayment };
+  return { FlutterwavePayment, paymentSuccess };
 };
 
 export default useFlutterwavePayment;

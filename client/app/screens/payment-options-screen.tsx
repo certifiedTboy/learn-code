@@ -1,11 +1,13 @@
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
+import { upsertRegisteredCourse } from "@/helpers/db/course-db";
+import { showNotification } from "@/helpers/notification";
 import useFlutterwavePayment from "@/hooks/use-flutterwave-payment";
 import usePaystackPayment from "@/hooks/use-paystack-payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -16,10 +18,15 @@ const PaymentOptionsScreen = () => {
 
   const { currentUser } = useSelector((state: any) => state.authState);
 
-  const { payNow, paymentSucess, paymentError, resetPaymentStatus } =
-    usePaystackPayment();
+  const {
+    payNow,
+    paymentSuccess: paystackPaymentSuccess,
+    paymentError,
+    resetPaymentStatus,
+  } = usePaystackPayment();
 
-  const { FlutterwavePayment } = useFlutterwavePayment();
+  const { FlutterwavePayment, paymentSuccess: flutterPaymentSuccess } =
+    useFlutterwavePayment();
 
   const backgroundColor = useThemeColor(
     {
@@ -38,6 +45,46 @@ const PaymentOptionsScreen = () => {
     { light: Colors.light.text, dark: Colors.dark.text },
     "text",
   );
+
+  useEffect(() => {
+    if (paystackPaymentSuccess) {
+      upsertRegisteredCourse({
+        _id: course?._id,
+        dateRegistered: new Date().toDateString(),
+        completion: "0",
+      });
+
+      navigation.navigate("main-tabs");
+    }
+
+    if (paymentError) {
+      showNotification({
+        title: "Payment Failed",
+        message: "Payment Failed",
+        type: "error",
+      });
+    }
+  }, [paystackPaymentSuccess, paymentError]);
+
+  useEffect(() => {
+    if (flutterPaymentSuccess === true) {
+      upsertRegisteredCourse({
+        _id: course?._id,
+        dateRegistered: new Date().toDateString(),
+        completion: "0",
+      });
+
+      navigation.navigate("main-tabs");
+    }
+
+    if (flutterPaymentSuccess === false) {
+      showNotification({
+        title: "Payment Failed",
+        message: "Payment Failed",
+        type: "error",
+      });
+    }
+  }, [flutterPaymentSuccess]);
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>

@@ -4,7 +4,7 @@ import { usePaystack } from "react-native-paystack-webview";
 import { useSelector } from "react-redux";
 
 const usePaystackPayment = () => {
-  const [paymentSucess, setPaymentSuccess] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState(false);
 
   const { currentUser } = useSelector((state: any) => state.authState);
@@ -44,7 +44,7 @@ const usePaystackPayment = () => {
     });
   };
 
-  return { payNow, paymentSucess, paymentError, resetPaymentStatus };
+  return { payNow, paymentSuccess, paymentError, resetPaymentStatus };
 };
 
 export default usePaystackPayment;

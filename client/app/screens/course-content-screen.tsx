@@ -1,8 +1,11 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
-import { markSubTopicAsCompleted } from "@/helpers/db/course-db";
+import {
+  getAllRegisteredCourse,
+  markSubTopicAsCompleted,
+} from "@/helpers/db/course-db";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -13,9 +16,28 @@ import {
 import { WebView } from "react-native-webview";
 
 const CourseContentScreen = ({ route }: { route: any }) => {
+  const [content, setContent] = useState<{
+    contentURI: string;
+    isCompleted: boolean;
+    isVideo: boolean;
+    title: string;
+  }>();
+
+  const [percentageCompletion, setPercentageCompletion] = useState<any>();
+
   const navigation = useNavigation();
 
-  const { topic, contentUri, name, id, isCompleted } = route.params;
+  const { topic, contentUri, mainTopic, id, isCompleted, name } = route.params;
+
+  const handleMarkAsCompleted = async () => {
+    const completionPercentage = await markSubTopicAsCompleted(
+      id,
+      mainTopic,
+      topic,
+    );
+
+    setPercentageCompletion(completionPercentage);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -30,13 +52,28 @@ const CourseContentScreen = ({ route }: { route: any }) => {
     }, []),
   );
 
-  const handleMarkAsCompleted = async () => {
-    const completionPercentage = await markSubTopicAsCompleted(id, name, topic);
+  useEffect(() => {
+    (async () => {
+      if (name) {
+        const registeredCourses = (await getAllRegisteredCourse()) as any[];
 
-    console.log("Completion percentage:", completionPercentage);
-  };
+        const mainCourse = registeredCourses?.find(
+          (course: any) => course?.name === name,
+        );
 
-  console.log(isCompleted);
+        const mainContent = JSON.parse(mainCourse?.contents)?.find(
+          (content: any) => content?.mainTopic === mainTopic,
+        );
+
+        const subTopic = mainContent?.subTopics?.find(
+          (subTopic: any) => subTopic?.title === topic,
+        );
+
+        setContent(subTopic);
+      }
+    })();
+  }, [name, handleMarkAsCompleted, percentageCompletion]);
+
   return (
     <View style={styles.container}>
       <WebView
@@ -50,7 +87,7 @@ const CourseContentScreen = ({ route }: { route: any }) => {
       />
 
       <View style={styles.bottomContainer}>
-        {!isCompleted ? (
+        {!content?.isCompleted ? (
           <TouchableOpacity
             style={[
               styles.button,
