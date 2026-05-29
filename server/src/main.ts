@@ -32,7 +32,6 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'https://bravixo-client.vercel.app',
       'https://2c8c1a26d806.ngrok-free.app',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -76,16 +75,18 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('bravixo api')
+    .setTitle('Learn Code API')
     .setDescription(
-      'bravixo authentication and user management API documentation',
+      'Learn Code API documentation',
     )
     .setVersion('1.0')
-    .addTag('cats')
+    // .addTag('cats')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  await app.listen(port ?? 9000);
+  await app.listen(port!, () => {
+    console.log(`Server is running on port ${port}`);
+  });
 }
 bootstrap();

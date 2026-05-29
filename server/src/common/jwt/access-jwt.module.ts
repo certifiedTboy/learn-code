@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AccessJwtService } from './access-jwt.service';
 
@@ -8,12 +8,12 @@ import { AccessJwtService } from './access-jwt.service';
   imports: [
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService): JwtModuleOptions => ({
         global: true,
         secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
         signOptions: {
           expiresIn:
-            configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN') || '1d',
+            Number(configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN')),
         },
       }),
 

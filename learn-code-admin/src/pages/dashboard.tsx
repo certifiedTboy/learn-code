@@ -200,7 +200,7 @@ export default function Dashboard() {
                 your platform by creating your first course.
               </p>
               <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow">Create First Course</Button>
+                <Button className="shadow-glow cursor-pointer">Create First Course</Button>
               </Link>
             </div>
           )}

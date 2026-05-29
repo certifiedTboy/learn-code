@@ -214,7 +214,7 @@ export default function CoursesList() {
             </p>
             {!searchTerm && (
               <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow">Create Course</Button>
+                <Button className="shadow-glow cursor-pointer">Create Course</Button>
               </Link>
             )}
           </div>

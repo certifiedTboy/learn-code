@@ -10,6 +10,8 @@ export const courseApis = createApi({
     prepareHeaders: async (headers) => {
       const token = await getToken();
 
+      console.log(token);
+
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }

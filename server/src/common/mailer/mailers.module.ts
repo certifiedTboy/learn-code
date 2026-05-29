@@ -47,7 +47,7 @@ import { google } from 'googleapis';
             socketTimeout: 20000,
           },
           defaults: {
-            from: '"No Reply" <etosin70@gmail.com>',
+            from: '"No Reply" <admin.learncode@gmail.com>',
           },
           template: {
             dir:

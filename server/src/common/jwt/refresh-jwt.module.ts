@@ -13,7 +13,7 @@ import { RefreshJwtService } from './refresh-jwt-service';
         secret: configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
         signOptions: {
           expiresIn:
-            configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN') || '7d',
+            Number(configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN')),
         },
       }),
 

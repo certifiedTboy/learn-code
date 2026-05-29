@@ -64,6 +64,9 @@ export default function CourseForm() {
     updateFormDataForContentUpdate,
   } = useForm(courseFormSchema);
 
+
+  console.log(formData);
+
   const courseData = isEdit && courseId ? getCourse(courseId) : undefined;
 
   useEffect(() => {
@@ -355,7 +358,7 @@ export default function CourseForm() {
                       <SubTopicsField
                         index={index}
                         appendLesson={appendLesson}
-                        lessons={content.subTopics}
+                        lessons={content?.subTopics}
                         handleLessonDataChange={handleLessonDataChange}
                         markLessonIsVideo={markLessonIsVideo}
                         removeLesson={removeLesson}
@@ -432,7 +435,7 @@ function SubTopicsField({
         </Label>
       </div>
       <div className="space-y-3">
-        {lessons.map((subField, subIndex) => {
+        {lessons && lessons?.length > 0 && lessons?.map((subField, subIndex) => {
           return (
             <div
               key={subIndex}

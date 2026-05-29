@@ -23,10 +23,10 @@ export class ChatService {
     @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
     private readonly configService: ConfigService,
   ) {
-    const ai_api_key = this.configService.get<string>('AI_API_KEY');
+    this.ai_api_key = this.configService.get<string>('AI_API_KEY')!;
 
     this.googleGenAi = new GoogleGenAI({
-      apiKey: ai_api_key,
+      apiKey: this.ai_api_key,
     });
   }
 

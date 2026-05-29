@@ -34,6 +34,8 @@ export function DashboardLayout({ children }: LayoutProps) {
     window.location.href = "/login";
   };
 
+
+  
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}

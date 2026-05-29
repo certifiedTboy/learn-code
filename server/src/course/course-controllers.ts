@@ -21,7 +21,6 @@ import {
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { CourseServices } from './course-services';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { FlutterwavePaymentDto } from './dto/flutterwave-payment.dto';
 import { AdminGuard, AuthGuard } from '../guard/auth-guard';
 
 /**
@@ -91,6 +90,8 @@ export class CourseControllers {
   ) {
     const { id } = req.params;
     try {
+
+      if (id && Array.isArray(id)) throw new BadRequestException('Invalid course ID');
       const updatedCourse = await this.courseService.updateCourseById(
         createCourseDto,
         id,
@@ -118,6 +119,8 @@ export class CourseControllers {
   @UseGuards(AdminGuard)
   async deleteCourse(@Req() req: Request) {
     const { id } = req.params;
+
+    if (id && Array.isArray(id)) throw new BadRequestException('Invalid course ID');
 
     try {
       await this.courseService.deleteCourseById(id);

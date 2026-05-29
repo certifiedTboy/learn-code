@@ -12,7 +12,7 @@ interface ErrorState {
 }
 
 interface FormDataState {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 const useForm = (validatorSchema: any) => {
@@ -53,19 +53,22 @@ const useForm = (validatorSchema: any) => {
    */
   useEffect(() => {
     (async () => {
+      if (!validatorSchema) return;
       try {
         await validatorSchema.validate(formData, { abortEarly: false });
 
         setError({ message: "", field: "" });
       } catch (error: unknown) {
         const err = error as any;
-        setError({
-          message: err.inner[0].message,
-          field: err.inner[0].path,
-        });
+        if (err?.inner?.length > 0) {
+          setError({
+            message: err.inner[0].message,
+            field: err.inner[0].path,
+          });
+        }
       }
     })();
-  }, [formData]);
+  }, [formData, validatorSchema]);
 
   /**
    * add new main content input form
@@ -86,8 +89,7 @@ const useForm = (validatorSchema: any) => {
   ) => {
     setFormData((prev) => ({
       ...prev,
-      // @ts-ignore
-      contents: prev.contents.map((content: any, i: any) => {
+      contents: (prev.contents || []).map((content: any, i: any) => {
         if (i === index) {
           return {
             ...content,
@@ -105,7 +107,7 @@ const useForm = (validatorSchema: any) => {
   const removeContentFormInput = (contentIndex: number) => {
     setFormData((prev: any) => ({
       ...prev,
-      contents: prev.contents.filter(
+      contents: (prev.contents || []).filter(
         (_: any, idx: number) => idx !== contentIndex,
       ),
     }));
@@ -117,11 +119,11 @@ const useForm = (validatorSchema: any) => {
   const appendLesson = (lesson: any, index: number) => {
     setFormData((prev: any) => ({
       ...prev,
-      contents: prev.contents.map((item: any, i: number) =>
+      contents: (prev.contents || []).map((item: any, i: number) =>
         i === index
           ? {
               ...item,
-              subTopics: [...item.subTopics, lesson],
+              subTopics: [...(item.subTopics || []), lesson],
             }
           : item,
       ),
@@ -138,12 +140,11 @@ const useForm = (validatorSchema: any) => {
   ) => {
     setFormData((prev) => ({
       ...prev,
-      // @ts-ignore
-      contents: prev.contents.map((content: any, i: number) => {
+      contents: (prev.contents || []).map((content: any, i: number) => {
         if (i === contentIndex) {
           return {
             ...content,
-            subTopics: content.subTopics.map((lesson: any, j: number) => {
+            subTopics: (content.subTopics || []).map((lesson: any, j: number) => {
               if (j === lessonIndex) {
                 return {
                   ...lesson,
@@ -155,6 +156,7 @@ const useForm = (validatorSchema: any) => {
             }),
           };
         }
+        return content;
       }),
     }));
   };
@@ -169,12 +171,11 @@ const useForm = (validatorSchema: any) => {
   ) => {
     setFormData((prev) => ({
       ...prev,
-      // @ts-ignore
-      contents: prev.contents.map((content: any, i: number) => {
+      contents: (prev.contents || []).map((content: any, i: number) => {
         if (i === contentIndex) {
           return {
             ...content,
-            subTopics: content.subTopics.map((lesson: any, j: number) => {
+            subTopics: (content.subTopics || []).map((lesson: any, j: number) => {
               if (j === lessonIndex) {
                 return {
                   ...lesson,
@@ -186,6 +187,7 @@ const useForm = (validatorSchema: any) => {
             }),
           };
         }
+        return content;
       }),
     }));
   };
@@ -196,11 +198,11 @@ const useForm = (validatorSchema: any) => {
   const removeLesson = (contentIndex: number, lessonIndex: number) => {
     setFormData((prev: any) => ({
       ...prev,
-      contents: prev.contents.map((content: any, i: number) =>
+      contents: (prev.contents || []).map((content: any, i: number) =>
         i === contentIndex
           ? {
               ...content,
-              subTopics: content.subTopics.filter(
+              subTopics: (content.subTopics || []).filter(
                 (_: any, idx: number) => idx !== lessonIndex,
               ),
             }

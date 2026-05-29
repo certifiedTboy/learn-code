@@ -83,6 +83,7 @@ export class CourseServices {
     const course = await this.courseModel.findById(courseId);
     const user = await this.usersService.checkUserExistById(userId);
 
+
     if (user && course) {
       const courseExists = user.registeredCourses.findIndex(
         (course: any) => course.course.toString() === courseId,
@@ -101,6 +102,8 @@ export class CourseServices {
           dateRegistered: new Date(),
           completion: '0%',
         });
+        course.subscribers += 1;
+        await course.save();
         await user.save();
 
         return user;

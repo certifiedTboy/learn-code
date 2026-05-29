@@ -113,11 +113,11 @@ export default function UserProfile() {
                 <button
                   type="submit"
                   //   disabled={loading}
-                  className="px-6 py-3 rounded-lg bg-cyan-500 hover:bg-cyan-600 transition-all font-medium disabled:opacity-50"
+                  className="px-6 py-3 cursor-pointer rounded-lg bg-cyan-500 hover:bg-cyan-600 transition-all font-medium disabled:opacity-50"
                 >
                   Save Changes
                 </button>
-              </div>
+              </div> 
             </form>
           </div>
         </div>

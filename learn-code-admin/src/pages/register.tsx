@@ -35,10 +35,11 @@ export default function Register() {
 
     if (Object.values(error)[0]) return;
 
+
+    delete formData.confirmPassword;
+
     createAdminAccount({
       ...formData,
-      firstName: "admin",
-      lastName: "admin",
       role: "admin",
     });
   };

@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user: {
-          name: `${currentUser?.firstName} ${currentUser?.lastName}`,
+          name: currentUser?.firstName && currentUser?.lastName ? `${currentUser?.firstName} ${currentUser?.lastName}` : "Admin",
           role: currentUser?.role || "admin",
         },
         isAuthenticated,
