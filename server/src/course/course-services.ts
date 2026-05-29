@@ -1,13 +1,21 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FlutterwavePaymentDto } from './dto/flutterwave-payment.dto';
 import { Course, CourseDocument } from './schema/course-schema';
 import { createHmac } from 'crypto';
 import axios, { AxiosResponse } from 'axios';
 import { Model } from 'mongoose';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UsersService } from '../user/users-service';
+import { QueueService } from '../queue/queue-service';
 import { InjectModel } from '@nestjs/mongoose';
+import { ObjectId } from 'mongoose';
+
+interface CourseProgressUpdateData {
+  course: ObjectId;
+  completion: string;
+  dateRegistered: Date;
+  paymentId: string;
+}
 
 /**
  * @class CourseServices
@@ -26,6 +34,7 @@ export class CourseServices {
     @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
     private configService: ConfigService,
     private usersService: UsersService,
+    private queueService: QueueService,
   ) {
     this.FLUTTERWAVE_PUBLIC_KEY = this.configService.get<string>(
       'FLUTTERWAVE_PUBLIC_KEY',
@@ -82,7 +91,6 @@ export class CourseServices {
   ) {
     const course = await this.courseModel.findById(courseId);
     const user = await this.usersService.checkUserExistById(userId);
-
 
     if (user && course) {
       const courseExists = user.registeredCourses.findIndex(
@@ -175,6 +183,64 @@ export class CourseServices {
       );
 
       return result;
+    }
+  }
+
+  /**
+   * @method getRegisteredCourses
+   * @description Retrieves all courses registered by a specific user.
+   */
+  async getRegisteredCourses(userId: string) {
+    const user = await this.usersService.checkIfUserExist({ _id: userId });
+
+    return user?.registeredCourses ?? [];
+  }
+
+  /**
+   * @method addCourseProgressUpdateToQueue
+   * @description Adds a course progress update job to the queue.
+   */
+  async addCourseProgressUpdateToQueue(courseData: any[], userId: string) {
+    const user = await this.usersService.checkUserExistById(userId);
+
+    if (user) {
+      this.queueService.addJob(
+        'update-course-progress',
+        { courseData, userId },
+        10000,
+      );
+    }
+  }
+
+  /**
+   * @method updateCourseProgress
+   * @description Updates the user's progress in a course.
+   */
+  async updateCourseProgress(courseData: any[], userId: string) {
+    try {
+      const user = await this.usersService.checkUserExistById(userId);
+
+      if (user) {
+        const updatedRegisteredCourses = courseData?.map((course: any) => {
+          return {
+            course: course._id,
+            completion: course.completion,
+            paymentId:
+              user.registeredCourses.find(
+                (registeredCourse: any) =>
+                  registeredCourse.course.toString() === course._id,
+              )?.paymentId ?? '',
+            dateRegistered: new Date(course.dateRegistered),
+          };
+        });
+
+        user.registeredCourses = updatedRegisteredCourses;
+        await user.save();
+
+        console.log('Course progress updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating course progress:', error);
     }
   }
 }

@@ -57,6 +57,32 @@ export class CourseControllers {
     }
   }
 
+  /**
+   * @method getRegisteredCourses
+   */
+  @Get('registered-courses')
+  @UseGuards(AuthGuard)
+  async getRegisteredCoursesByUser(@Req() req: Request) {
+    try {
+      const userId = req.user._id;
+      const courses = await this.courseService.getRegisteredCourses(userId);
+
+      return ResponseHandler.ok(
+        200,
+        'Registered courses retrieved successfully',
+        courses,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new BadRequestException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+      throw new InternalServerErrorException('An unexpected error occurred');
+    }
+  }
+
   @Post('create')
   @UseGuards(AdminGuard)
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
@@ -90,8 +116,8 @@ export class CourseControllers {
   ) {
     const { id } = req.params;
     try {
-
-      if (id && Array.isArray(id)) throw new BadRequestException('Invalid course ID');
+      if (id && Array.isArray(id))
+        throw new BadRequestException('Invalid course ID');
       const updatedCourse = await this.courseService.updateCourseById(
         createCourseDto,
         id,
@@ -120,7 +146,8 @@ export class CourseControllers {
   async deleteCourse(@Req() req: Request) {
     const { id } = req.params;
 
-    if (id && Array.isArray(id)) throw new BadRequestException('Invalid course ID');
+    if (id && Array.isArray(id))
+      throw new BadRequestException('Invalid course ID');
 
     try {
       await this.courseService.deleteCourseById(id);
@@ -143,7 +170,7 @@ export class CourseControllers {
    * @description Handles successful payment for a project.
    */
   @Post('payment/webhook')
-  async paystackSuccessPayment(@Req() req: Request, @Res() res: Response) {
+  async paystackSuccessPayment(@Req() req: Request) {
     try {
       const signature = req.headers['x-paystack-signature'] as string;
       const result = await this.courseService.verifyPaystackPayment(
@@ -172,16 +199,42 @@ export class CourseControllers {
    * @description Handles successful payment for a project.
    */
   @Post('payment/flutterwave/webhook')
-  async handleFlutterwaveSuccessPayment(
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
+  async handleFlutterwaveSuccessPayment(@Req() req: Request) {
     try {
       const result = await this.courseService.verifyFlutterwavePayment(
         req.body.id,
       );
 
       ResponseHandler.ok(200, 'Payment verified successfully', result);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
+      });
+    }
+  }
+
+  /**
+   * @method updateRegisteredCourseProgress
+   * @description Updates the user's progress in a course.
+   */
+  @Put('update-progress')
+  @UseGuards(AuthGuard)
+  async updateRegisteredCourseProgress(@Req() req: Request) {
+    try {
+      const result = await this.courseService.addCourseProgressUpdateToQueue(
+        req.body,
+        req.user._id,
+      );
+
+      ResponseHandler.ok(200, 'Course progress updated successfully', {});
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new InternalServerErrorException('', {

@@ -1,9 +1,10 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { QueueService } from './queue-service';
 import { QueueWorker } from './queue-worker';
 import { AppQueueEventsListener } from './queue-events';
 import { MailersModule } from '../common/mailer/mailers.module';
+import { CourseModule } from '../course/course-module';
 
 @Global()
 @Module({
@@ -12,6 +13,7 @@ import { MailersModule } from '../common/mailer/mailers.module';
       name: 'appQueue',
     }),
     MailersModule,
+    CourseModule,
   ],
   providers: [QueueService, QueueWorker, AppQueueEventsListener],
   exports: [QueueService],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersController } from './users-controllers';
 import { UsersService } from './users-service';
@@ -13,7 +13,7 @@ import { AuthGuard } from '../guard/auth-guard';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AccessJWTModule,
     MailersModule,
-    QueueModule,
+    forwardRef(() => QueueModule), // Use forwardRef to avoid circular dependency
   ],
   controllers: [UsersController],
   providers: [UsersService, AuthGuard],

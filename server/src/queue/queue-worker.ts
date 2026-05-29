@@ -1,10 +1,14 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { EmailService } from 'src/common/mailer/mailer.service';
+import { CourseServices } from 'src/course/course-services';
 
 @Processor('appQueue', { concurrency: 3 }) // Can run up to 3 jobs concurrently
 export class QueueWorker extends WorkerHost {
-  constructor(private readonly emailService: EmailService) {
+  constructor(
+    private readonly emailService: EmailService,
+    private readonly courseServices: CourseServices,
+  ) {
     super();
   }
 
@@ -38,6 +42,13 @@ export class QueueWorker extends WorkerHost {
         job?.data?.passwordResetCode!,
         job?.data?.firstName!,
       );
+    }
+
+    if (job.name === 'update-course-progress') {
+      const courseData = job?.data?.courseData;
+      const userId = job?.data?.userId;
+
+      await this.courseServices.updateCourseProgress(courseData, userId);
     }
   }
 
