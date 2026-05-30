@@ -2,8 +2,8 @@ import * as Yup from "yup";
 
 export const validateRegform = () => {
   const Schema = Yup.object().shape({
-    firstName: Yup.string().required("Full name is required"),
-    lastName: Yup.string().required("Last name is required"),
+    // firstName: Yup.string().required("Full name is required"),
+    // lastName: Yup.string().required("Last name is required"),
     password: Yup.string()
       .required("Password is required")
       .min(8, "Password must be at least 8 characters")

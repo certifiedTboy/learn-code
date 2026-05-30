@@ -1,7 +1,6 @@
 import {
   deleteAllCourse,
   deleteAllRegisteredCourses,
-  upsertRegisteredCourse,
 } from "@/helpers/db/course-db";
 import { deleteUserProfile, upsertUserProfile } from "@/helpers/db/user-db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,7 +21,7 @@ export const AuthContext = createContext({
     refreshToken: string,
     accessToken: string,
     user: User,
-    courseData: any[],
+    // courseData: any[],
   ) => {},
   user: null as User | null,
   logout: () => {},
@@ -44,7 +43,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     refreshToken: string,
     accessToken: string,
     user: User,
-    courseData: any[],
+    // courseData: any[],
   ) => {
     await AsyncStorage.setItem("access_token", accessToken);
     await AsyncStorage.setItem("refresh_token", refreshToken);
@@ -53,15 +52,15 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     await upsertUserProfile(user);
 
-    (async () => {
-      for (let course of courseData) {
-        await upsertRegisteredCourse({
-          _id: course?.course._id,
-          dateRegistered: course.dateRegistered,
-          completion: course?.completion,
-        });
-      }
-    })();
+    // (async () => {
+    //   for (let course of courseData) {
+    //     await upsertRegisteredCourse({
+    //       _id: course?.course._id,
+    //       dateRegistered: course.dateRegistered,
+    //       completion: course?.completion,
+    //     });
+    //   }
+    // })();
   };
 
   /**

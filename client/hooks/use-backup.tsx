@@ -1,4 +1,9 @@
-import { getAllRegisteredCourse } from "@/helpers/db/course-db";
+import {
+  getAllRegisteredCourse,
+  upsertRegisteredCourse,
+} from "@/helpers/db/course-db";
+import { showNotification } from "@/helpers/notification";
+import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
 import {
   CloudStorage,
   CloudStorageProvider,
@@ -8,8 +13,9 @@ import useGoogleAuth from "./use-google-auth";
 
 const useBackup = () => {
   const { handleGoogleSignIn } = useGoogleAuth();
+  const { setRegisteredCourses } = useRegisteredCourseContext();
 
-  const path = "file.txt";
+  const path = "file.json";
 
   const writeToCloud = async () => {
     try {
@@ -27,13 +33,19 @@ const useBackup = () => {
 
         const registeredCourses = await getAllRegisteredCourse();
 
-        await CloudStorage.writeFile(
-          path,
-          "Hello, world!",
-          CloudStorageScope.AppData,
-        );
+        if (registeredCourses) {
+          await CloudStorage.writeFile(
+            path,
+            JSON.stringify(registeredCourses),
+            CloudStorageScope.AppData,
+          );
 
-        console.log("Successfully wrote file to cloud");
+          showNotification({
+            type: "success",
+            message: "Backup Successful!",
+            title: "Backup Successfuly!",
+          });
+        }
       }
     } catch (error) {
       console.log("Error writing file to cloud:", error);
@@ -42,13 +54,53 @@ const useBackup = () => {
 
   const readFromCloud = async () => {
     try {
-      await handleGoogleSignIn();
+      const token = await handleGoogleSignIn();
 
-      const value = await CloudStorage.readFile(
-        path,
-        CloudStorageScope.AppData,
-      );
-      console.log("Successfully read file from cloud:", value);
+      if (
+        token &&
+        CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive
+      ) {
+        CloudStorage.setProviderOptions({
+          accessToken: token,
+        });
+
+        const result = await CloudStorage.readFile(
+          path,
+          CloudStorageScope.AppData,
+        );
+
+        if (result) {
+          const registeredCourses = JSON.parse(result);
+          setRegisteredCourses(registeredCourses);
+
+          for (let course of registeredCourses) {
+            await upsertRegisteredCourse({
+              _id: course?._id,
+              name: course?.name,
+              description: course?.description,
+              price: course?.price,
+              rating: course?.rating,
+              completed: course?.completed,
+              subscribers: course?.subscribers,
+              totalTopics: course?.totalTopics,
+              requiredDuration: course?.requiredDuration,
+              contents: course?.contents,
+              createdAt: course?.createdAt,
+              updatedAt: course?.updatedAt,
+              skills: course?.skills,
+              image: course?.image,
+              dateRegistered: course?.dateRegistered,
+              completion: course?.completion,
+            });
+          }
+
+          showNotification({
+            type: "success",
+            message: "Restore Successful!",
+            title: "Restore Successfuly!",
+          });
+        }
+      }
     } catch (error) {
       console.log("Error reading file from cloud:", error);
     }

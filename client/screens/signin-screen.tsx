@@ -15,8 +15,6 @@ import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +22,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const { width, height } = Dimensions.get("window");
 
@@ -128,7 +127,7 @@ const SignInScreen = () => {
         data?.data?.refreshToken,
         data?.data?.accessToken,
         userData,
-        data?.data?.user?.registeredCourses,
+        // data?.data?.user?.registeredCourses,
       );
       navigation.navigate("CoursesScreen");
     }
@@ -149,7 +148,7 @@ const SignInScreen = () => {
         googleData?.data?.refreshToken,
         googleData?.data?.accessToken,
         userData,
-        googleData?.data?.user?.registeredCourses,
+        // googleData?.data?.user?.registeredCourses,
       );
       navigation.navigate("CoursesScreen");
     }
@@ -167,7 +166,8 @@ const SignInScreen = () => {
       >
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={"padding"}
+          keyboardVerticalOffset={100}
         >
           <View style={styles.container}>
             <ThemedText style={styles.title}>Sign in</ThemedText>

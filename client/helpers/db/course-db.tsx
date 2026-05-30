@@ -39,8 +39,21 @@ export const createRegisteredCourseTable = async () => {
   try {
     const db = await getDatabase();
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS registered_course_new2 (
+      CREATE TABLE IF NOT EXISTS registered_course_new3 (
         _id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT DEFAULT NULL,
+        price TEXT NOT NULL,
+        rating TEXT DEFAULT NULL,
+        requiredDuration INTEGER DEFAULT NULL,
+        totalTopics INTEGER DEFAULT NULL,
+        course_image TEXT DEFAULT NULL,
+        completed INTEGER DEFAULT 0,
+        subscribers INTEGER DEFAULT 0,
+        contents TEXT, -- JSON string,
+        skills TEXT, -- JSON string,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
         dateRegistered TEXT NOT NULL,
         completion TEXT NOT NULL
       );
@@ -188,35 +201,73 @@ export const getAllCourse = async () => {
   }
 };
 
-/**
- * Inserts or updates a user profile in the user_profile table.
- */
 export const upsertRegisteredCourse = async (course: {
   _id: string;
+  name: string;
+  description: string;
+  price: string;
+  rating: string;
+  completed: boolean;
+  subscribers: number;
+  totalTopics: number;
+  requiredDuration: number;
+  contents: any;
+  createdAt: string;
+  updatedAt: string;
+  skills: string[];
+  image: string;
   dateRegistered: string;
   completion: string;
 }) => {
   try {
     const db = await getDatabase();
 
+    // 🔥 Step 2: Insert fresh record
     await db.runAsync(
       `
-      INSERT INTO registered_course_new2 (
+      INSERT OR REPLACE INTO registered_course_new3 (
         _id,
-       dateRegistered,
-       completion
+        name,
+        description,
+        price,
+        rating,
+        completed,
+        subscribers,
+        totalTopics,
+        requiredDuration,
+        contents,
+        createdAt,
+        updatedAt,
+        skills,
+        course_image,
+        dateRegistered,
+        completion
       )
-      VALUES (?, ?, ?)
-      ON CONFLICT(_id) DO UPDATE SET
-        dateRegistered = excluded.dateRegistered,
-        completion = excluded.completion
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [course._id, course.dateRegistered, course.completion],
+      [
+        course._id,
+        course.name,
+        course.description,
+        course.price,
+        course.rating,
+        course.completed,
+        course.subscribers,
+        course.totalTopics,
+        course.requiredDuration,
+        JSON.stringify(course.contents),
+        course.createdAt,
+        course.updatedAt,
+        JSON.stringify(course.skills),
+        course.image,
+        course.dateRegistered,
+        course.completion,
+      ],
     );
 
     console.log("Registered Course upserted:", course._id);
   } catch (error) {
-    console.log("Error upserting registered course:", error);
+    console.log("Error replacing course:", error);
   }
 };
 
@@ -232,7 +283,7 @@ export const getAllRegisteredCourse = async () => {
     `);
 
     const registeredCourserows = await db.getAllAsync(`
-      SELECT * FROM registered_course_new2
+      SELECT * FROM registered_course_new3
     `);
 
     return registeredCourserows.map((course: any) => {
@@ -338,7 +389,7 @@ export const markSubTopicAsCompleted = async (
 
     await db.runAsync(
       `
-      UPDATE registered_course_new2 
+      UPDATE registered_course_new3 
       SET completion = ? 
       WHERE _id = ?
       `,
@@ -349,6 +400,7 @@ export const markSubTopicAsCompleted = async (
       `Subtopic "${subTopicTitle}" marked as completed. Progress: ${completionPercentage}%`,
     );
 
+    // return the updated course with the updated completion percentage
     return completionPercentage;
   } catch (error) {
     console.log("Error marking subtopic as completed:", error);
@@ -360,7 +412,7 @@ export const deleteAllRegisteredCourses = async () => {
     const db = await getDatabase();
 
     await db.runAsync(`
-      DELETE FROM registered_course_new2
+      DELETE FROM registered_course_new3
     `);
 
     console.log("All registered courses deleted successfully");
@@ -375,8 +427,55 @@ export const deleteAllCourse = async () => {
 
     await db.runAsync(`DELETE FROM new_course`);
 
-    console.log("All registered courses deleted successfully");
+    console.log("All courses deleted successfully");
   } catch (error) {
     console.log("error deleting courses:", error);
+  }
+};
+
+/**
+ * @description get registered course by id
+ */
+export const getRegisteredCourseById = async (_id: string) => {
+  try {
+    const db = await getDatabase();
+    const row: {
+      _id: string;
+      name: string;
+      description: string;
+      price: string;
+      rating: string;
+      completed: boolean;
+      subscribers: number;
+      totalTopics: number;
+      requiredDuration: number;
+      contents: any; // JSON object
+      createdAt: string;
+      updatedAt: string;
+      skills: string; // JSON array
+      course_image: string;
+      dateRegistered: string;
+      completion: string;
+    } | null = await db.getFirstAsync(
+      `
+      SELECT * FROM registered_course_new3 WHERE _id = ?
+    `,
+      [_id],
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      ...row,
+      contents: row.contents ? JSON.parse(row.contents) : null,
+      skills: row.skills ? JSON.parse(row.skills) : [], // Parse skills JSON string into an array
+      image: row.course_image,
+      dateRegistered: row.dateRegistered,
+      completion: row.completion,
+    };
+  } catch (error) {
+    console.log("Error getting course:", error);
   }
 };

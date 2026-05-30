@@ -13,8 +13,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const { width, height } = Dimensions.get("window");
 
@@ -123,7 +122,8 @@ const UpdatePasswordScreen = ({
           {({ handleChange, values, errors, handleBlur, isValid }) => (
             <KeyboardAvoidingView
               style={{ flex: 1 }}
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              behavior={"padding"}
+              keyboardVerticalOffset={100}
             >
               <View style={styles.container}>
                 <ThemedText style={styles.title}>Update Password</ThemedText>

@@ -17,8 +17,6 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -137,36 +135,31 @@ const PasswordResetBottomSheetModal = ({
                 {/* OTP Inputs */}
 
                 <View style={styles.otpContainer}>
-                  <KeyboardAvoidingView
-                    style={{ flex: 1 }}
-                    behavior={Platform.OS === "ios" ? "padding" : undefined}
-                  >
-                    <OtpInput
-                      numberOfDigits={6}
-                      onTextChange={handleChange("passwordResetCode")}
-                      onBlur={() => handleBlur("passwordResetCode")}
-                      onFilled={() => {
-                        verifyAccount({
-                          verificationCode: values.passwordResetCode,
-                          action: "PASSWORD_RESET",
-                        });
-                        setValidPasswordResetCode(values.passwordResetCode);
-                      }}
-                      blurOnFilled={true}
-                      disabled={newPasswordResetLoading || isLoading}
-                      theme={{
-                        pinCodeTextStyle: styles.pinCodeText,
-                        // filledPinCodeContainerStyle: styles.input,
-                        containerStyle: {
-                          ...styles.inputContainer,
-                          width: isPortrait ? width * 0.8 : width * 0.6,
-                        },
-                      }}
-                      textInputProps={{
-                        accessibilityLabel: "One-Time Password",
-                      }}
-                    />
-                  </KeyboardAvoidingView>
+                  <OtpInput
+                    numberOfDigits={6}
+                    onTextChange={handleChange("passwordResetCode")}
+                    onBlur={() => handleBlur("passwordResetCode")}
+                    onFilled={() => {
+                      verifyAccount({
+                        verificationCode: values.passwordResetCode,
+                        action: "PASSWORD_RESET",
+                      });
+                      setValidPasswordResetCode(values.passwordResetCode);
+                    }}
+                    blurOnFilled={true}
+                    disabled={newPasswordResetLoading || isLoading}
+                    theme={{
+                      pinCodeTextStyle: styles.pinCodeText,
+                      // filledPinCodeContainerStyle: styles.input,
+                      containerStyle: {
+                        ...styles.inputContainer,
+                        width: isPortrait ? width * 0.8 : width * 0.6,
+                      },
+                    }}
+                    textInputProps={{
+                      accessibilityLabel: "One-Time Password",
+                    }}
+                  />
                 </View>
 
                 {newPasswordResetLoading && (

@@ -12,29 +12,29 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SceneMap, TabView } from "react-native-tab-view";
-import AIScreen from "../screens/ai-screen";
-import CoursesScreen from "../screens/courses-screen";
-import MyCoursesScreen from "../screens/my-courses-screen";
-import ProfileScreen from "../screens/profile-screen";
+import AIScreen from "../../screens/ai-screen";
+import CoursesScreen from "../../screens/courses-screen";
+import MyCoursesScreen from "../../screens/my-courses-screen";
+import ProfileScreen from "../../screens/profile-screen";
 
 const MainTabs = () => {
   const [index, setIndex] = useState(0);
 
   const renderScene = SceneMap({
     courses: CoursesScreen,
-    "ask-ai": AIScreen,
     "my-courses": MyCoursesScreen,
+    "ask-ai": AIScreen,
     profile: ProfileScreen,
   });
 
   const [routes] = useState([
     { key: "courses", title: "Courses", icon: "book-open-variant-outline" },
-    { key: "ask-ai", title: "Ask AI", icon: "brain" },
     {
       key: "my-courses",
       title: "My Courses",
       icon: "bookmark-multiple-outline",
     },
+    { key: "ask-ai", title: "Ask AI", icon: "brain" },
     { key: "profile", title: "Profile", icon: "account-circle-outline" },
   ]);
 

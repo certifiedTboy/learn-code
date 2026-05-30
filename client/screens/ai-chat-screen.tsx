@@ -16,14 +16,13 @@ import React, {
 import {
   Dimensions,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSelector } from "react-redux";
 
 const { width } = Dimensions.get("window");
@@ -147,14 +146,15 @@ const AIChatScreen = () => {
   };
 
   return (
-    <ThemedView
-      lightColor="#ffffff"
-      darkColor="#000000"
-      style={[styles.container]}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={"padding"}
+      keyboardVerticalOffset={100}
     >
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      <ThemedView
+        lightColor="#ffffff"
+        darkColor="#000000"
+        style={[styles.container]}
       >
         <FlatList
           ref={flatListRef}
@@ -193,8 +193,8 @@ const AIChatScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </ThemedView>
+      </ThemedView>
+    </KeyboardAvoidingView>
   );
 };
 

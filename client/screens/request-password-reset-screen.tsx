@@ -13,8 +13,6 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const { width, height } = Dimensions.get("window");
 
@@ -87,28 +86,29 @@ const RequestPasswordResetScreen = () => {
 
   return (
     <>
-      <ThemedView
-        style={styles.container}
-        darkColor={Colors.dark.background}
-        lightColor={Colors.light.background}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={"padding"}
+        // keyboardVerticalOffset={100}
       >
-        <SuccessModal
-          visible={showModal}
-          onClose={() => {
-            setShowModal(false);
-            navigation.navigate("UpdatePasswordScreen", {
-              verificationCode: validPasswordResetCode,
-            });
-          }}
-          message="Password reset request is verified!"
-        />
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
+        <ThemedView
+          style={styles.container}
+          darkColor={Colors.dark.background}
+          lightColor={Colors.light.background}
         >
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          <SuccessModal
+            visible={showModal}
+            onClose={() => {
+              setShowModal(false);
+              navigation.navigate("UpdatePasswordScreen", {
+                verificationCode: validPasswordResetCode,
+              });
+            }}
+            message="Password reset request is verified!"
+          />
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
           >
             <Formik
               initialValues={{
@@ -163,22 +163,22 @@ const RequestPasswordResetScreen = () => {
                 </View>
               )}
             </Formik>
-          </KeyboardAvoidingView>
-        </ScrollView>
-      </ThemedView>
+          </ScrollView>
+        </ThemedView>
 
-      {isModalVisible && (
-        <PasswordResetBottomSheetModal
-          isVisible={isModalVisible}
-          setIsVisibile={() => setIsModalVisible(false)}
-          email={data?.data?.email}
-          onUserVerificationSuccess={() => {
-            setIsModalVisible(false);
-            setShowModal(true);
-          }}
-          setValidPasswordResetCode={setValidPasswordResetCode}
-        />
-      )}
+        {isModalVisible && (
+          <PasswordResetBottomSheetModal
+            isVisible={isModalVisible}
+            setIsVisibile={() => setIsModalVisible(false)}
+            email={data?.data?.email}
+            onUserVerificationSuccess={() => {
+              setIsModalVisible(false);
+              setShowModal(true);
+            }}
+            setValidPasswordResetCode={setValidPasswordResetCode}
+          />
+        )}
+      </KeyboardAvoidingView>
     </>
   );
 };

@@ -148,9 +148,13 @@ const CoursesScreen = () => {
           ]}
           placeholderTextColor="#999"
         />
-
         {/* Categories */}
-        <View style={styles.chipsRow}>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+        >
           {[
             "Design",
             "Engineering",
@@ -168,16 +172,14 @@ const CoursesScreen = () => {
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Continue Watching */}
+        </ScrollView>
+        {/* Continue Learning */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: courseTitleColor }]}>
-            Continue Learning
+            Available Courses
           </Text>
           <Text style={styles.seeAll}>See All</Text>
         </View>
-
         <View style={styles.cardRow}>
           <FlatList
             data={availableCourses}
@@ -197,7 +199,6 @@ export default CoursesScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingHorizontal: 16,
     marginTop: height * 0.01,
   },
@@ -212,6 +213,7 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: "row",
     marginVertical: 16,
+    height: 30,
   },
   chip: {
     paddingVertical: 5,

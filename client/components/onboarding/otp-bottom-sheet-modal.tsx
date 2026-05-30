@@ -17,8 +17,6 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -26,7 +24,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
 import { OtpInput } from "react-native-otp-entry";
 import { ThemedText } from "../themed-text";
 import Icon from "../ui/Icon";
@@ -130,38 +127,32 @@ const OTPBottomSheetModal = ({
                   Enter the verification code sent to your email
                 </Text>
 
-                {/* OTP Inputs */}
-                <KeyboardAvoidingView
-                  style={{ flex: 1 }}
-                  behavior={Platform.OS === "ios" ? "padding" : undefined}
-                >
-                  <View style={styles.otpContainer}>
-                    <OtpInput
-                      numberOfDigits={6}
-                      onTextChange={handleChange("verificationCode")}
-                      onBlur={() => handleBlur("verificationCode")}
-                      onFilled={() =>
-                        verifyAccount({
-                          verificationCode: values.verificationCode,
-                          action: "ACCOUNT_VERIFICATION",
-                        })
-                      }
-                      blurOnFilled={true}
-                      disabled={newVerificationCodeLoading || isLoading}
-                      theme={{
-                        pinCodeTextStyle: styles.pinCodeText,
-                        // filledPinCodeContainerStyle: styles.input,
-                        containerStyle: {
-                          ...styles.inputContainer,
-                          width: isPortrait ? width * 0.8 : width * 0.6,
-                        },
-                      }}
-                      textInputProps={{
-                        accessibilityLabel: "One-Time Password",
-                      }}
-                    />
-                  </View>
-                </KeyboardAvoidingView>
+                <View style={styles.otpContainer}>
+                  <OtpInput
+                    numberOfDigits={6}
+                    onTextChange={handleChange("verificationCode")}
+                    onBlur={() => handleBlur("verificationCode")}
+                    onFilled={() =>
+                      verifyAccount({
+                        verificationCode: values.verificationCode,
+                        action: "ACCOUNT_VERIFICATION",
+                      })
+                    }
+                    blurOnFilled={true}
+                    disabled={newVerificationCodeLoading || isLoading}
+                    theme={{
+                      pinCodeTextStyle: styles.pinCodeText,
+                      // filledPinCodeContainerStyle: styles.input,
+                      containerStyle: {
+                        ...styles.inputContainer,
+                        width: isPortrait ? width * 0.8 : width * 0.6,
+                      },
+                    }}
+                    textInputProps={{
+                      accessibilityLabel: "One-Time Password",
+                    }}
+                  />
+                </View>
 
                 {newVerificationCodeLoading && (
                   <ActivityIndicator

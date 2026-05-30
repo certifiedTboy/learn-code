@@ -19,8 +19,6 @@ import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -28,6 +26,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const { width, height } = Dimensions.get("window");
 
@@ -90,7 +89,6 @@ const SignUpScreen = () => {
     await createNewUser({
       email: email.trim(),
       password: password.trim(),
-      confirmPassword: password.trim(),
       role: "user",
     });
   };
@@ -151,7 +149,7 @@ const SignUpScreen = () => {
         googleData?.data?.refreshToken,
         googleData?.data?.accessToken,
         userData,
-        googleData?.data?.user?.registeredCourses,
+        // googleData?.data?.user?.registeredCourses,
       );
       navigation.navigate("CoursesScreen");
     }
@@ -161,7 +159,8 @@ const SignUpScreen = () => {
     <>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={"padding"}
+        // keyboardVerticalOffset={100}
       >
         <Formik
           initialValues={{
@@ -307,19 +306,18 @@ const SignUpScreen = () => {
             </ThemedView>
           )}
         </Formik>
+        {showBottomSheetModal && (
+          <OTPBottomSheetModal
+            isVisible={showBottomSheetModal}
+            setIsVisibile={() => setShowBottomSheetModal(false)}
+            email={data?.data?.email || googleData?.data?.email}
+            onUserVerificationSuccess={() => {
+              setShowBottomSheetModal(false);
+              setShowModal(true);
+            }}
+          />
+        )}
       </KeyboardAvoidingView>
-
-      {showBottomSheetModal && (
-        <OTPBottomSheetModal
-          isVisible={true}
-          setIsVisibile={() => setShowBottomSheetModal(false)}
-          email={data?.data?.email || googleData?.data?.email}
-          onUserVerificationSuccess={() => {
-            setShowBottomSheetModal(false);
-            setShowModal(true);
-          }}
-        />
-      )}
     </>
   );
 };

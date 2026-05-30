@@ -22,7 +22,26 @@ export const courseApis = createApi({
         method: "GET",
       }),
     }),
+
+    updateRegisteredCoursesProgress: builder.mutation({
+      query: (payload) => ({
+        url: "/courses/update-progress",
+        method: "PUT",
+        body: payload,
+      }),
+    }),
+
+    getRegisteredCourses: builder.mutation({
+      query: () => ({
+        url: "/courses/registered-courses",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetAllCoursesMutation } = courseApis;
+export const {
+  useGetAllCoursesMutation,
+  useUpdateRegisteredCoursesProgressMutation,
+  useGetRegisteredCoursesMutation,
+} = courseApis;

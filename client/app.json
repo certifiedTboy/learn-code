@@ -47,7 +47,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.124943341739-blqhi83272ccebsmlsdhad0ph2d82t3s"
+          "iosUrlScheme": "com.googleusercontent.apps.615183565746-36cmnbhvh3bc5b2egeq5uaa3lmhhmfn1"
         }
       ],
       "react-native-cloud-storage"

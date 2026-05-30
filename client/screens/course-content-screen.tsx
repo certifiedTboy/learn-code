@@ -1,11 +1,8 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
-import {
-  getAllRegisteredCourse,
-  markSubTopicAsCompleted,
-} from "@/helpers/db/course-db";
+import { markSubTopicAsCompleted } from "@/helpers/db/course-db";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -16,15 +13,6 @@ import {
 import { WebView } from "react-native-webview";
 
 const CourseContentScreen = ({ route }: { route: any }) => {
-  const [content, setContent] = useState<{
-    contentURI: string;
-    isCompleted: boolean;
-    isVideo: boolean;
-    title: string;
-  }>();
-
-  const [percentageCompletion, setPercentageCompletion] = useState<any>();
-
   const navigation = useNavigation();
 
   const { topic, contentUri, mainTopic, id, isCompleted, name } = route.params;
@@ -35,8 +23,6 @@ const CourseContentScreen = ({ route }: { route: any }) => {
       mainTopic,
       topic,
     );
-
-    setPercentageCompletion(completionPercentage);
   };
 
   useFocusEffect(
@@ -52,28 +38,6 @@ const CourseContentScreen = ({ route }: { route: any }) => {
     }, []),
   );
 
-  useEffect(() => {
-    (async () => {
-      if (name) {
-        const registeredCourses = (await getAllRegisteredCourse()) as any[];
-
-        const mainCourse = registeredCourses?.find(
-          (course: any) => course?.name === name,
-        );
-
-        const mainContent = JSON.parse(mainCourse?.contents)?.find(
-          (content: any) => content?.mainTopic === mainTopic,
-        );
-
-        const subTopic = mainContent?.subTopics?.find(
-          (subTopic: any) => subTopic?.title === topic,
-        );
-
-        setContent(subTopic);
-      }
-    })();
-  }, [name, handleMarkAsCompleted, percentageCompletion]);
-
   return (
     <View style={styles.container}>
       <WebView
@@ -87,7 +51,7 @@ const CourseContentScreen = ({ route }: { route: any }) => {
       />
 
       <View style={styles.bottomContainer}>
-        {!content?.isCompleted ? (
+        {!isCompleted ? (
           <TouchableOpacity
             style={[
               styles.button,

@@ -3,11 +3,11 @@ import { useGetCurrentUserMutation } from "@/lib/apis/user-apis";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
 import "react-native-reanimated";
-import AIChatScreen from "./screens/ai-chat-screen";
-import CourseContentScreen from "./screens/course-content-screen";
-import CourseDetailsScreen from "./screens/course-details-screen";
-import MainCourseScreen from "./screens/main-course-screen";
-import PaymentOptionsScreen from "./screens/payment-options-screen";
+import AIChatScreen from "../screens/ai-chat-screen";
+import CourseContentScreen from "../screens/course-content-screen";
+import CourseDetailsScreen from "../screens/course-details-screen";
+import MainCourseScreen from "../screens/main-course-screen";
+import PaymentOptionsScreen from "../screens/payment-options-screen";
 import MainTabs from "./tabs/main-tab";
 
 const Stack = createNativeStackNavigator();

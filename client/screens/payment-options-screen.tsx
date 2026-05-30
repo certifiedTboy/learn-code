@@ -48,13 +48,28 @@ const PaymentOptionsScreen = () => {
 
   useEffect(() => {
     if (paystackPaymentSuccess) {
-      upsertRegisteredCourse({
-        _id: course?._id,
-        dateRegistered: new Date().toDateString(),
-        completion: "0",
-      });
+      (async () => {
+        await upsertRegisteredCourse({
+          _id: course?._id,
+          name: course?.name,
+          description: course?.description,
+          price: course?.price,
+          rating: course?.rating,
+          completed: course?.completed,
+          subscribers: course?.subscribers,
+          totalTopics: course?.totalTopics,
+          requiredDuration: course?.requiredDuration,
+          contents: course?.contents,
+          createdAt: course?.createdAt,
+          updatedAt: course?.updatedAt,
+          skills: course?.skills,
+          image: course?.image,
+          dateRegistered: new Date().toDateString(),
+          completion: "0%",
+        });
 
-      navigation.navigate("main-tabs");
+        navigation.navigate("main-tabs");
+      })();
     }
 
     if (paymentError) {
@@ -68,13 +83,28 @@ const PaymentOptionsScreen = () => {
 
   useEffect(() => {
     if (flutterPaymentSuccess === true) {
-      upsertRegisteredCourse({
-        _id: course?._id,
-        dateRegistered: new Date().toDateString(),
-        completion: "0",
-      });
+      (async () => {
+        await upsertRegisteredCourse({
+          _id: course?._id,
+          name: course?.name,
+          description: course?.description,
+          price: course?.price,
+          rating: course?.rating,
+          completed: course?.completed,
+          subscribers: course?.subscribers,
+          totalTopics: course?.totalTopics,
+          requiredDuration: course?.requiredDuration,
+          contents: course?.contents,
+          createdAt: course?.createdAt,
+          updatedAt: course?.updatedAt,
+          skills: course?.skills,
+          image: course?.image,
+          dateRegistered: new Date().toDateString(),
+          completion: "0",
+        });
 
-      navigation.navigate("main-tabs");
+        navigation.navigate("main-tabs");
+      })();
     }
 
     if (flutterPaymentSuccess === false) {

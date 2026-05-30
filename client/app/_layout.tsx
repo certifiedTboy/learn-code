@@ -4,6 +4,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import AuthContextProvider from "@/lib/context/auth-context";
 import CourseDetailsContextProvider from "@/lib/context/course-details-context";
+import RegisteredCourseContextProvider from "@/lib/context/registered-course-context";
 import { store } from "@/lib/redux/store";
 import {
   DarkTheme,
@@ -12,6 +13,7 @@ import {
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet } from "react-native";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { PaystackProvider } from "react-native-paystack-webview";
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,27 +34,33 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <StatusBar style="auto" translucent={true} />
+      <KeyboardProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <StatusBar style="auto" translucent={true} />
 
-        <AuthContextProvider>
-          <PaystackProvider
-            // debug={true}
-            publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
-          >
-            <CourseDetailsContextProvider>
-              <SafeAreaView
-                style={[{ backgroundColor }, styles.container]}
-                edges={["bottom", "left", "right"]}
-              >
-                <Notification />
+          <AuthContextProvider>
+            <PaystackProvider
+              // debug={true}
+              publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
+            >
+              <RegisteredCourseContextProvider>
+                <CourseDetailsContextProvider>
+                  <SafeAreaView
+                    style={[{ backgroundColor }, styles.container]}
+                    edges={["bottom", "left", "right"]}
+                  >
+                    <Notification />
 
-                <AppNavigator />
-              </SafeAreaView>
-            </CourseDetailsContextProvider>
-          </PaystackProvider>
-        </AuthContextProvider>
-      </ThemeProvider>
+                    <AppNavigator />
+                  </SafeAreaView>
+                </CourseDetailsContextProvider>
+              </RegisteredCourseContextProvider>
+            </PaystackProvider>
+          </AuthContextProvider>
+        </ThemeProvider>
+      </KeyboardProvider>
     </Provider>
   );
 }
