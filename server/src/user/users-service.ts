@@ -6,6 +6,7 @@ import { User } from './schemas/user-schema';
 import { UserDocument } from './schemas/user-schema';
 import { CreateUserDto, CreateGoogleUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import { CodeGenerator } from '../helpers/code-generator';
 import { AccessJwtService } from '../common/jwt/access-jwt.service';
 import { Time } from '../helpers/time';
@@ -291,6 +292,35 @@ export class UsersService {
       },
       10000,
     );
+
+    return updatedUser;
+  }
+
+  /**
+   * @method updateProfile
+   * @description updates user profile on db
+   * @param {string} userId
+   * @param {UpdateUserProfileDTO} updateUserProfileDto
+   */
+  async updateProfile(
+    userId: string,
+    updateUserProfileDto: UpdateUserProfileDTO,
+  ) {
+    const updatedUser = await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      {
+        firstName: updateUserProfileDto.firstName,
+        lastName: updateUserProfileDto.lastName,
+      },
+      { new: true },
+    );
+
+    if (!updatedUser) {
+      throw new BadRequestException('', {
+        cause: 'Failed to update profile',
+        description: 'Failed to update profile',
+      });
+    }
 
     return updatedUser;
   }

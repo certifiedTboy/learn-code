@@ -33,7 +33,7 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('', {
-        cause: `Invalid login credentials`,
+        cause: 'Invalid login credentials',
         description: 'No user with this email exists',
       });
     }
@@ -43,6 +43,13 @@ export class AuthService {
         cause: `Unverified account`,
         description: 'Account is unverified.',
       });
+    }
+
+    if (!user.password) {
+      throw new UnauthorizedException("", {
+        cause: 'Request password reset',
+        description: 'Request password reset'
+      })
     }
     if (user && user.isVerified) {
       const passwordMatch = await PasscodeHashing.verifyPassword(

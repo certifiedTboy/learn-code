@@ -15,6 +15,7 @@ import { Request } from 'express';
 import { UsersService } from './users-service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { VerifyUserDto } from './dto/verify-user.dto';
+import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import { GenerateNewTokenDto } from './dto/generate-token.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ResponseHandler } from '../common/response-handler/response-handler';
@@ -153,6 +154,38 @@ export class UsersController {
         user!,
       );
     } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new InternalServerErrorException('Something went wrong', {
+          cause: error.cause,
+          description: error.message,
+        });
+      }
+
+      throw new InternalServerErrorException('Something went wrong', {
+        cause: 'Internal server error',
+        description: 'An unexpected error occurred',
+      });
+    }
+  }
+
+  /**
+   * @method updateUserProfile
+   * @description updates the users firstName and lastName
+   */
+  @Patch('current-user/update')
+  @UseGuards(AuthGuard)
+  async updateUserProfile(
+    @Req() req: Request,
+    @Body() updateUserProfileDto: UpdateUserProfileDTO,
+  ) {
+    try {
+      const result = await this.usersService.updateProfile(
+        req?.user?._id,
+        updateUserProfileDto,
+      );
+
+      return ResponseHandler.ok(200, 'Profile updated successfully', result);
+    } catch (error) {
       if (error instanceof Error) {
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
