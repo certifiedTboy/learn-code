@@ -27,7 +27,7 @@ export class ChatGateway
     private readonly usersService: UsersService,
   ) {}
 
-  private server: Server;
+  private server!: Server;
 
   afterInit(server: Server) {
     this.server = server;

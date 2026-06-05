@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { Model } from 'mongoose';
-import { Chat, ChatDocument } from './schemas/chat-schema';
-import { CreateChatDto } from './dto/create-chat.dto';
 import { GoogleGenAI } from '@google/genai';
 
 /**
@@ -20,7 +16,6 @@ export class ChatService {
   private googleGenAi: GoogleGenAI;
   ai_api_key: string;
   constructor(
-    @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
     private readonly configService: ConfigService,
   ) {
     this.ai_api_key = this.configService.get<string>('AI_API_KEY')!;
@@ -76,37 +71,6 @@ export class ChatService {
     this.users = this.users.filter((user) => user.roomId !== roomId);
   }
 
-  /**
-   * @method createChat
-   * @description Creates a new chat message in the specified room.
-   * @param {CreateChatDto} CreateChatDto - The chat message to be created.
-   */
-  async createChat(createChatDto: CreateChatDto) {
-    const createdChat = new this.chatModel(createChatDto);
-    const chat = await createdChat.save();
-    return chat;
-  }
-
-  /**
-   * @method findChatByRoomId
-   * @description Finds all chat messages in a specific room by its ID.
-   * @param {string} chatRoomId - The ID of the room to find chat messages in.
-   * @returns {Promise<ChatDocument[]>} - A promise that resolves to an array of chat messages.
-   */
-  async findChatByRoomId(
-    chatRoomId: string,
-    page: number,
-    limit: number,
-  ): Promise<ChatDocument[]> {
-    const skip = (page - 1) * limit;
-
-    const data = await this.chatModel
-      .find({ roomId: chatRoomId })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-    return data;
-  }
 
   /**
    * @method runConveration
@@ -118,6 +82,9 @@ export class ChatService {
       const response = await this.googleGenAi.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: message,
+        config: {
+          systemInstruction: 'You are an AI model strictly for technical and engineering related questions only. All other questions not related to this should be flagged and you should politely refuse to answer them.',
+        },
       });
 
       if (!response || !response?.text) {
