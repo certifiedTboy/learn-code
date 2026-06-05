@@ -1,5 +1,6 @@
 // components/CourseCard.js
 import { Colors } from "@/constants/Colors";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
@@ -30,9 +31,24 @@ const CourseCard = ({
     navigate: (arg0: string) => void;
   }>();
 
+  const cardColor = useThemeColor(
+    { light: "#EAF0FF", dark: "#1E1E1E" },
+    "background",
+  );
+
+  const textColor = useThemeColor(
+    { light: Colors.light.text, dark: Colors.dark.text },
+    "text",
+  );
+
+  const authorTextColor = useThemeColor(
+    { light: "#666666", dark: "#AAAAAA" },
+    "text",
+  );
+
   return (
     <TouchableOpacity
-      style={[styles.card, { width: width - 32 }]}
+      style={[styles.card, { width: width - 32, backgroundColor: cardColor }]}
       onPress={() =>
         // @ts-ignore
         navigation.navigate("main-course-screen", {
@@ -44,16 +60,20 @@ const CourseCard = ({
       <Image source={image} style={styles.image} />
 
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
           {name}
         </Text>
-        <Text style={styles.author}>{author}</Text>
+        <Text style={[styles.author, { color: authorTextColor }]}>
+          {author}
+        </Text>
 
         <View style={styles.progressRow}>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { width: `${progress}%` }]} />
           </View>
-          <Text style={styles.percent}>{progress}%</Text>
+          <Text style={[styles.percent, { color: textColor }]}>
+            {progress}%
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

@@ -1,5 +1,4 @@
 import SuccessModal from "@/components/common/success-modal";
-import PasswordResetBottomSheetModal from "@/components/onboarding/password-reset-bottom-sheet-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
@@ -7,22 +6,21 @@ import { validatePasswordResetRequestForm } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useRequestPasscodeResetMutation } from "@/lib/apis/auth-apis";
+import PasswordResetBottomSheetModal from "@/screens/onboarding/password-reset-bottom-sheet-modal";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-
-const { width, height } = Dimensions.get("window");
 
 const PasswordResetRequestSchema = validatePasswordResetRequestForm();
 
@@ -31,6 +29,8 @@ const RequestPasswordResetScreen = () => {
   const [validPasswordResetCode, setValidPasswordResetCode] =
     useState<string>("");
   const [showModal, setShowModal] = useState(false);
+
+  const { width, height } = useWindowDimensions();
 
   const [requestPasswordReset, { isLoading, isError, error, isSuccess, data }] =
     useRequestPasscodeResetMutation();
@@ -92,7 +92,10 @@ const RequestPasswordResetScreen = () => {
         // keyboardVerticalOffset={100}
       >
         <ThemedView
-          style={styles.container}
+          style={[
+            styles.container,
+            { paddingHorizontal: width * 0.1, paddingTop: height * 0.16 },
+          ]}
           darkColor={Colors.dark.background}
           lightColor={Colors.light.background}
         >
@@ -119,18 +122,40 @@ const RequestPasswordResetScreen = () => {
             >
               {({ handleChange, values, errors, handleBlur, isValid }) => (
                 <View style={styles.container}>
-                  <ThemedText style={styles.title}>Reset Password</ThemedText>
-                  <ThemedText style={styles.subtitle}>
+                  <ThemedText
+                    style={[
+                      styles.title,
+                      { fontSize: width * 0.075, lineHeight: width * 0.09 },
+                    ]}
+                  >
+                    Reset Password
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.subtitle,
+                      { fontSize: width * 0.038, marginBottom: height * 0.05 },
+                    ]}
+                  >
                     Enter your email to reset your password
                   </ThemedText>
 
-                  <View style={styles.inputGroup}>
-                    <ThemedText style={styles.label}>Email Here</ThemedText>
+                  <View style={{ marginBottom: height * 0.025 }}>
+                    <ThemedText
+                      style={[styles.label, { fontSize: width * 0.035 }]}
+                    >
+                      Email Here
+                    </ThemedText>
                     <TextInput
                       placeholder="Enter your email"
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      style={[styles.input, { color: inputTextColor }]}
+                      style={[
+                        styles.input,
+                        {
+                          color: inputTextColor,
+                          paddingVertical: height * 0.018,
+                        },
+                      ]}
                       placeholderTextColor={placeHolderColor}
                       onChangeText={handleChange("email")}
                       onBlur={handleBlur("email")}
@@ -139,7 +164,13 @@ const RequestPasswordResetScreen = () => {
                   </View>
 
                   <TouchableOpacity
-                    style={styles.signInButton}
+                    style={[
+                      styles.signInButton,
+                      {
+                        paddingVertical: height * 0.02,
+                        marginBottom: height * 0.04,
+                      },
+                    ]}
                     onPress={() =>
                       passwordResetRequestSubmitHandler({ isValid, values })
                     }
@@ -188,27 +219,17 @@ export default RequestPasswordResetScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.06,
   },
 
   title: {
-    fontSize: width * 0.075,
     fontWeight: "700",
     marginBottom: 5,
-    lineHeight: width * 0.09,
   },
   subtitle: {
-    fontSize: width * 0.038,
     color: "#666",
-    marginBottom: height * 0.05,
   },
 
-  inputGroup: {
-    marginBottom: height * 0.025,
-  },
   label: {
-    fontSize: width * 0.035,
     color: Colors.dark.textSecondary,
     marginBottom: 6,
   },
@@ -216,20 +237,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E0E0E0",
     borderRadius: 10,
-    paddingVertical: height * 0.018,
     paddingHorizontal: 14,
     fontSize: 15,
   },
 
   signInButton: {
     backgroundColor: Colors.dark.generalBg,
-    paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
     gap: 10,
-    marginBottom: height * 0.04,
   },
   signInText: {
     color: "#FFF",

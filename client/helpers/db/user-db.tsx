@@ -8,6 +8,12 @@ import { getDatabase } from "./db";
 export const createUserProfileTable = async () => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS user_profile_db (
         _id TEXT PRIMARY KEY NOT NULL,
@@ -31,6 +37,12 @@ export const createUserProfileTable = async () => {
 export const upsertUserProfile = async (userProfile: User) => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     await db.runAsync(
       `
       INSERT INTO user_profile_db (_id, email, firstName, lastName, profilePicture, isVerified)
@@ -61,6 +73,11 @@ export const upsertUserProfile = async (userProfile: User) => {
 export const getUserProfileById = async (_id: string) => {
   try {
     const db = await getDatabase();
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     const row = await db.getFirstAsync(
       `
       SELECT * FROM user_profile_db WHERE _id = ?
@@ -91,6 +108,10 @@ export const updateUserProfilePicture = async (
 ) => {
   try {
     const db = await getDatabase();
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
     await db.runAsync(
       `
       UPDATE user_profile_db SET firstName = ?, lastName = ?, profilePicture = ? WHERE _id = ?
@@ -106,6 +127,11 @@ export const updateUserProfilePicture = async (
 export const deleteUserProfile = async (_id: string) => {
   try {
     const db = await getDatabase();
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     await db.runAsync(
       `
       DELETE FROM user_profile_db WHERE _id = ?
@@ -115,5 +141,25 @@ export const deleteUserProfile = async (_id: string) => {
     console.log("User profile deleted successfully");
   } catch (error) {
     console.log("Error deleting user profile:", error);
+  }
+};
+
+export const getCurrentUserFromDb = async () => {
+  try {
+    const db = await getDatabase();
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
+    const row = await db.getFirstAsync(
+      `
+      SELECT * FROM user_profile_db LIMIT 1
+    `,
+    );
+    return row as User | null;
+  } catch (error) {
+    console.log("Error getting current user from db:", error);
+    return null;
   }
 };

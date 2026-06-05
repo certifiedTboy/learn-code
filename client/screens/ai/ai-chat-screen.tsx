@@ -1,10 +1,10 @@
-import TypingIndicator from "@/components/ai-chat/TypingIndication";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { generateRandomRoomId } from "@/helpers/chat";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { ChatContext } from "@/lib/context/chat-context";
+import TypingIndicator from "@/screens/ai/TypingIndication";
 import { useFocusEffect } from "@react-navigation/native";
 import React, {
   useCallback,
@@ -14,18 +14,16 @@ import React, {
   useState,
 } from "react";
 import {
-  Dimensions,
   FlatList,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSelector } from "react-redux";
-
-const { width } = Dimensions.get("window");
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState<
@@ -52,6 +50,8 @@ const AIChatScreen = () => {
     "text",
   );
 
+  const { width } = useWindowDimensions();
+
   useFocusEffect(
     useCallback(() => {
       if (currentUser) {
@@ -64,11 +64,6 @@ const AIChatScreen = () => {
     }, [currentUser]),
   );
 
-  // Auto-scroll when new messages arrive
-  useEffect(() => {
-    flatListRef?.current?.scrollToEnd({ animated: true });
-  }, [messages]);
-
   // Simulated ChatGPT streaming response
   const simulateAssistantReply = (fullText: string) => {
     const messageId = Date.now().toString();
@@ -76,9 +71,14 @@ const AIChatScreen = () => {
     setMessages((prev) => [...prev, { id: messageId, sender: "ai", text: "" }]);
 
     let index = 0;
+    const chunkSize = 3;
 
     const interval = setInterval(() => {
-      index++;
+      index += chunkSize;
+      if (index >= fullText.length) {
+        index = fullText.length;
+        clearInterval(interval);
+      }
 
       setMessages((prev: any[]) =>
         prev.map((msg) =>
@@ -87,11 +87,7 @@ const AIChatScreen = () => {
             : msg,
         ),
       );
-
-      if (index === fullText.length) {
-        clearInterval(interval);
-      }
-    }, 0); // typing speed
+    }, 15); // typing speed
   };
 
   useEffect(() => {
@@ -134,10 +130,22 @@ const AIChatScreen = () => {
         style={[
           styles.messageBubble,
           isUser ? styles.userBubble : styles.assistantBubble,
+          {
+            paddingVertical: width * 0.035,
+            paddingHorizontal: width * 0.045,
+            marginBottom: width * 0.03,
+          },
         ]}
       >
         <Text
-          style={[styles.messageText, isUser && { color: Colors.dark.text }]}
+          style={[
+            styles.messageText,
+            isUser && { color: Colors.dark.text },
+            {
+              fontSize: width * 0.042,
+              lineHeight: width * 0.058,
+            },
+          ]}
         >
           {item.text}
         </Text>
@@ -161,7 +169,18 @@ const AIChatScreen = () => {
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.chatContainer}
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: false })
+          }
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          contentContainerStyle={[
+            styles.chatContainer,
+            {
+              paddingHorizontal: width * 0.05,
+              paddingTop: width * 0.04,
+              paddingBottom: width * 0.25,
+            },
+          ]}
           showsVerticalScrollIndicator={false}
         />
 
@@ -173,17 +192,38 @@ const AIChatScreen = () => {
           ]}
         >
           {isTyping && <TypingIndicator />}
-          <View style={styles.inputContainer}>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                paddingHorizontal: width * 0.04,
+                paddingVertical: width * 0.02,
+              },
+            ]}
+          >
             <TextInput
               placeholder="Ask AI..."
               placeholderTextColor={Colors.light.generalBg}
               value={input}
               onChangeText={setInput}
-              style={[styles.input, { color: inputTextColor }]}
+              style={[
+                styles.input,
+                {
+                  color: inputTextColor,
+                  fontSize: width * 0.042,
+                  maxHeight: width * 0.3,
+                },
+              ]}
               multiline
             />
 
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                { padding: width * 0.03, marginLeft: width * 0.02 },
+              ]}
+              onPress={handleSend}
+            >
               <Icon
                 name="send"
                 size={width * 0.055}
@@ -205,18 +245,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  chatContainer: {
-    paddingHorizontal: width * 0.05,
-    paddingTop: width * 0.04,
-    paddingBottom: width * 0.25,
-  },
+  chatContainer: {},
 
   messageBubble: {
     maxWidth: "80%",
-    paddingVertical: width * 0.035,
-    paddingHorizontal: width * 0.045,
     borderRadius: 18,
-    marginBottom: width * 0.03,
   },
 
   userBubble: {
@@ -232,9 +265,7 @@ const styles = StyleSheet.create({
   },
 
   messageText: {
-    fontSize: width * 0.042,
     color: Colors.light.text,
-    lineHeight: width * 0.058,
   },
 
   inputWrapper: {
@@ -246,25 +277,18 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
-    paddingHorizontal: width * 0.04,
-    paddingVertical: width * 0.02,
     borderTopWidth: 1,
     borderColor: Colors.dark.generalBg,
-    // padding: width * 0.02,
     borderRadius: 10,
   },
 
   input: {
     flex: 1,
-    fontSize: width * 0.042,
-    maxHeight: width * 0.3,
     backgroundColor: "transparent",
   },
 
   sendButton: {
     backgroundColor: Colors.light.generalBg,
     borderRadius: 18,
-    padding: width * 0.03,
-    marginLeft: width * 0.02,
   },
 });

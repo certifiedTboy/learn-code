@@ -1,8 +1,9 @@
 import {
+  getAllRegisteredCourse,
   getRegisteredCourseById,
   markSubTopicAsCompleted,
 } from "@/helpers/db/course-db";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface RegisteredCourseContextType {
   registeredCourses: any[];
@@ -15,6 +16,7 @@ interface RegisteredCourseContextType {
   ) => Promise<void>;
 
   onGetRegisteredCourseById: (id: string) => Promise<any>;
+  onGetAllRegisteredCourses: () => Promise<void>;
 }
 
 const RegisteredCourseContext = createContext<RegisteredCourseContextType>({
@@ -27,6 +29,7 @@ const RegisteredCourseContext = createContext<RegisteredCourseContextType>({
     subTopicId: string,
   ) => {},
   onGetRegisteredCourseById: async (id: string) => {},
+  onGetAllRegisteredCourses: async () => {},
 });
 
 const RegisteredCourseContextProvider = ({
@@ -42,11 +45,9 @@ const RegisteredCourseContextProvider = ({
     topicId: string,
     subTopicId: string,
   ) => {
-    const result = await markSubTopicAsCompleted(courseId, topicId, subTopicId);
-
-    // trigger certificate issue if completion percentage is 100%
-
-    // set the updated registered course in state to trigger re-render and update progress UI
+    await markSubTopicAsCompleted(courseId, topicId, subTopicId);
+    await onGetAllRegisteredCourses();
+    await onGetRegisteredCourseById(courseId);
   };
 
   const onGetRegisteredCourseById = async (id: string) => {
@@ -54,12 +55,27 @@ const RegisteredCourseContextProvider = ({
     setRegisteredCourse(course);
   };
 
+  const onGetAllRegisteredCourses = async () => {
+    const courses = await getAllRegisteredCourse();
+
+    if (courses) {
+      setRegisteredCourses(courses);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await onGetAllRegisteredCourses();
+    })();
+  }, []);
+
   const value = {
     registeredCourses,
     setRegisteredCourses,
     registeredCourse,
     markTopicAsCompleted,
     onGetRegisteredCourseById,
+    onGetAllRegisteredCourses,
   };
 
   return (

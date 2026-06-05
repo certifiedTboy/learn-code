@@ -1,13 +1,17 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useGetCurrentUserMutation } from "@/lib/apis/user-apis";
+import AIChatScreen from "@/screens/ai/ai-chat-screen";
+import CourseContentScreen from "@/screens/courses/course-content-screen";
+import CourseDetailsScreen from "@/screens/courses/course-details-screen";
+import MainCourseScreen from "@/screens/courses/main-course-screen";
+import PaymentOptionsScreen from "@/screens/payment/payment-options-screen";
+import AvailablePaymentOptionsScreen from "@/screens/profile/available-payment-options-screen";
+import HelpCenterScreen from "@/screens/profile/help-center-screen";
+import InviteFriendsScreen from "@/screens/profile/invite-friends-screen";
+import UpdateProfileScreen from "@/screens/profile/update-profile-screen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
 import "react-native-reanimated";
-import AIChatScreen from "../screens/ai-chat-screen";
-import CourseContentScreen from "../screens/course-content-screen";
-import CourseDetailsScreen from "../screens/course-details-screen";
-import MainCourseScreen from "../screens/main-course-screen";
-import PaymentOptionsScreen from "../screens/payment-options-screen";
 import MainTabs from "./tabs/main-tab";
 
 const Stack = createNativeStackNavigator();
@@ -53,6 +57,7 @@ const MainStack = () => {
         name="ai-chat-screen"
         options={() => ({
           animation: "slide_from_right",
+          title: "Ask AI",
         })}
         component={AIChatScreen}
       />
@@ -62,6 +67,8 @@ const MainStack = () => {
         component={MainCourseScreen}
         options={() => ({
           animation: "slide_from_right",
+
+          headerTitleAlign: "left",
         })}
       />
 
@@ -78,6 +85,43 @@ const MainStack = () => {
         component={PaymentOptionsScreen}
         options={() => ({
           animation: "slide_from_right",
+          title: "Payment Options",
+        })}
+      />
+
+      <Stack.Screen
+        name="profile-update"
+        component={UpdateProfileScreen}
+        options={() => ({
+          animation: "slide_from_right",
+          title: "Update Profile",
+        })}
+      />
+
+      <Stack.Screen
+        name="available-payment-options"
+        component={AvailablePaymentOptionsScreen}
+        options={() => ({
+          animation: "slide_from_right",
+          title: "Available Payment Options",
+        })}
+      />
+
+      <Stack.Screen
+        name="help-center"
+        component={HelpCenterScreen}
+        options={() => ({
+          animation: "slide_from_right",
+          title: "Help Center",
+        })}
+      />
+
+      <Stack.Screen
+        name="invite-friends"
+        component={InviteFriendsScreen}
+        options={() => ({
+          animation: "slide_from_right",
+          title: "Invite Friends",
         })}
       />
     </Stack.Navigator>

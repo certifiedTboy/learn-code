@@ -2,7 +2,11 @@ import {
   deleteAllCourse,
   deleteAllRegisteredCourses,
 } from "@/helpers/db/course-db";
-import { deleteUserProfile, upsertUserProfile } from "@/helpers/db/user-db";
+import {
+  deleteUserProfile,
+  getCurrentUserFromDb,
+  upsertUserProfile,
+} from "@/helpers/db/user-db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useState } from "react";
 
@@ -72,6 +76,8 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (accessToken) {
       setIsAuthenticated(true);
+      const result = await getCurrentUserFromDb();
+      setUser(result);
     } else {
       setIsAuthenticated(false);
     }

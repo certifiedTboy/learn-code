@@ -102,6 +102,11 @@ const useBackup = () => {
         }
       }
     } catch (error) {
+      showNotification({
+        type: "error",
+        message: "No Data Found in Cloud!",
+        title: "No Data Found in Cloud!",
+      });
       console.log("Error reading file from cloud:", error);
     }
   };

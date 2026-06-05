@@ -4,31 +4,28 @@ import { showNotification } from "@/helpers/notification";
 import { useGetScreenOrientation } from "@/hooks/use-get-screen-orientation";
 import { useTimeCountdown } from "@/hooks/use-time-countdown";
 import {
-  useRequestPasscodeResetMutation,
-  useVerifyUserAccountMutation,
+    useRequestPasscodeResetMutation,
+    useVerifyUserAccountMutation,
 } from "@/lib/apis/auth-apis";
 import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetView,
+    BottomSheetModal,
+    BottomSheetModalProvider,
+    BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import { useCallback, useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    useWindowDimensions,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { OtpInput } from "react-native-otp-entry";
-import { ThemedText } from "../themed-text";
-import Icon from "../ui/Icon";
-
-const { width, height } = Dimensions.get("window");
+import { ThemedText } from "../../components/themed-text";
+import Icon from "../../components/ui/Icon";
 
 /**
  * yup validation schema for the registration form
@@ -66,7 +63,7 @@ const PasswordResetBottomSheetModal = ({
     console.log("handleSheetChanges", index);
   }, []);
 
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   const { countdownTimeLeft, startCountdown, isCountingDown } =
     useTimeCountdown();
@@ -109,7 +106,16 @@ const PasswordResetBottomSheetModal = ({
   }, [isVisible]);
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView
+      style={[
+        styles.container,
+        {
+          paddingHorizontal: width * 0.08,
+          paddingTop: height * 0.02,
+          paddingBottom: height * 0.04,
+        },
+      ]}
+    >
       <BottomSheetModalProvider>
         <Formik
           initialValues={{ passwordResetCode: "" }}
@@ -124,17 +130,34 @@ const PasswordResetBottomSheetModal = ({
               keyboardBehavior="interactive"
             >
               <BottomSheetView
-                style={[styles.container, styles.sheetBackground]}
+                style={[
+                  styles.container,
+                  styles.sheetBackground,
+                  {
+                    paddingHorizontal: width * 0.08,
+                    paddingTop: height * 0.02,
+                    paddingBottom: height * 0.04,
+                  },
+                ]}
               >
                 {/* Header */}
-                <Text style={styles.title}>Password Reset Verification</Text>
-                <Text style={styles.subtitle}>
+                <Text style={[styles.title, { fontSize: width * 0.07 }]}>
+                  Password Reset Verification
+                </Text>
+                <Text
+                  style={[
+                    styles.subtitle,
+                    { fontSize: width * 0.038, marginBottom: height * 0.04 },
+                  ]}
+                >
                   Enter the password reset code sent to your email
                 </Text>
 
                 {/* OTP Inputs */}
 
-                <View style={styles.otpContainer}>
+                <View
+                  style={[styles.otpContainer, { marginBottom: height * 0.02 }]}
+                >
                   <OtpInput
                     numberOfDigits={6}
                     onTextChange={handleChange("passwordResetCode")}
@@ -253,9 +276,6 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: width * 0.08,
-    paddingTop: height * 0.02,
-    paddingBottom: height * 0.04,
     alignItems: "center",
   },
 
@@ -270,14 +290,11 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: width * 0.07,
     fontWeight: "700",
     marginBottom: 6,
   },
   subtitle: {
-    fontSize: width * 0.038,
     color: "#666",
-    marginBottom: height * 0.04,
   },
 
   resendBtnContainer: {
@@ -298,7 +315,6 @@ const styles = StyleSheet.create({
   otpContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: height * 0.02,
     gap: 3,
   },
 
@@ -308,8 +324,6 @@ const styles = StyleSheet.create({
   },
   pinCodeText: { color: "#0263FFFF" },
   otpInput: {
-    width: width * 0.15,
-    height: width * 0.15,
     borderWidth: 1,
     borderColor: "#E0E0E0",
     borderRadius: 12,
@@ -333,7 +347,6 @@ const styles = StyleSheet.create({
 
   verifyButton: {
     backgroundColor: "#0A3D91",
-    paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
   },

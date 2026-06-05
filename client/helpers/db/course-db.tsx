@@ -1,4 +1,4 @@
-import { getDatabase } from "./db";
+import { getDatabase, runWithLock } from "./db";
 
 /**
  * Creates the user profile table if it doesn't exist.
@@ -7,8 +7,14 @@ import { getDatabase } from "./db";
 export const createCourseTable = async () => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS  new_course (
+      CREATE TABLE IF NOT EXISTS  courses (
         _id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
         description TEXT DEFAULT NULL,
@@ -38,8 +44,14 @@ export const createCourseTable = async () => {
 export const createRegisteredCourseTable = async () => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS registered_course_new3 (
+      CREATE TABLE IF NOT EXISTS registered_courses (
         _id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
         description TEXT DEFAULT NULL,
@@ -84,16 +96,22 @@ export const upsertCourse = async (course: {
   skills: string[];
   image: string;
 }) => {
-  try {
-    const db = await getDatabase();
+  return runWithLock(async () => {
+    try {
+      const db = await getDatabase();
 
-    // 🔥 Step 1: Delete all existing records
-    await db.runAsync(`DELETE FROM new_course`);
+      if (!db) {
+        console.log("Database not ready");
+        return null;
+      }
 
-    // 🔥 Step 2: Insert fresh record
-    await db.runAsync(
-      `
-      INSERT INTO new_course (
+      // 🔥 Step 1: Delete all existing records
+      await db.runAsync(`DELETE FROM courses`);
+
+      // 🔥 Step 2: Insert fresh record
+      await db.runAsync(
+        `
+      INSERT INTO courses (
         _id,
         name,
         description,
@@ -111,28 +129,29 @@ export const upsertCourse = async (course: {
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [
-        course._id,
-        course.name,
-        course.description,
-        course.price,
-        course.rating,
-        course.completed,
-        course.subscribers,
-        course.totalTopics,
-        course.requiredDuration,
-        JSON.stringify(course.contents),
-        course.createdAt,
-        course.updatedAt,
-        JSON.stringify(course.skills),
-        course.image,
-      ],
-    );
+        [
+          course._id,
+          course.name,
+          course.description,
+          course.price,
+          course.rating,
+          course.completed,
+          course.subscribers,
+          course.totalTopics,
+          course.requiredDuration,
+          JSON.stringify(course.contents),
+          course.createdAt,
+          course.updatedAt,
+          JSON.stringify(course.skills),
+          course.image,
+        ],
+      );
 
-    console.log("Course replaced:", course.name);
-  } catch (error) {
-    console.log("Error replacing course:", error);
-  }
+      console.log("Course replaced:", course.name);
+    } catch (error) {
+      console.log("Error replacing course:", error);
+    }
+  });
 };
 
 /**
@@ -141,6 +160,12 @@ export const upsertCourse = async (course: {
 export const getCourseById = async (_id: string) => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     const row: {
       _id: string;
       name: string;
@@ -158,7 +183,7 @@ export const getCourseById = async (_id: string) => {
       course_image: string;
     } | null = await db.getFirstAsync(
       `
-      SELECT * FROM new_course WHERE _id = ?
+      SELECT * FROM courses WHERE _id = ?
     `,
       [_id],
     );
@@ -174,7 +199,7 @@ export const getCourseById = async (_id: string) => {
       image: row.course_image,
     };
   } catch (error) {
-    console.log("Error getting course:", error);
+    console.log("Error getting course by id:", error);
   }
 };
 
@@ -184,10 +209,17 @@ export const getCourseById = async (_id: string) => {
  */
 
 export const getAllCourse = async () => {
+  console.log("Fetching all courses...");
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
+
     const rows = await db.getAllAsync(`
-      SELECT * FROM new_course
+      SELECT * FROM courses
     `);
 
     return rows.map((row: any) => ({
@@ -197,7 +229,7 @@ export const getAllCourse = async () => {
       image: row.course_image,
     }));
   } catch (error) {
-    console.log("Error getting courses:", error);
+    console.log("Error getting all courses:", error);
   }
 };
 
@@ -219,13 +251,21 @@ export const upsertRegisteredCourse = async (course: {
   dateRegistered: string;
   completion: string;
 }) => {
-  try {
-    const db = await getDatabase();
+  return runWithLock(async () => {
+    try {
+      const db = await getDatabase();
 
-    // 🔥 Step 2: Insert fresh record
-    await db.runAsync(
-      `
-      INSERT OR REPLACE INTO registered_course_new3 (
+      if (!db) {
+        console.log("Database not ready");
+        return null;
+      }
+
+      await db.runAsync("BEGIN TRANSACTION");
+
+      // 🔥 Step 2: Insert fresh record
+      await db.runAsync(
+        `
+      INSERT OR REPLACE INTO registered_courses (
         _id,
         name,
         description,
@@ -245,191 +285,72 @@ export const upsertRegisteredCourse = async (course: {
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [
-        course._id,
-        course.name,
-        course.description,
-        course.price,
-        course.rating,
-        course.completed,
-        course.subscribers,
-        course.totalTopics,
-        course.requiredDuration,
-        JSON.stringify(course.contents),
-        course.createdAt,
-        course.updatedAt,
-        JSON.stringify(course.skills),
-        course.image,
-        course.dateRegistered,
-        course.completion,
-      ],
-    );
+        [
+          course._id,
+          course.name,
+          course.description,
+          course.price,
+          course.rating,
+          course.completed,
+          course.subscribers,
+          course.totalTopics,
+          course.requiredDuration,
+          JSON.stringify(course.contents),
+          course.createdAt,
+          course.updatedAt,
+          JSON.stringify(course.skills),
+          course.image,
+          course.dateRegistered,
+          course.completion,
+        ],
+      );
 
-    console.log("Registered Course upserted:", course._id);
-  } catch (error) {
-    console.log("Error replacing course:", error);
-  }
+      await db.runAsync("COMMIT");
+
+      console.log("Registered Course upserted:", course._id);
+    } catch (error) {
+      console.log("Error replacing course:", error);
+    }
+  });
 };
 
 /**
  * get all registered courses
  */
 export const getAllRegisteredCourse = async () => {
+  console.log("Fetching all registered courses...");
   try {
     const db = await getDatabase();
 
-    const allCourserows = await db.getAllAsync(`
-      SELECT * FROM new_course
-    `);
+    if (db) {
+      const allCourserows = await db.getAllAsync(`SELECT * FROM courses`);
 
-    const registeredCourserows = await db.getAllAsync(`
-      SELECT * FROM registered_course_new3
-    `);
+      if (allCourserows && allCourserows.length > 0) {
+        const registeredCourserows = await db.getAllAsync(
+          `SELECT * FROM registered_courses`,
+        );
 
-    return registeredCourserows.map((course: any) => {
-      const matchedCourse = allCourserows.find(
-        (newCourse: any) => newCourse?._id === course._id,
-      );
+        return registeredCourserows.map((course: any) => {
+          const matchedCourse = allCourserows.find(
+            (newCourse: any) => newCourse?._id === course._id,
+          );
 
-      if (matchedCourse) {
-        return {
-          ...matchedCourse,
-          completion: course?.completion,
-          dateRegistered: course?.dateRegistered,
-        };
+          if (matchedCourse) {
+            return {
+              ...matchedCourse,
+              completion: course?.completion,
+              dateRegistered: course?.dateRegistered,
+            };
+          }
+
+          return []; // or course, depending on your use case
+        });
+      } else {
+        return [];
       }
-
-      return []; // or course, depending on your use case
-    });
-  } catch (error) {
-    console.log("Error getting courses:", error);
-  }
-};
-
-/**
- * mark a subtopic has been completed
- */
-// generate a function to mark a particular subtopic has being completed
-export const markSubTopicAsCompleted = async (
-  courseId: string,
-  mainTopic: string,
-  subTopicTitle: string,
-) => {
-  try {
-    const db = await getDatabase();
-
-    const course = await getCourseById(courseId);
-    if (!course) return;
-
-    let totalSubTopics = 0;
-    let completedSubTopics = 0;
-    let foundSubTopic = false;
-
-    const updatedContents = course.contents.map((chapter: any) => {
-      const updatedSubTopics = chapter.subTopics.map((sub: any) => {
-        totalSubTopics++;
-
-        const isTargetSubTopic =
-          chapter.mainTopic === mainTopic && sub.title === subTopicTitle;
-
-        const isCompleted = isTargetSubTopic ? true : Boolean(sub.isCompleted);
-
-        if (isTargetSubTopic) {
-          foundSubTopic = true;
-        }
-
-        if (isCompleted) {
-          completedSubTopics++;
-        }
-
-        return {
-          ...sub,
-          isCompleted,
-        };
-      });
-
-      return {
-        ...chapter,
-        subTopics: updatedSubTopics,
-      };
-    });
-
-    if (!foundSubTopic) {
-      console.log("Subtopic not found");
-      return;
     }
-
-    const completionPercentage =
-      totalSubTopics > 0
-        ? Math.round((completedSubTopics / totalSubTopics) * 100)
-        : 0;
-
-    await db.runAsync(
-      `
-  UPDATE new_course
-  SET contents = ?
-  WHERE _id = ?
-  `,
-      [
-        JSON.stringify(
-          course.contents.map((chapter: any) => ({
-            ...chapter,
-            subTopics: chapter.subTopics.map((sub: any) => ({
-              ...sub,
-              isCompleted:
-                chapter.mainTopic === mainTopic && sub.title === subTopicTitle
-                  ? true
-                  : sub.isCompleted,
-            })),
-          })),
-        ),
-        courseId,
-      ],
-    );
-
-    await db.runAsync(
-      `
-      UPDATE registered_course_new3 
-      SET completion = ? 
-      WHERE _id = ?
-      `,
-      [`${completionPercentage}%`, courseId],
-    );
-
-    console.log(
-      `Subtopic "${subTopicTitle}" marked as completed. Progress: ${completionPercentage}%`,
-    );
-
-    // return the updated course with the updated completion percentage
-    return completionPercentage;
   } catch (error) {
-    console.log("Error marking subtopic as completed:", error);
-  }
-};
-
-export const deleteAllRegisteredCourses = async () => {
-  try {
-    const db = await getDatabase();
-
-    await db.runAsync(`
-      DELETE FROM registered_course_new3
-    `);
-
-    console.log("All registered courses deleted successfully");
-  } catch (error) {
-    console.log("Error deleting registered courses:", error);
-  }
-};
-
-export const deleteAllCourse = async () => {
-  try {
-    const db = await getDatabase();
-
-    await db.runAsync(`DELETE FROM new_course`);
-
-    console.log("All courses deleted successfully");
-  } catch (error) {
-    console.log("error deleting courses:", error);
+    console.log("Error getting registered courses:", error);
   }
 };
 
@@ -439,6 +360,11 @@ export const deleteAllCourse = async () => {
 export const getRegisteredCourseById = async (_id: string) => {
   try {
     const db = await getDatabase();
+
+    if (!db) {
+      console.log("Database not ready");
+      return null;
+    }
     const row: {
       _id: string;
       name: string;
@@ -458,7 +384,7 @@ export const getRegisteredCourseById = async (_id: string) => {
       completion: string;
     } | null = await db.getFirstAsync(
       `
-      SELECT * FROM registered_course_new3 WHERE _id = ?
+      SELECT * FROM registered_courses WHERE _id = ?
     `,
       [_id],
     );
@@ -476,6 +402,142 @@ export const getRegisteredCourseById = async (_id: string) => {
       completion: row.completion,
     };
   } catch (error) {
-    console.log("Error getting course:", error);
+    console.log("Error getting registered course by id:", error);
+  }
+};
+
+export const markSubTopicAsCompleted = async (
+  courseId: string,
+  mainTopic: string,
+  subTopicTitle: string,
+) => {
+  return runWithLock(async () => {
+    try {
+      const db = await getDatabase();
+
+      if (!db) {
+        console.log("Database not ready");
+        return null;
+      }
+
+      if (!courseId || !mainTopic || !subTopicTitle) {
+        console.log("Missing required parameters");
+        return null;
+      }
+
+      const course = await getRegisteredCourseById(courseId);
+
+      if (!course) {
+        console.log("Course not found");
+        return null;
+      }
+
+      const contents =
+        typeof course.contents === "string"
+          ? JSON.parse(course.contents)
+          : course.contents;
+
+      let totalSubTopics = 0;
+      let completedSubTopics = 0;
+      let foundSubTopic = false;
+
+      const updatedContents = contents.map((chapter: any) => {
+        const updatedSubTopics = chapter.subTopics.map((sub: any) => {
+          const isTargetSubTopic =
+            chapter.mainTopic === mainTopic && sub.title === subTopicTitle;
+
+          const isCompleted = isTargetSubTopic
+            ? true
+            : Boolean(sub.isCompleted);
+
+          if (isTargetSubTopic) {
+            foundSubTopic = true;
+          }
+
+          totalSubTopics += 1;
+
+          if (isCompleted) {
+            completedSubTopics += 1;
+          }
+
+          return {
+            ...sub,
+            isCompleted,
+          };
+        });
+
+        return {
+          ...chapter,
+          subTopics: updatedSubTopics,
+        };
+      });
+
+      if (!foundSubTopic) {
+        console.log("Subtopic not found");
+        return null;
+      }
+
+      const completionPercentage =
+        totalSubTopics > 0
+          ? Math.round((completedSubTopics / totalSubTopics) * 100)
+          : 0;
+
+      await db.withTransactionAsync(async () => {
+        await db.runAsync(
+          `
+        UPDATE courses
+        SET contents = ?
+        WHERE _id = ?
+        `,
+          [JSON.stringify(updatedContents), courseId],
+        );
+
+        await db.runAsync(
+          `
+        UPDATE registered_courses
+        SET contents = ?, completion = ?
+        WHERE _id = ?
+        `,
+          [
+            JSON.stringify(updatedContents),
+            `${completionPercentage}%`,
+            courseId,
+          ],
+        );
+      });
+    } catch (error) {
+      console.log("Error marking subtopic as completed:", error);
+      return null;
+    }
+  });
+
+  // const updatedCourse = await getRegisteredCourseById(courseId);
+
+  // return updatedCourse;
+};
+
+export const deleteAllRegisteredCourses = async () => {
+  try {
+    const db = await getDatabase();
+
+    await db.runAsync(`
+      DELETE FROM registered_courses
+    `);
+
+    console.log("All registered courses deleted successfully");
+  } catch (error) {
+    console.log("Error deleting registered courses:", error);
+  }
+};
+
+export const deleteAllCourse = async () => {
+  try {
+    const db = await getDatabase();
+
+    await db.runAsync(`DELETE FROM courses`);
+
+    console.log("All courses deleted successfully");
+  } catch (error) {
+    console.log("error deleting courses:", error);
   }
 };

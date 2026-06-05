@@ -1,14 +1,18 @@
-import CourseItem from "@/components/courses/course-item";
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import CourseItem from "@/screens/courses/course-item";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 // import CourseCheckedItem from "@/components/courses/CourseCheckedItem";
 import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
 import { useCallback, useEffect } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+} from "react-native";
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
-const { width } = Dimensions.get("window");
 
 const MainCourseScreen = ({ route }: { route: any }) => {
   const { onGetRegisteredCourseById, registeredCourse } =
@@ -17,6 +21,8 @@ const MainCourseScreen = ({ route }: { route: any }) => {
   const navigation = useNavigation();
 
   const { id, name } = route.params;
+
+  const { width } = useWindowDimensions();
 
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
@@ -46,7 +52,10 @@ const MainCourseScreen = ({ route }: { route: any }) => {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor }]}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingHorizontal: width > 768 ? 40 : 20 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       {registeredCourse &&
@@ -68,6 +77,7 @@ const MainCourseScreen = ({ route }: { route: any }) => {
                       style={[
                         styles.contentText,
                         !topic?.isVideo && { color: "#ff0000" },
+                        { fontSize: width > 768 ? 16 : 14 },
                       ]}
                       onPress={() =>
                         // @ts-ignore
@@ -75,7 +85,7 @@ const MainCourseScreen = ({ route }: { route: any }) => {
                           topic: topic?.title,
                           contentUri: topic?.contentURI,
                           mainTopic: chapter?.mainTopic,
-                          id: registeredCourse?._id,
+                          id,
                           isCompleted: topic?.isCompleted,
                           name,
                         })
@@ -107,6 +117,7 @@ const MainCourseScreen = ({ route }: { route: any }) => {
                     style={[
                       styles.contentText,
                       !topic?.isVideo && { color: "#ff0000" },
+                      { fontSize: width > 768 ? 16 : 14 },
                     ]}
                     onPress={() =>
                       // @ts-ignore
@@ -137,11 +148,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: width > 768 ? 40 : 20,
     paddingVertical: 20,
   },
   mainTitle: {
-    fontSize: width > 768 ? 32 : 24,
     fontWeight: "700",
     color: "#2d3436",
     marginBottom: 25,
@@ -149,7 +158,6 @@ const styles = StyleSheet.create({
   },
 
   contentText: {
-    fontSize: width > 768 ? 16 : 14,
     color: "#636e72",
     lineHeight: 22,
   },

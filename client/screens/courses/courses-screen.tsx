@@ -7,7 +7,6 @@ import { useGetAllCoursesMutation } from "@/lib/apis/course-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   Image,
   RefreshControl,
@@ -18,15 +17,16 @@ import {
   TouchableOpacity,
   View,
   useColorScheme,
+  useWindowDimensions,
 } from "react-native";
-
-const { width, height } = Dimensions.get("window");
-const CARD_WIDTH = width * 0.42;
 
 const CoursesScreen = () => {
   const theme = useColorScheme();
 
   const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+
+  const { width, height } = useWindowDimensions();
+  const CARD_WIDTH = width * 0.42;
 
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -39,24 +39,43 @@ const CoursesScreen = () => {
     "background",
   );
 
+  const cardBackgroundColor = useThemeColor(
+    { light: "#EAF0FF", dark: "#1E1E1E" },
+    "background",
+  );
+
   const courseTitleColor = useThemeColor(
     { light: Colors.dark.generalBg, dark: "#fff" },
     "text",
   );
 
   const chipBackgroundColor = useThemeColor(
-    { light: Colors.light.textMuted, dark: Colors.dark.textMuted },
+    { light: "#EAF0FF", dark: "#1E1E1E" },
     "background",
   );
 
   const chipTextColor = useThemeColor(
-    { light: Colors.dark.text, dark: Colors.dark.text },
+    { light: Colors.light.text, dark: Colors.dark.text },
     "text",
   );
 
   const searchInputBorderColor = useThemeColor(
     { light: Colors.light.textMuted, dark: Colors.dark.textMuted },
     "background",
+  );
+  const inputTextColor = useThemeColor(
+    { light: Colors.light.text, dark: Colors.dark.text },
+    "text",
+  );
+
+  const cardColor = useThemeColor(
+    { light: "#EAF0FF", dark: "#1E1E1E" },
+    "background",
+  );
+
+  const authorTextColor = useThemeColor(
+    { light: "#666666", dark: "#AAAAAA" },
+    "text",
   );
 
   useEffect(() => {
@@ -97,9 +116,9 @@ const CoursesScreen = () => {
           })
         }
         style={[
-          theme === "light" && {
+          {
             borderWidth: 1,
-            borderColor: Colors.dark.generalBg,
+            borderColor: cardBackgroundColor,
             shadowColor: Colors.dark.textMuted,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.1,
@@ -107,18 +126,24 @@ const CoursesScreen = () => {
 
             // Android shadow
             elevation: 4,
-            backgroundColor,
+            backgroundColor: cardBackgroundColor,
           },
+
           styles.card,
+          { width: CARD_WIDTH, backgroundColor: cardColor },
         ]}
       >
         <Image source={{ uri: item?.image }} style={styles.cardImage} />
-        <Text style={styles.cardTitle}>{item?.name}</Text>
+        <Text style={[styles.cardTitle, { color: inputTextColor }]}>
+          {item?.name}
+        </Text>
         <Text style={styles.rating}>★★★★★</Text>
-        <Text style={styles.author}>Adebisi Tosin</Text>
+        <Text style={[styles.author, { color: authorTextColor }]}>
+          Adebisi Tosin
+        </Text>
       </TouchableOpacity>
     ),
-    [],
+    [cardBackgroundColor],
   );
 
   const onRefresh = () => {
@@ -127,8 +152,20 @@ const CoursesScreen = () => {
     setTimeout(() => setRefreshing(false), 2000); // simulate refresh
   };
 
+  // make the search text input functional
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCourses = availableCourses.filter((course) =>
+    course?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+  };
+
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
+    <ThemedView
+      style={[styles.container, { backgroundColor, marginTop: height * 0.01 }]}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
@@ -144,9 +181,13 @@ const CoursesScreen = () => {
             {
               borderColor: searchInputBorderColor,
               backgroundColor,
+              color: inputTextColor,
+              paddingVertical: height * 0.018,
             },
           ]}
           placeholderTextColor="#999"
+          value={searchQuery}
+          onChangeText={handleSearch}
         />
         {/* Categories */}
 
@@ -178,11 +219,11 @@ const CoursesScreen = () => {
           <Text style={[styles.sectionTitle, { color: courseTitleColor }]}>
             Available Courses
           </Text>
-          <Text style={styles.seeAll}>See All</Text>
+          {/* <Text style={styles.seeAll}>See All</Text> */}
         </View>
         <View style={styles.cardRow}>
           <FlatList
-            data={availableCourses}
+            data={filteredCourses}
             horizontal
             keyExtractor={(item) => item?._id}
             showsHorizontalScrollIndicator={false}
@@ -200,7 +241,6 @@ export default CoursesScreen;
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    marginTop: height * 0.01,
   },
   search: {
     borderRadius: 5,
@@ -213,17 +253,15 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: "row",
     marginVertical: 16,
-    height: 30,
   },
   chip: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 5,
     marginRight: 10,
   },
   chipText: {
     fontSize: 13,
-    color: "#333",
   },
   sectionHeader: {
     flexDirection: "row",
@@ -244,8 +282,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   card: {
-    width: CARD_WIDTH,
-    backgroundColor: Colors.light.generalBg,
     borderRadius: 12,
     padding: 10,
   },
@@ -278,7 +314,6 @@ const styles = StyleSheet.create({
   },
   largeImage: {
     width: "100%",
-    height: width * 0.45,
   },
   largeTitle: {
     fontSize: 16,

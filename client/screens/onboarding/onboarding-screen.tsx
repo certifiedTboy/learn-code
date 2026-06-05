@@ -1,28 +1,26 @@
-import OnboardingSwiper from "@/components/onboarding/onboarding-swiper";
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
 import {
-  createCourseTable,
-  createRegisteredCourseTable,
+    createCourseTable,
+    createRegisteredCourseTable,
 } from "@/helpers/db/course-db";
 import { createUserProfileTable } from "@/helpers/db/user-db";
+import OnboardingSwiper from "@/screens/onboarding/onboarding-swiper";
 import {
-  NavigationProp,
-  useFocusEffect,
-  useNavigation,
+    NavigationProp,
+    useFocusEffect,
+    useNavigation,
 } from "@react-navigation/native";
 import { useCallback, useRef, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from "react-native";
-
-const { width, height } = Dimensions.get("window");
 
 const slides = [
   {
@@ -51,6 +49,8 @@ const OnboardingScreen = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
+  const { width, height } = useWindowDimensions();
+
   const navigation = useNavigation<NavigationProp<any>>();
 
   const onViewableItemsChanged = useRef(
@@ -77,7 +77,7 @@ const OnboardingScreen = () => {
 
   return (
     <ThemedView
-      style={styles.container}
+      style={[styles.container, { paddingHorizontal: width * 0.06 }]}
       darkColor={Colors.dark.background}
       lightColor={Colors.light.background}
     >
@@ -105,7 +105,7 @@ const OnboardingScreen = () => {
           )}
         />
 
-        <View style={styles.dotsContainer}>
+        <View style={[styles.dotsContainer, { marginVertical: height * 0.04 }]}>
           {slides.map((_, index) => (
             <View
               key={index}
@@ -115,7 +115,10 @@ const OnboardingScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[
+            styles.button,
+            { marginBottom: height * 0.04, paddingVertical: height * 0.02 },
+          ]}
           onPress={() => {
             if (currentIndex === slides.length - 1) {
               navigation.navigate("SignInScreen");
@@ -133,7 +136,7 @@ const OnboardingScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.skipBtn}
+          style={[styles.skipBtn, { marginBottom: height * 0.05 }]}
           onPress={() => navigation.navigate("SignInScreen")}
         >
           <Text style={styles.skipText}>SKIP</Text>
@@ -148,12 +151,10 @@ export default OnboardingScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: width * 0.06,
   },
 
   skipBtn: {
     alignSelf: "center",
-    marginBottom: height * 0.05,
   },
   skipText: {
     fontSize: 14,
@@ -164,7 +165,6 @@ const styles = StyleSheet.create({
   dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginVertical: height * 0.04,
   },
   dot: {
     width: 8,
@@ -181,10 +181,8 @@ const styles = StyleSheet.create({
 
   button: {
     backgroundColor: Colors.light.generalBg,
-    paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: height * 0.04,
   },
   buttonText: {
     color: "#FFF",

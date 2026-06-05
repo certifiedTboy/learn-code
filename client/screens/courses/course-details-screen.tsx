@@ -1,4 +1,3 @@
-import CourseDetailsTab from "@/components/courses/course-details-tab";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
@@ -6,6 +5,7 @@ import { getAllRegisteredCourse, getCourseById } from "@/helpers/db/course-db";
 import { isAtLeast31DaysAgo } from "@/helpers/payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
+import CourseDetailsTab from "@/screens/courses/course-details-tab";
 import {
   NavigationProp,
   useFocusEffect,
@@ -13,16 +13,14 @@ import {
 } from "@react-navigation/native";
 import { useCallback, useContext, useEffect } from "react";
 import {
-  Dimensions,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-const { width } = Dimensions.get("window");
-const HERO_HEIGHT = width * 0.5;
 
 const CourseDetailsScreen = ({ route }: { route: any }) => {
   const { setCourse, course } = useContext(CourseDetailsContext);
@@ -30,6 +28,9 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const { id, name } = route.params;
+
+  const { width } = useWindowDimensions();
+  const HERO_HEIGHT = width * 0.5;
 
   const headerTitleTextColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
@@ -84,54 +85,57 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor }]}>
-      {/* <ScrollView
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
         nestedScrollEnabled={true}
-      > */}
-      <View style={styles.heroWrapper}>
-        <Image source={{ uri: course?.image }} style={styles.hero} />
-        <View style={styles.playButton}>
-          <Icon name="play" size={22} color="#ffffff" />
+      >
+        <View style={styles.heroWrapper}>
+          <Image
+            source={{ uri: course?.image }}
+            style={[styles.hero, { height: HERO_HEIGHT }]}
+          />
+          <View style={styles.playButton}>
+            <Icon name="play" size={22} color="#ffffff" />
+          </View>
         </View>
-      </View>
-      <CourseDetailsTab />
+        <CourseDetailsTab />
 
-      {/* Enroll Button */}
-      <View style={styles.footer}>
-        {!course?.isRegistered && (
-          <TouchableOpacity
-            style={styles.enrollBtn}
-            onPress={() => navigation.navigate("payment-options")}
-          >
-            <Text style={styles.enrollText}>GET ENROLLED</Text>
-          </TouchableOpacity>
-        )}
+        {/* Enroll Button */}
+        <View style={styles.footer}>
+          {!course?.isRegistered && (
+            <TouchableOpacity
+              style={styles.enrollBtn}
+              onPress={() => navigation.navigate("payment-options")}
+            >
+              <Text style={styles.enrollText}>GET ENROLLED</Text>
+            </TouchableOpacity>
+          )}
 
-        {course?.isRegistered && !course.paymentIsExpired && (
-          <TouchableOpacity
-            style={styles.enrollBtn}
-            onPress={() =>
-              navigation.navigate("main-course-screen", {
-                id: course?._id,
-                name: course?.name,
-              })
-            }
-          >
-            <Text style={styles.enrollText}>Continue Learning</Text>
-          </TouchableOpacity>
-        )}
+          {course?.isRegistered && !course.paymentIsExpired && (
+            <TouchableOpacity
+              style={styles.enrollBtn}
+              onPress={() =>
+                navigation.navigate("main-course-screen", {
+                  id: course?._id,
+                  name: course?.name,
+                })
+              }
+            >
+              <Text style={styles.enrollText}>Continue Learning</Text>
+            </TouchableOpacity>
+          )}
 
-        {course?.isRegistered && course.paymentIsExpired && (
-          <TouchableOpacity
-            style={styles.enrollBtn}
-            onPress={() => navigation.navigate("payment-options")}
-          >
-            <Text style={styles.enrollText}>Update Payment</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      {/* </ScrollView> */}
+          {course?.isRegistered && course.paymentIsExpired && (
+            <TouchableOpacity
+              style={styles.enrollBtn}
+              onPress={() => navigation.navigate("payment-options")}
+            >
+              <Text style={styles.enrollText}>Update Payment</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
     </ThemedView>
   );
 };
@@ -147,7 +151,6 @@ const styles = StyleSheet.create({
   },
   hero: {
     width: "100%",
-    height: HERO_HEIGHT,
   },
   playButton: {
     position: "absolute",

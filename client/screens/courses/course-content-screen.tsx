@@ -1,8 +1,9 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
-import { markSubTopicAsCompleted } from "@/helpers/db/course-db";
+import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback } from "react";
+
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -14,15 +15,17 @@ import { WebView } from "react-native-webview";
 
 const CourseContentScreen = ({ route }: { route: any }) => {
   const navigation = useNavigation();
+  const [contentData, setContentData] = useState<any | null>(null);
+  const [tempCourseCompleted, setTempCourseCompleted] = useState(false);
+  const { markTopicAsCompleted, registeredCourse } =
+    useRegisteredCourseContext();
 
-  const { topic, contentUri, mainTopic, id, isCompleted, name } = route.params;
+  const { topic, mainTopic, id } = route.params;
 
   const handleMarkAsCompleted = async () => {
-    const completionPercentage = await markSubTopicAsCompleted(
-      id,
-      mainTopic,
-      topic,
-    );
+    if (id && mainTopic && topic) {
+      await markTopicAsCompleted(id, mainTopic, topic);
+    }
   };
 
   useFocusEffect(
@@ -38,12 +41,27 @@ const CourseContentScreen = ({ route }: { route: any }) => {
     }, []),
   );
 
+  useEffect(() => {
+    if (id && registeredCourse) {
+      const courseContent = Array?.isArray(registeredCourse?.contents)
+        ? registeredCourse?.contents
+        : JSON.parse(registeredCourse?.contents);
+      const mainTopicData = courseContent.find(
+        (item: any) => item.mainTopic === mainTopic,
+      );
+      const subTopicData = mainTopicData?.subTopics?.find(
+        (sub: any) => sub.title === topic,
+      );
+      setContentData(subTopicData);
+    }
+  }, [id, registeredCourse]);
+
   return (
     <View style={styles.container}>
       <WebView
         originWhitelist={["*"]}
         source={{
-          uri: contentUri,
+          uri: contentData?.contentURI,
           cache: true,
         }}
         startInLoadingState
@@ -51,22 +69,7 @@ const CourseContentScreen = ({ route }: { route: any }) => {
       />
 
       <View style={styles.bottomContainer}>
-        {!isCompleted ? (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              { flexDirection: "row", justifyContent: "center" },
-            ]}
-            onPress={handleMarkAsCompleted}
-          >
-            <Icon
-              name="checkmark-done-circle-outline"
-              size={20}
-              color="#ffffff"
-            />
-            <Text style={styles.buttonText}>Mark as Completed</Text>
-          </TouchableOpacity>
-        ) : (
+        {tempCourseCompleted || contentData?.isCompleted ? (
           <TouchableOpacity
             style={[
               styles.button,
@@ -76,6 +79,24 @@ const CourseContentScreen = ({ route }: { route: any }) => {
             <Icon name="checkmark-done-circle" size={20} color="#ffffff" />
 
             <Text style={styles.buttonText}>Completed</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { flexDirection: "row", justifyContent: "center" },
+            ]}
+            onPress={() => {
+              setTempCourseCompleted(true);
+              handleMarkAsCompleted();
+            }}
+          >
+            <Icon
+              name="checkmark-done-circle-outline"
+              size={20}
+              color="#ffffff"
+            />
+            <Text style={styles.buttonText}>Mark as Completed</Text>
           </TouchableOpacity>
         )}
       </View>

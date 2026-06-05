@@ -4,16 +4,14 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import React, { useState } from "react";
 import {
   Animated,
-  Dimensions,
   LayoutAnimation,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 const CourseItem = ({
   title,
@@ -27,13 +25,15 @@ const CourseItem = ({
   const [expanded, setExpanded] = useState(false);
   const [animation] = useState(new Animated.Value(0));
 
+  const { width } = useWindowDimensions();
+
   const backgroundColor = useThemeColor(
-    { light: "#EAF0FF", dark: "#EAF0FF" },
+    { light: "#EAF0FF", dark: "#1E1E1E" },
     "background",
   );
 
   const textColor = useThemeColor(
-    { light: Colors.light.text, dark: Colors.light.text },
+    { light: Colors.light.text, dark: Colors.dark.text },
     "text",
   );
 
@@ -58,13 +58,18 @@ const CourseItem = ({
   });
 
   return (
-    <View style={styles.accordionContainer}>
+    <View style={[styles.accordionContainer, { backgroundColor }]}>
       <TouchableOpacity
         style={[styles.accordionHeader, { backgroundColor }]}
         onPress={() => isCheckedList && toggleExpand()}
         activeOpacity={0.8}
       >
-        <Text style={[styles.accordionTitle, { color: textColor }]}>
+        <Text
+          style={[
+            styles.accordionTitle,
+            { color: textColor, fontSize: width > 768 ? 18 : 16 },
+          ]}
+        >
           {title}
         </Text>
         <Animated.View style={{ transform: [{ rotate }] }}>
@@ -92,11 +97,17 @@ const CourseItem = ({
                 >
                   {/* @ts-ignore */}
                   {child?.props?.style[1] ? (
-                    <Icon name="book" size={20} color="#000000" />
+                    <Icon name="book" size={20} color={textColor} />
                   ) : (
-                    <Icon name="videocam" size={20} color="#000000" />
+                    <Icon name="videocam" size={20} color={textColor} />
                   )}
-                  <Text style={styles.checklistText}>
+                  <Text
+                    style={[
+                      styles.checklistText,
+                      { fontSize: width > 768 ? 16 : 14 },
+                      { color: textColor },
+                    ]}
+                  >
                     {/* @ts-ignore */}
                     {child?.props?.children}
                   </Text>
@@ -116,7 +127,7 @@ export default CourseItem;
 
 const styles = StyleSheet.create({
   accordionContainer: {
-    backgroundColor: "#ffffff",
+    // backgroundColor: "#ffffff",
     borderRadius: 12,
     marginBottom: 15,
     shadowColor: "#000",
@@ -137,7 +148,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   accordionTitle: {
-    fontSize: width > 768 ? 18 : 16,
     fontWeight: "600",
     // color: "#2d3436",
     flex: 1,
@@ -150,7 +160,7 @@ const styles = StyleSheet.create({
   accordionBody: {
     overflow: "hidden",
     borderTopWidth: 1,
-    borderTopColor: "#f1f2f6",
+    // borderTopColor: "#f1f2f6",
   },
   accordionContent: {
     padding: 20,
@@ -178,8 +188,7 @@ const styles = StyleSheet.create({
   },
 
   checklistText: {
-    fontSize: width > 768 ? 16 : 14,
-    color: "#2d3436",
+    // color: "#2d3436",
     flex: 1,
     lineHeight: 22,
   },

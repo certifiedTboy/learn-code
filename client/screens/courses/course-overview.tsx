@@ -18,8 +18,23 @@ const CourseOverview = () => {
   );
 
   const skillTextColor = useThemeColor(
-    { light: Colors.light.text, dark: Colors.light.text },
+    { light: Colors.light.text, dark: Colors.dark.text },
     "text",
+  );
+
+  const subtitleColor = useThemeColor(
+    { light: "#666666", dark: "#AAAAAA" },
+    "text",
+  );
+
+  const statBoxColor = useThemeColor(
+    { light: "#EAF0FF", dark: "#1E1E1E" },
+    "background",
+  );
+
+  const chipColor = useThemeColor(
+    { light: "#EAF0FF", dark: "#1E1E1E" },
+    "background",
   );
 
   return (
@@ -29,8 +44,8 @@ const CourseOverview = () => {
         <Text style={styles.price}>{course?.price}</Text>
       </View>
 
-      <Text style={[styles.author, { color: Colors.dark.textSecondary }]}>
-        By {course?.instructor || "Syd Hassan"}
+      <Text style={[styles.author, { color: subtitleColor }]}>
+        By {course?.instructor || "Adebisi Tosin"}
       </Text>
 
       <Text style={[styles.description, { color: textColor }]}>
@@ -41,21 +56,50 @@ const CourseOverview = () => {
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <Stat label={`${course?.totalTopics}+ Topics`} />
-        <Stat label={`${course?.subscribers} Subscribers`} />
-        <Stat label={`${course?.requiredDuration}+ Weeks`} />
-        <Stat label={`Complete by ${course?.completed}`} />
-        <Stat label={`${course?.rating} Rating`} />
-        {course?.discount && <Stat label={`${course?.discount}% Off`} />}
+        <Stat
+          label={`${course?.totalTopics}+ Topics`}
+          bgColor={statBoxColor}
+          textColor={skillTextColor}
+        />
+        <Stat
+          label={`${course?.subscribers} Subscribers`}
+          bgColor={statBoxColor}
+          textColor={skillTextColor}
+        />
+        <Stat
+          label={`${course?.requiredDuration}+ Weeks`}
+          bgColor={statBoxColor}
+          textColor={skillTextColor}
+        />
+        <Stat
+          label={`Complete by ${course?.completed}`}
+          bgColor={statBoxColor}
+          textColor={skillTextColor}
+        />
+        <Stat
+          label={`${course?.rating} Rating`}
+          bgColor={statBoxColor}
+          textColor={skillTextColor}
+        />
+        {course?.discount && (
+          <Stat
+            label={`${course?.discount}% Off`}
+            bgColor={statBoxColor}
+            textColor={skillTextColor}
+          />
+        )}
       </View>
 
       {/* Skills */}
-      <Text style={[styles.sectionTitle, { color: Colors.dark.textSecondary }]}>
+      <Text style={[styles.sectionTitle, { color: subtitleColor }]}>
         Skills
       </Text>
       <View style={styles.skillsRow}>
         {course?.skills?.map((skill: string | null) => (
-          <View key={skill} style={[styles.skillChip]}>
+          <View
+            key={skill}
+            style={[styles.skillChip, { backgroundColor: chipColor }]}
+          >
             <Text style={[styles.skillText, { color: skillTextColor }]}>
               {skill}
             </Text>
@@ -68,9 +112,17 @@ const CourseOverview = () => {
 
 export default CourseOverview;
 
-const Stat = ({ label }: { label: string }) => (
-  <View style={styles.statBox}>
-    <Text style={styles.statText}>{label}</Text>
+const Stat = ({
+  label,
+  bgColor,
+  textColor,
+}: {
+  label: string;
+  bgColor: string;
+  textColor: string;
+}) => (
+  <View style={[styles.statBox, bgColor && { backgroundColor: bgColor }]}>
+    <Text style={[styles.statText, { color: textColor }]}>{label}</Text>
   </View>
 );
 
@@ -125,7 +177,6 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#ffffff",
   },
   sectionTitle: {
     fontSize: 16,
@@ -137,10 +188,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   skillChip: {
-    backgroundColor: "#EAF0FF",
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 18,
+    borderRadius: 5,
     marginRight: 8,
     marginBottom: 10,
   },

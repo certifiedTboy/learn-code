@@ -1,17 +1,14 @@
-import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import {
-  Dimensions,
-  FlatList,
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 const REVIEWS = [
   {
@@ -39,12 +36,17 @@ const REVIEWS = [
 
 const ReviewCard = ({ item }: any) => {
   const backgroundColor = useThemeColor(
-    { light: "#EAF0FF", dark: "#EAF0FF" },
+    { light: "#EAF0FF", dark: "#1E1E1E" },
     "background",
   );
 
   const reviewTextColor = useThemeColor(
-    { light: Colors.light.text, dark: Colors.light.text },
+    { light: "#6B7280", dark: "#9CA3AF" },
+    "text",
+  );
+
+  const nameTextColor = useThemeColor(
+    { light: "#111827", dark: "#F9FAFB" },
     "text",
   );
 
@@ -57,7 +59,9 @@ const ReviewCard = ({ item }: any) => {
         />
 
         <View style={styles.headerText}>
-          <Text style={styles.name}>{item.name}</Text>
+          <Text style={[styles.name, { color: nameTextColor }]}>
+            {item.name}
+          </Text>
 
           <View style={styles.stars}>
             {Array.from({ length: item.rating }).map((_, index) => (
@@ -78,14 +82,20 @@ const ReviewCard = ({ item }: any) => {
 };
 
 const CourseReview = () => {
+  const { width } = useWindowDimensions();
+
   return (
-    <FlatList
-      data={REVIEWS}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <ReviewCard item={item} />}
-      contentContainerStyle={styles.container}
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { paddingHorizontal: width * 0.05 },
+      ]}
       showsVerticalScrollIndicator={false}
-    />
+    >
+      {REVIEWS.map((item) => (
+        <ReviewCard key={item.id} item={item} />
+      ))}
+    </ScrollView>
   );
 };
 
@@ -94,7 +104,6 @@ export default CourseReview;
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 16,
-    paddingHorizontal: width * 0.05,
   },
 
   card: {

@@ -2,13 +2,18 @@ import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import React, { useContext } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+} from "react-native";
 import CourseItem2 from "./course-item2";
-
-const { width } = Dimensions.get("window");
 
 const CourseLessons = () => {
   const { course } = useContext(CourseDetailsContext);
+
+  const { width } = useWindowDimensions();
 
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
@@ -18,12 +23,19 @@ const CourseLessons = () => {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor }]}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingHorizontal: width > 768 ? 40 : 20 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       {course?.contents?.map((chapter: any, index: number) => (
         <CourseItem2 key={index} title={chapter?.mainTopic}>
-          <Text style={styles.contentText}>{chapter?.description}</Text>
+          <Text
+            style={[styles.contentText, { fontSize: width > 768 ? 16 : 14 }]}
+          >
+            {chapter?.description}
+          </Text>
         </CourseItem2>
       ))}
     </ScrollView>
@@ -37,11 +49,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: width > 768 ? 40 : 20,
     paddingVertical: 20,
   },
   mainTitle: {
-    fontSize: width > 768 ? 32 : 24,
     fontWeight: "700",
     color: "#2d3436",
     marginBottom: 25,
@@ -49,7 +59,6 @@ const styles = StyleSheet.create({
   },
 
   contentText: {
-    fontSize: width > 768 ? 16 : 14,
     color: "#636e72",
     lineHeight: 22,
   },

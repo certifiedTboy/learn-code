@@ -1,24 +1,27 @@
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { AuthContext } from "@/lib/context/auth-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import {
-  Dimensions,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SceneMap, TabView } from "react-native-tab-view";
-import AIScreen from "../../screens/ai-screen";
-import CoursesScreen from "../../screens/courses-screen";
-import MyCoursesScreen from "../../screens/my-courses-screen";
-import ProfileScreen from "../../screens/profile-screen";
+import AIScreen from "../../screens/ai/ai-screen";
+import CoursesScreen from "../../screens/courses/courses-screen";
+import MyCoursesScreen from "../../screens/courses/my-courses-screen";
+import ProfileScreen from "../../screens/profile/profile-screen";
 
 const MainTabs = () => {
   const [index, setIndex] = useState(0);
+  const { user } = useContext(AuthContext);
+  const { width } = useWindowDimensions();
 
   const renderScene = SceneMap({
     courses: CoursesScreen,
@@ -84,14 +87,16 @@ const MainTabs = () => {
         <View style={[styles.header, { backgroundColor, ...shadowStyle }]}>
           <Text
             style={[
-              routes[index].key === "courses"
+              routes[index].key === "courses" || routes[index].key === "profile"
                 ? styles.mainTitle
                 : styles.headerTitle,
 
               { color: titleColor },
             ]}
           >
-            {routes[index].title}
+            {user && routes[index].title === "Profile"
+              ? `Hello ${user.firstName}`
+              : routes[index].title}
           </Text>
         </View>
 
@@ -100,7 +105,7 @@ const MainTabs = () => {
           navigationState={{ index, routes }}
           renderScene={renderScene}
           onIndexChange={setIndex}
-          initialLayout={{ width: Dimensions.get("window").width }}
+          initialLayout={{ width }}
           swipeEnabled
           renderTabBar={() => null} // we use a custom tab bar
         />

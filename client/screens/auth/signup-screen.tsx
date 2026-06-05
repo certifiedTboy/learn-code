@@ -1,7 +1,7 @@
 import SuccessModal from "@/components/common/success-modal";
-import OTPBottomSheetModal from "@/components/onboarding/otp-bottom-sheet-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import GoogleBtn from "@/components/ui/google-btn";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { validateRegform } from "@/helpers/form-validators";
@@ -13,22 +13,21 @@ import {
   useLoginWithGoogleMutation,
 } from "@/lib/apis/auth-apis";
 import { AuthContext } from "@/lib/context/auth-context";
+import OTPBottomSheetModal from "@/screens/onboarding/otp-bottom-sheet-modal";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-
-const { width, height } = Dimensions.get("window");
 
 /**
  * yup validation schema for the registration form
@@ -39,6 +38,8 @@ const SignUpScreen = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showBottomSheetModal, setShowBottomSheetModal] = useState(false);
+
+  const { width, height } = useWindowDimensions();
 
   const [createNewUser, { isLoading, error, isError, isSuccess, data }] =
     useCreateNewUserMutation();
@@ -172,7 +173,10 @@ const SignUpScreen = () => {
         >
           {({ handleChange, values, errors, handleBlur, isValid }) => (
             <ThemedView
-              style={styles.container}
+              style={[
+                styles.container,
+                { paddingHorizontal: width * 0.1, paddingTop: height * 0.16 },
+              ]}
               darkColor={Colors.dark.background}
               lightColor={Colors.light.background}
             >
@@ -189,18 +193,40 @@ const SignUpScreen = () => {
                 showsVerticalScrollIndicator={false}
               >
                 <View style={styles.container}>
-                  <ThemedText style={styles.title}>Sign up</ThemedText>
-                  <ThemedText style={styles.subtitle}>
+                  <ThemedText
+                    style={[
+                      styles.title,
+                      { fontSize: width * 0.075, lineHeight: width * 0.09 },
+                    ]}
+                  >
+                    Sign up
+                  </ThemedText>
+                  <ThemedText
+                    style={[
+                      styles.subtitle,
+                      { fontSize: width * 0.038, marginBottom: height * 0.05 },
+                    ]}
+                  >
                     Please sign up here
                   </ThemedText>
 
-                  <View style={styles.inputGroup}>
-                    <ThemedText style={styles.label}>Email Here</ThemedText>
+                  <View style={{ marginBottom: height * 0.025 }}>
+                    <ThemedText
+                      style={[styles.label, { fontSize: width * 0.035 }]}
+                    >
+                      Email Here
+                    </ThemedText>
                     <TextInput
                       placeholder="Enter your email"
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      style={[styles.input, { color: inputTextColor }]}
+                      style={[
+                        styles.input,
+                        {
+                          color: inputTextColor,
+                          paddingVertical: height * 0.018,
+                        },
+                      ]}
                       placeholderTextColor={placeHolderColor}
                       onChangeText={handleChange("email")}
                       onBlur={handleBlur("email")}
@@ -221,15 +247,22 @@ const SignUpScreen = () => {
                     )}
                   </View>
 
-                  <View style={styles.inputGroup}>
-                    <ThemedText style={styles.label}>Password</ThemedText>
+                  <View style={{ marginBottom: height * 0.025 }}>
+                    <ThemedText
+                      style={[styles.label, { fontSize: width * 0.035 }]}
+                    >
+                      Password
+                    </ThemedText>
                     <View style={styles.passwordWrapper}>
                       <TextInput
                         placeholder="Enter your password"
                         secureTextEntry={!passwordVisible}
                         style={[
                           styles.passwordInput,
-                          { color: inputTextColor },
+                          {
+                            color: inputTextColor,
+                            paddingVertical: height * 0.018,
+                          },
                         ]}
                         placeholderTextColor={placeHolderColor}
                         onChangeText={handleChange("password")}
@@ -260,7 +293,13 @@ const SignUpScreen = () => {
                   </View>
 
                   <TouchableOpacity
-                    style={styles.signInButton}
+                    style={[
+                      styles.signInButton,
+                      {
+                        paddingVertical: height * 0.02,
+                        marginBottom: height * 0.04,
+                      },
+                    ]}
                     onPress={() => createNewUserHandler({ isValid, values })}
                   >
                     <Text style={styles.signInText}>SIGN UP</Text>
@@ -269,27 +308,31 @@ const SignUpScreen = () => {
                     )}
                   </TouchableOpacity>
 
-                  <View style={styles.dividerContainer}>
+                  <View
+                    style={[
+                      styles.dividerContainer,
+                      { marginBottom: height * 0.03 },
+                    ]}
+                  >
                     <View style={styles.divider} />
                     <Text style={styles.dividerText}>Or Sign up with</Text>
                     <View style={styles.divider} />
                   </View>
 
-                  <TouchableOpacity
-                    style={styles.googleBtn}
+                  <GoogleBtn
+                    styles={[
+                      styles.googleBtn,
+                      {
+                        paddingVertical: height * 0.018,
+                        marginBottom: height * 0.03,
+                      },
+                    ]}
                     onPress={handleGoogleSignIn}
-                  >
-                    <Icon
-                      name="logo-google"
-                      size={24}
-                      color={Colors.dark.generalBg}
-                    />
-                    <Text style={styles.googleText}>Sign up with Google</Text>
-                    {isLoading ||
-                      (isGoogleLoading && (
-                        <ActivityIndicator size="small" color="#fff" />
-                      ))}
-                  </TouchableOpacity>
+                    iconColor={Colors.dark.generalBg}
+                    isLoading={isLoading || isGoogleLoading}
+                    buttonText="Sign up with Google"
+                    buttonTextStyle={styles.googleText}
+                  />
 
                   <View style={styles.footer}>
                     <Text style={styles.footerText}>
@@ -327,28 +370,18 @@ export default SignUpScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.09,
   },
 
   title: {
-    fontSize: width * 0.075,
     fontWeight: "700",
     marginBottom: 5,
-    lineHeight: width * 0.09,
   },
 
   subtitle: {
-    fontSize: width * 0.038,
     color: "#666",
-    marginBottom: height * 0.05,
   },
 
-  inputGroup: {
-    marginBottom: height * 0.025,
-  },
   label: {
-    fontSize: width * 0.035,
     color: Colors.dark.textSecondary,
     marginBottom: 6,
   },
@@ -356,7 +389,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E0E0E0",
     borderRadius: 10,
-    paddingVertical: height * 0.018,
     paddingHorizontal: 14,
     fontSize: 15,
   },
@@ -371,7 +403,6 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     flex: 1,
-    paddingVertical: height * 0.018,
     fontSize: 15,
   },
   eyeIcon: {
@@ -380,7 +411,6 @@ const styles = StyleSheet.create({
 
   forgotContainer: {
     alignItems: "flex-end",
-    marginBottom: height * 0.04,
   },
   forgotText: {
     color: Colors.dark.generalBg,
@@ -390,13 +420,11 @@ const styles = StyleSheet.create({
 
   signInButton: {
     backgroundColor: Colors.dark.generalBg,
-    paddingVertical: height * 0.02,
     borderRadius: 10,
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
     gap: 3,
-    marginBottom: height * 0.04,
   },
   signInText: {
     color: "#FFF",
@@ -407,7 +435,6 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: height * 0.03,
   },
   divider: {
     flex: 1,
@@ -423,17 +450,15 @@ const styles = StyleSheet.create({
   googleBtn: {
     borderWidth: 1,
     borderColor: Colors.dark.generalBg,
-    paddingVertical: height * 0.018,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: height * 0.03,
     flexDirection: "row",
     justifyContent: "center",
     gap: 5,
   },
 
   googleText: {
-    color: "#333",
+    color: Colors.dark.generalBg,
     fontWeight: "600",
   },
 

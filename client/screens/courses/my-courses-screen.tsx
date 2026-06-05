@@ -1,10 +1,18 @@
-import CourseCard from "@/components/courses/course-card";
 import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
-import React from "react";
+import CourseCard from "@/screens/courses/course-card";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 
 const MyCoursesScreen = () => {
-  const { registeredCourses } = useRegisteredCourseContext();
+  const { registeredCourses, onGetAllRegisteredCourses } =
+    useRegisteredCourseContext();
+
+  useFocusEffect(
+    useCallback(() => {
+      onGetAllRegisteredCourses();
+    }, []),
+  );
 
   return (
     <>
