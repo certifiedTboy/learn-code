@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { useRoute, useLocation } from "wouter";
 import useForm from "../../hooks/useForm";
@@ -27,7 +27,10 @@ import {
   GripVertical,
   Video,
   Save,
+  Upload,
 } from "lucide-react";
+import pdfToText from "react-pdftotext";
+import { convertCourseTextToReference } from "../../helpers/data-converter";
 
 export default function CourseForm() {
   const [match, params] = useRoute("/dashboard/courses/:id/edit");
@@ -63,9 +66,8 @@ export default function CourseForm() {
     removeContentFormInput,
     updateFormDataForContentUpdate,
   } = useForm(courseFormSchema);
-
-
-  console.log(formData);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanningPdf, setIsScanningPdf] = useState(false);
 
   const courseData = isEdit && courseId ? getCourse(courseId) : undefined;
 
@@ -75,6 +77,44 @@ export default function CourseForm() {
       updateFormDataForContentUpdate(rest);
     }
   }, [isEdit, courseId, courseData]);
+
+  const handlePdfUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanningPdf(true);
+    try {
+      // Create a FormData object to send the file
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", file);
+
+      const textContent = await pdfToText(file);
+
+      if (textContent) {
+        const convertedContent = convertCourseTextToReference(textContent);
+
+        // Populate the form with the parsed data
+        updateFormDataForContentUpdate(convertedContent);
+
+        toast({
+          title: "PDF Scanned Successfully",
+          description: "Form fields have been populated from the PDF.",
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Scan Failed",
+        description: "Failed to scan the PDF file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanningPdf(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const onSubmit = () => {
     if (isEdit && courseId) {
@@ -162,13 +202,32 @@ export default function CourseForm() {
             </div>
           </div>
 
-          <Button
-            onClick={onSubmit}
-            className="shadow-glow px-6 cursor-pointer"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isEdit ? "Save Changes" : "Publish Course"}
-          </Button>
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handlePdfUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isScanningPdf}
+              className="cursor-pointer"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {isScanningPdf ? "Scanning..." : "Scan PDF"}
+            </Button>
+            <Button
+              onClick={onSubmit}
+              className="shadow-glow px-6 cursor-pointer"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isEdit ? "Save Changes" : "Publish Course"}
+            </Button>
+          </div>
         </div>
 
         <form className="space-y-8">
@@ -195,7 +254,9 @@ export default function CourseForm() {
                 )}
               </div>
 
-              {isLoading || (isUpdateLoading && <Loader />)}
+              {isLoading && <Loader />}
+
+              {isUpdateLoading && <Loader />}
 
               <div>
                 <Label>Description</Label>
@@ -435,23 +496,25 @@ function SubTopicsField({
         </Label>
       </div>
       <div className="space-y-3">
-        {lessons && lessons?.length > 0 && lessons?.map((subField, subIndex) => {
-          return (
-            <div
-              key={subIndex}
-              className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-card/40 p-3 rounded-lg border border-white/5"
-            >
-              <div className="flex-1 w-full space-y-1">
-                <Input
-                  name="title"
-                  value={subField?.title}
-                  onChange={(event) =>
-                    handleLessonDataChange(event, index, subIndex)
-                  }
-                  placeholder="Lesson Title"
-                  className="h-9 bg-background/50 text-sm"
-                />
-                {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
+        {lessons &&
+          lessons?.length > 0 &&
+          lessons?.map((subField, subIndex) => {
+            return (
+              <div
+                key={subIndex}
+                className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-card/40 p-3 rounded-lg border border-white/5"
+              >
+                <div className="flex-1 w-full space-y-1">
+                  <Input
+                    name="title"
+                    value={subField?.title}
+                    onChange={(event) =>
+                      handleLessonDataChange(event, index, subIndex)
+                    }
+                    placeholder="Lesson Title"
+                    className="h-9 bg-background/50 text-sm"
+                  />
+                  {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
                   ?.title && (
                   <p className="text-[10px] text-destructive">
                     {
@@ -460,19 +523,19 @@ function SubTopicsField({
                     }
                   </p>
                 )} */}
-              </div>
+                </div>
 
-              <div className="flex-1 w-full space-y-1">
-                <Input
-                  onChange={(event) =>
-                    handleLessonDataChange(event, index, subIndex)
-                  }
-                  name="contentURI"
-                  value={subField?.contentURI}
-                  placeholder="URL to content or video"
-                  className="h-9 bg-background/50 text-sm"
-                />
-                {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
+                <div className="flex-1 w-full space-y-1">
+                  <Input
+                    onChange={(event) =>
+                      handleLessonDataChange(event, index, subIndex)
+                    }
+                    name="contentURI"
+                    value={subField?.contentURI}
+                    placeholder="URL to content or video"
+                    className="h-9 bg-background/50 text-sm"
+                  />
+                  {/* {errors.contents?.[contentIndex]?.subTopics?.[subIndex]
                   ?.contentURI && (
                   <p className="text-[10px] text-destructive">
                     {
@@ -481,34 +544,34 @@ function SubTopicsField({
                     }
                   </p>
                 )} */}
-              </div>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-background/50 rounded-md border border-white/5">
-                  <Switch
-                    onCheckedChange={(val: boolean) =>
-                      markLessonIsVideo(val, index, subIndex)
-                    }
-                    checked={subField?.isVideo}
-                  />
-                  <Label className="text-xs flex items-center gap-1 cursor-pointer">
-                    <Video className="w-3 h-3" /> Video
-                  </Label>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0"
-                  onClick={() => removeLesson(index, subIndex)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-background/50 rounded-md border border-white/5">
+                    <Switch
+                      onCheckedChange={(val: boolean) =>
+                        markLessonIsVideo(val, index, subIndex)
+                      }
+                      checked={subField?.isVideo}
+                    />
+                    <Label className="text-xs flex items-center gap-1 cursor-pointer">
+                      <Video className="w-3 h-3" /> Video
+                    </Label>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0"
+                    onClick={() => removeLesson(index, subIndex)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
       <Button
         type="button"
