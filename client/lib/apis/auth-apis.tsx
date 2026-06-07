@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { setCurrentUser } from "../redux/auth-slice";
 
 let baseUrl = process.env.EXPO_PUBLIC_API_URL;
 
@@ -45,12 +44,10 @@ export const authApis = createApi({
           const { data } = await queryFulfilled;
 
           if (data) {
-            const { accessToken, refreshToken, user } = data.data;
+            const { accessToken, refreshToken } = data.data;
 
             await AsyncStorage.setItem("accessToken", accessToken);
             await AsyncStorage.setItem("refreshToken", refreshToken);
-
-            dispatch(setCurrentUser({ currentUser: user }));
           }
         } catch (error) {
           // console.log(error);
@@ -70,12 +67,10 @@ export const authApis = createApi({
           const { data } = await queryFulfilled;
 
           if (data) {
-            const { accessToken, refreshToken, user } = data.data;
+            const { accessToken, refreshToken } = data.data;
 
             await AsyncStorage.setItem("accessToken", accessToken);
             await AsyncStorage.setItem("refreshToken", refreshToken);
-
-            dispatch(setCurrentUser({ currentUser: user }));
           }
         } catch (error) {
           // console.log(error);
@@ -97,8 +92,6 @@ export const authApis = createApi({
             const { accessToken, user } = data.data;
 
             await AsyncStorage.setItem("accessToken", accessToken);
-
-            dispatch(setCurrentUser({ currentUser: user }));
           }
         } catch (error) {
           // console.log(error);

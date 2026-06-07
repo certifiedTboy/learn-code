@@ -19,17 +19,31 @@ export interface User {
   isVerified: boolean;
 }
 
-export const AuthContext = createContext({
-  isAuthenticated: false,
+interface AuthContextType {
+  isAuthenticated: boolean;
   updateAuthenticatedState: (
-    refreshToken: string,
+    refereshToken: string,
     accessToken: string,
     user: User,
+  ) => void;
+  user: User | null;
+  logout: () => void;
+  checkUserIsAuthenticated: () => void;
+  updateUserDataOnProfileUpdate: (user: User) => void;
+}
+
+export const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  updateAuthenticatedState: (
+    refreshToken,
+    accessToken,
+    user,
     // courseData: any[],
   ) => {},
-  user: null as User | null,
+  user: null,
   logout: () => {},
   checkUserIsAuthenticated: () => {},
+  updateUserDataOnProfileUpdate: () => {},
 });
 
 const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
@@ -55,16 +69,6 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(user);
 
     await upsertUserProfile(user);
-
-    // (async () => {
-    //   for (let course of courseData) {
-    //     await upsertRegisteredCourse({
-    //       _id: course?.course._id,
-    //       dateRegistered: course.dateRegistered,
-    //       completion: course?.completion,
-    //     });
-    //   }
-    // })();
   };
 
   /**
@@ -81,6 +85,14 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setIsAuthenticated(false);
     }
+  };
+
+  /**
+   * @function updateUserDataOnProfileUpdate
+   */
+  const updateUserDataOnProfileUpdate = async (user: User) => {
+    setUser(user);
+    await upsertUserProfile(user);
   };
 
   /**
@@ -107,6 +119,7 @@ const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     logout,
     checkUserIsAuthenticated,
+    updateUserDataOnProfileUpdate,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

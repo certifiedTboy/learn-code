@@ -23,7 +23,7 @@ const AIScreen = () => {
   );
 
   const cardColor = useThemeColor(
-    { light: Colors.light.card || "#F8F9FA", dark: "#1E1E1E" },
+    { light: Colors.light.card, dark: Colors.dark.courseCardBg },
     "background",
   );
 
@@ -33,12 +33,12 @@ const AIScreen = () => {
   );
 
   const subtitleColor = useThemeColor(
-    { light: Colors.light.textMuted || "#666666", dark: "#AAAAAA" },
+    { light: Colors.light.generalBg, dark: Colors.dark.authorText },
     "text",
   );
 
   const promptBoxColor = useThemeColor(
-    { light: "#ffffff", dark: "#2A2A2A" },
+    { light: Colors.light.promptBoxBg, dark: Colors.dark.promptBoxBg },
     "background",
   );
 
@@ -192,13 +192,13 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    color: Colors.light.textMuted,
+    color: Colors.light.generalBg,
     textAlign: "center",
   },
 
   promptBox: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.light.white,
     borderRadius: 16,
   },
 
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#fff",
+    color: Colors.light.white,
     fontWeight: "600",
     marginRight: 10,
   },

@@ -2,35 +2,32 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { UpdateProfileSchema } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { useUpdateUserProfileMutation } from "@/lib/apis/user-apis";
+import { AuthContext } from "@/lib/context/auth-context";
 import { Formik } from "formik";
-import React, { useState } from "react";
+import { useContext, useEffect } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import * as yup from "yup";
-
-const UpdateProfileSchema = yup.object().shape({
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
-});
 
 const UpdateProfileScreen = () => {
-  const { width, height } = useWindowDimensions();
-  const navigation = useNavigation<NavigationProp<any>>();
+  const { user, updateUserDataOnProfileUpdate } = useContext(AuthContext);
 
-  // NOTE: Replace with your actual mutation hook if you have one, e.g., useUpdateProfileMutation()
-  const [isLoading, setIsLoading] = useState(false);
+  const { width, height } = useWindowDimensions();
+
+  const [updateUserProfile, { isLoading, isSuccess, data, error, isError }] =
+    useUpdateUserProfileMutation();
 
   const inputTextColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
@@ -42,6 +39,11 @@ const UpdateProfileScreen = () => {
     "text",
   );
 
+  const borderColor = useThemeColor(
+    { light: "#E0E0E0", dark: "#333333" },
+    "background",
+  );
+
   const updateProfileHandler = async (
     isValid: boolean,
     values: { firstName: string; lastName: string },
@@ -50,43 +52,48 @@ const UpdateProfileScreen = () => {
       return showNotification({
         type: "error",
         title: "Invalid Input",
-        message: "Please fill all required fields correctly.",
+        message: "All fields are required",
       });
     }
 
-    setIsLoading(true);
-    try {
-      // TODO: Call your update profile API here
-      console.log("Updating profile", values);
+    updateUserProfile({ ...values });
+  };
 
-      // Simulating an API call
-      setTimeout(() => {
-        setIsLoading(false);
-        showNotification({
-          type: "success",
-          title: "Success",
-          message: "Profile updated successfully!",
+  useEffect(() => {
+    if (isSuccess && data) {
+      showNotification({
+        type: "success",
+        title: "Success",
+        message: "Profile updated successfully.",
+      });
+
+      (async () => {
+        await updateUserDataOnProfileUpdate({
+          _id: data?.data?._id?.toString(),
+          firstName: data?.data?.firstName,
+          lastName: data?.data?.lastName,
+          isVerified: data?.data?.isVerified,
+          profilePicture: data?.data?.profilePicture,
+          email: data?.data?.email,
         });
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-        }
-      }, 1000);
-    } catch (error: any) {
-      setIsLoading(false);
+      })();
+    }
+
+    if (isError) {
       showNotification({
         type: "error",
         title: "Error",
-        message: error?.message || "Something went wrong",
+        message: "Profile update failed.",
       });
     }
-  };
+  }, [isSuccess, isError, error, data]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={"padding"}>
       <Formik
         initialValues={{
-          firstName: "",
-          lastName: "",
+          firstName: user?.firstName || "",
+          lastName: user?.lastName || "",
         }}
         onSubmit={(values) => console.log(values)}
         validationSchema={UpdateProfileSchema}
@@ -95,7 +102,10 @@ const UpdateProfileScreen = () => {
           <ThemedView
             style={[
               styles.container,
-              { paddingHorizontal: width * 0.1, paddingTop: height * 0.16 },
+              {
+                paddingHorizontal: width * 0.1,
+                paddingTop: height * 0.16,
+              },
             ]}
             darkColor={Colors.dark.background}
             lightColor={Colors.light.background}
@@ -116,11 +126,29 @@ const UpdateProfileScreen = () => {
                 <ThemedText
                   style={[
                     styles.subtitle,
-                    { fontSize: width * 0.038, marginBottom: height * 0.05 },
+                    {
+                      fontSize: width * 0.038,
+                      marginBottom:
+                        user && !user?.firstName && user?.lastName
+                          ? height * 0.05
+                          : height * 0.1,
+                    },
                   ]}
                 >
                   Edit your personal information
                 </ThemedText>
+
+                {user && !user?.firstName && user?.lastName && (
+                  <ThemedText
+                    style={{
+                      fontSize: width * 0.038,
+                      marginBottom: height * 0.05,
+                      color: Colors.dark.errorText,
+                    }}
+                  >
+                    Profile update can only be done once
+                  </ThemedText>
+                )}
 
                 <View style={{ marginBottom: height * 0.025 }}>
                   <ThemedText
@@ -131,17 +159,20 @@ const UpdateProfileScreen = () => {
                   <TextInput
                     placeholder="Enter your first name"
                     autoCapitalize="words"
+                    editable={!user?.firstName}
                     style={[
                       styles.input,
                       {
                         color: inputTextColor,
                         paddingVertical: height * 0.018,
+                        borderColor,
+                        opacity: user?.firstName ? 0.6 : 1,
                       },
                     ]}
                     placeholderTextColor={placeHolderColor}
                     onChangeText={handleChange("firstName")}
                     onBlur={handleBlur("firstName")}
-                    value={values.firstName}
+                    value={values?.firstName}
                   />
 
                   {errors?.firstName && (
@@ -167,17 +198,20 @@ const UpdateProfileScreen = () => {
                   <TextInput
                     placeholder="Enter your last name"
                     autoCapitalize="words"
+                    editable={!user?.lastName}
                     style={[
                       styles.input,
                       {
                         color: inputTextColor,
                         paddingVertical: height * 0.018,
+                        borderColor,
+                        opacity: user?.lastName ? 0.6 : 1,
                       },
                     ]}
                     placeholderTextColor={placeHolderColor}
                     onChangeText={handleChange("lastName")}
                     onBlur={handleBlur("lastName")}
-                    value={values.lastName}
+                    value={values?.lastName}
                   />
 
                   {errors?.lastName && (
@@ -200,10 +234,22 @@ const UpdateProfileScreen = () => {
                     {
                       paddingVertical: height * 0.02,
                       marginBottom: height * 0.04,
+                      opacity:
+                        isLoading ||
+                        (!!user?.firstName && !!user?.lastName) ||
+                        !values.firstName ||
+                        !values.lastName
+                          ? 0.6
+                          : 1,
                     },
                   ]}
                   onPress={() => updateProfileHandler(isValid, values)}
-                  disabled={isLoading}
+                  disabled={
+                    isLoading ||
+                    (!!user?.firstName && !!user?.lastName) ||
+                    !values.firstName ||
+                    !values.lastName
+                  }
                 >
                   <Text style={styles.saveText}>SAVE CHANGES</Text>
                   {isLoading && <ActivityIndicator size="small" color="#fff" />}
@@ -236,7 +282,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
     paddingHorizontal: 14,
     fontSize: 15,

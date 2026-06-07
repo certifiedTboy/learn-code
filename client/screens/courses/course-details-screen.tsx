@@ -56,12 +56,27 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
     }, []),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: name,
+        headerTitleStyle: {
+          fontSize: 18,
+          fontWeight: "600",
+          marginLeft: -100,
+          color: headerTitleTextColor,
+        },
+      });
+    }, []),
+  );
+
   useEffect(() => {
     if (id) {
       (async () => {
         const courses = await getAllRegisteredCourse();
 
         const course = await getCourseById(id);
+
         if (course) {
           const courseIsRegistered = courses?.find(
             (myCourse: any) => myCourse._id === course?._id,
@@ -96,7 +111,7 @@ const CourseDetailsScreen = ({ route }: { route: any }) => {
             style={[styles.hero, { height: HERO_HEIGHT }]}
           />
           <View style={styles.playButton}>
-            <Icon name="play" size={22} color="#ffffff" />
+            <Icon name="play" size={22} color={Colors.light.white} />
           </View>
         </View>
         <CourseDetailsTab />
@@ -156,7 +171,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: "45%",
     left: "45%",
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: Colors.light.overlay,
     borderRadius: 40,
     padding: 18,
   },
@@ -164,15 +179,15 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.light.white,
     paddingVertical: 12,
   },
   tab: {
     fontSize: 14,
-    color: "#888",
+    color: Colors.light.tabText,
   },
   activeTab: {
-    color: "#0A58ED",
+    color: Colors.light.primaryBlue,
     fontWeight: "600",
   },
   footer: {
@@ -185,7 +200,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   enrollText: {
-    color: "#fff",
+    color: Colors.light.white,
     fontSize: 16,
     fontWeight: "700",
   },

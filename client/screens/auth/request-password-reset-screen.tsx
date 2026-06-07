@@ -1,6 +1,7 @@
 import SuccessModal from "@/components/common/success-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import SubmitButton from "@/components/ui/submit-button";
 import { Colors } from "@/constants/Colors";
 import { validatePasswordResetRequestForm } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
@@ -11,7 +12,6 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -43,8 +43,13 @@ const RequestPasswordResetScreen = () => {
   );
 
   const placeHolderColor = useThemeColor(
-    { light: "#555", dark: "#555" },
+    { light: Colors.light.placeholder, dark: Colors.dark.placeholder },
     "text",
+  );
+
+  const borderColor = useThemeColor(
+    { light: Colors.light.border, dark: Colors.dark.border },
+    "background",
   );
 
   useEffect(() => {
@@ -154,6 +159,7 @@ const RequestPasswordResetScreen = () => {
                         {
                           color: inputTextColor,
                           paddingVertical: height * 0.018,
+                          borderColor,
                         },
                       ]}
                       placeholderTextColor={placeHolderColor}
@@ -163,23 +169,22 @@ const RequestPasswordResetScreen = () => {
                     />
                   </View>
 
-                  <TouchableOpacity
-                    style={[
+                  <SubmitButton
+                    buttonText="RESET PASSWORD"
+                    buttonStyles={[
                       styles.signInButton,
                       {
                         paddingVertical: height * 0.02,
                         marginBottom: height * 0.04,
                       },
                     ]}
-                    onPress={() =>
+                    onButtonPress={() =>
                       passwordResetRequestSubmitHandler({ isValid, values })
                     }
-                  >
-                    <Text style={styles.signInText}>RESET PASSWORD</Text>
-                    {isLoading && (
-                      <ActivityIndicator size="small" color="#fff" />
-                    )}
-                  </TouchableOpacity>
+                    isLoading={isLoading}
+                    buttonTextStyles={styles.signInText}
+                    buttonDisabled={isLoading}
+                  />
 
                   <View style={styles.footer}>
                     <Text style={styles.footerText}>
@@ -226,7 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   subtitle: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
 
   label: {
@@ -235,7 +240,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
     paddingHorizontal: 14,
     fontSize: 15,
@@ -250,7 +255,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   signInText: {
-    color: "#FFF",
+    color: Colors.light.white,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -260,7 +265,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   footerText: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
   signupText: {
     color: Colors.dark.generalBg,

@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { setCurrentUser } from "../redux/auth-slice";
 
 let baseUrl = process.env.EXPO_PUBLIC_API_URL;
 
@@ -26,8 +25,6 @@ export const userApis = createApi({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-
-          dispatch(setCurrentUser({ currentUser: data.data }));
         } catch (error: unknown) {
           // @ts-ignore
           if (error?.error?.data?.message === "jwt expired") {
@@ -46,45 +43,14 @@ export const userApis = createApi({
         url: `/auth/user/${payload}/profile`,
         method: "GET",
       }),
-
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-
-          // const userProfileData = {
-          //   id: data?.data._id.toString(),
-          //   phoneNumber: data?.data.phoneNumber,
-          //   email: data?.data.email,
-          //   isActive: data?.data?.isActive,
-          //   isOnline: data?.data?.isOnline,
-          //   lastSeen: data?.data?.lastSeen,
-          //   profilePicture: data?.data?.profilePicture,
-          // };
-
-          // console.log("Fetched user profile data:", userProfileData);
-          // await upsertUserProfile(userProfileData);
-        } catch (error) {
-          // console.log(error);
-        }
-      },
     }),
 
-    uploadProfileImage: builder.mutation({
+    updateUserProfile: builder.mutation({
       query: (payload) => ({
-        url: `/users/profile/upload-image`,
+        url: `/users/current-user/update`,
         method: "PATCH",
         body: payload,
       }),
-
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-
-          dispatch(setCurrentUser({ currentUser: data.data }));
-        } catch (error: unknown) {
-          // console.log(error);
-        }
-      },
     }),
 
     getNewToken: builder.mutation({
@@ -98,11 +64,9 @@ export const userApis = createApi({
           const { data } = await queryFulfilled;
 
           if (data) {
-            const { accessToken, user } = data.data;
+            const { accessToken } = data.data;
 
             await AsyncStorage.setItem("access_token", accessToken);
-
-            dispatch(setCurrentUser({ currentUser: user }));
           }
         } catch (error) {
           // console.log(error);
@@ -115,5 +79,5 @@ export const userApis = createApi({
 export const {
   useGetCurrentUserMutation,
   useGetUserProfileMutation,
-  useUploadProfileImageMutation,
+  useUpdateUserProfileMutation,
 } = userApis;

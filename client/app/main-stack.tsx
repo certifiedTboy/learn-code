@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useGetCurrentUserMutation } from "@/lib/apis/user-apis";
 import AIChatScreen from "@/screens/ai/ai-chat-screen";
@@ -24,7 +25,7 @@ const Stack = createNativeStackNavigator();
  */
 const MainStack = () => {
   const backgroundColor = useThemeColor(
-    { light: "#fff", dark: "#000" },
+    { light: Colors.light.background, dark: Colors.dark.background },
     "background",
   );
 

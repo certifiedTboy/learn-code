@@ -94,7 +94,7 @@ const MainTabs = () => {
               { color: titleColor },
             ]}
           >
-            {user && routes[index].title === "Profile"
+            {user && user?.firstName && routes[index].title === "Profile"
               ? `Hello ${user.firstName}`
               : routes[index].title}
           </Text>

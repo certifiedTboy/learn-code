@@ -3,6 +3,7 @@ import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { generateRandomRoomId } from "@/helpers/chat";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { AuthContext } from "@/lib/context/auth-context";
 import { ChatContext } from "@/lib/context/chat-context";
 import TypingIndicator from "@/screens/ai/TypingIndication";
 import { useFocusEffect } from "@react-navigation/native";
@@ -23,7 +24,7 @@ import {
   View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { useSelector } from "react-redux";
+import Markdown from "react-native-markdown-display";
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState<
@@ -38,10 +39,9 @@ const AIChatScreen = () => {
   const { joinRoom, sendMessage, socketMessage, clearSocketMessage, isTyping } =
     useContext(ChatContext);
 
-  const { currentUser } = useSelector((state: any) => state.authState);
-
+  const { user } = useContext(AuthContext);
   const chatBackgroundColor = useThemeColor(
-    { light: "#ffffff", dark: "#000000" },
+    { light: Colors.light.background, dark: Colors.dark.background },
     "background",
   );
 
@@ -54,14 +54,14 @@ const AIChatScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (currentUser) {
-        joinRoom(roomIdRef?.current, currentUser?.email);
+      if (user) {
+        joinRoom(roomIdRef?.current, user?.email);
       }
 
       return () => {
         clearSocketMessage();
       };
-    }, [currentUser]),
+    }, [user]),
   );
 
   // Simulated ChatGPT streaming response
@@ -94,7 +94,7 @@ const AIChatScreen = () => {
     if (
       socketMessage &&
       socketMessage?.content &&
-      socketMessage?.senderId !== currentUser?.email
+      socketMessage?.senderId !== user?.email
     ) {
       simulateAssistantReply(socketMessage?.content);
     }
@@ -105,7 +105,7 @@ const AIChatScreen = () => {
 
     const userMessage = {
       chatId: Date.now().toString(),
-      senderId: currentUser?.email,
+      senderId: user?.email!,
       content: input,
       roomId: roomIdRef?.current,
     };
@@ -123,7 +123,7 @@ const AIChatScreen = () => {
   };
 
   const renderItem = ({ item }: { item: any }) => {
-    const isUser = item?.sender === currentUser?.email;
+    const isUser = item?.sender === user?.email;
 
     return (
       <View
@@ -137,18 +137,46 @@ const AIChatScreen = () => {
           },
         ]}
       >
-        <Text
-          style={[
-            styles.messageText,
-            isUser && { color: Colors.dark.text },
-            {
-              fontSize: width * 0.042,
-              lineHeight: width * 0.058,
-            },
-          ]}
-        >
-          {item.text}
-        </Text>
+        {isUser ? (
+          <Text
+            style={[
+              styles.messageText,
+              { color: Colors.dark.text },
+              {
+                fontSize: width * 0.042,
+                lineHeight: width * 0.058,
+              },
+            ]}
+          >
+            {item.text}
+          </Text>
+        ) : (
+          <Markdown
+            style={{
+              body: {
+                color: Colors.light.text,
+                fontSize: width * 0.042,
+                lineHeight: width * 0.058,
+              },
+              fence: {
+                backgroundColor: Colors.light.codeBlockBg,
+                color: Colors.light.codeBlockText,
+                padding: 10,
+                borderRadius: 8,
+                marginTop: 8,
+                marginBottom: 8,
+              },
+              code_inline: {
+                backgroundColor: Colors.light.codeInlineBg,
+                color: Colors.light.codeInlineText,
+                paddingHorizontal: 4,
+                borderRadius: 4,
+              },
+            }}
+          >
+            {item.text}
+          </Markdown>
+        )}
       </View>
     );
   };
@@ -160,8 +188,8 @@ const AIChatScreen = () => {
       keyboardVerticalOffset={100}
     >
       <ThemedView
-        lightColor="#ffffff"
-        darkColor="#000000"
+        lightColor={Colors.light.background}
+        darkColor={Colors.dark.background}
         style={[styles.container]}
       >
         <FlatList
@@ -227,7 +255,7 @@ const AIChatScreen = () => {
               <Icon
                 name="send"
                 size={width * 0.055}
-                color="#fff"
+                color={Colors.light.white}
                 onPress={handleSend}
               />
             </TouchableOpacity>
@@ -259,7 +287,7 @@ const styles = StyleSheet.create({
   },
 
   assistantBubble: {
-    backgroundColor: "#E7ECF6",
+    backgroundColor: Colors.light.assistantBubbleBg,
     alignSelf: "flex-start",
     borderBottomLeftRadius: 6,
   },

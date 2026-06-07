@@ -7,6 +7,7 @@ import ChatContextProvider from "@/lib/context/chat-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { useNavigationState } from "@react-navigation/native";
 import Tooltip from "@/components/ui/tooltip";
+import { Colors } from "@/constants/Colors";
 import { useContext, useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import MainStack from "./main-stack";
@@ -84,7 +85,7 @@ const AppNavigator = () => {
             <Icon
               name="help-circle-outline"
               size={28}
-              color="#fff"
+              color={Colors.light.white}
               onPress={() => setShowTooltip(!showTooltip)}
             />
           </TouchableOpacity>
@@ -119,13 +120,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 220,
     zIndex: 100,
-    backgroundColor: "#0A58ED",
+    backgroundColor: Colors.light.primaryBlue,
     width: 48,
     height: 48,
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: Colors.light.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,

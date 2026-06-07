@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
+import { Colors } from "@/constants/Colors";
 
 const TypingIndicator = () => {
   const dot1 = useRef(new Animated.Value(0)).current;
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#aaa",
+    backgroundColor: Colors.light.typingDot,
     marginHorizontal: 4,
   },
 });

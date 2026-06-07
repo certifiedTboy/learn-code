@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import { generatePaymentReference } from "@/helpers/payment";
 import { PayWithFlutterwave } from "flutterwave-react-native";
 import { useState } from "react";
@@ -78,14 +79,14 @@ export default useFlutterwavePayment;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#6f7f9c",
+    backgroundColor: Colors.light.flutterwaveBtnBg,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.light.white,
     fontWeight: "600",
     fontSize: 16,
   },

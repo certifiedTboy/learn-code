@@ -3,6 +3,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import GoogleBtn from "@/components/ui/google-btn";
 import Icon from "@/components/ui/Icon";
+import SubmitButton from "@/components/ui/submit-button";
 import { Colors } from "@/constants/Colors";
 import { validateRegform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
@@ -18,7 +19,6 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -67,8 +67,13 @@ const SignUpScreen = () => {
   );
 
   const placeHolderColor = useThemeColor(
-    { light: "#555", dark: "#555" },
+    { light: Colors.light.placeholder, dark: Colors.dark.placeholder },
     "text",
+  );
+
+  const borderColor = useThemeColor(
+    { light: Colors.light.border, dark: Colors.dark.border },
+    "background",
   );
 
   const createNewUserHandler = async (values: {
@@ -225,6 +230,7 @@ const SignUpScreen = () => {
                         {
                           color: inputTextColor,
                           paddingVertical: height * 0.018,
+                          borderColor,
                         },
                       ]}
                       placeholderTextColor={placeHolderColor}
@@ -253,7 +259,7 @@ const SignUpScreen = () => {
                     >
                       Password
                     </ThemedText>
-                    <View style={styles.passwordWrapper}>
+                    <View style={[styles.passwordWrapper, { borderColor }]}>
                       <TextInput
                         placeholder="Enter your password"
                         secureTextEntry={!passwordVisible}
@@ -292,21 +298,22 @@ const SignUpScreen = () => {
                     )}
                   </View>
 
-                  <TouchableOpacity
-                    style={[
+                  <SubmitButton
+                    buttonText="SIGN UP"
+                    buttonStyles={[
                       styles.signInButton,
                       {
                         paddingVertical: height * 0.02,
                         marginBottom: height * 0.04,
                       },
                     ]}
-                    onPress={() => createNewUserHandler({ isValid, values })}
-                  >
-                    <Text style={styles.signInText}>SIGN UP</Text>
-                    {isLoading && (
-                      <ActivityIndicator size="small" color="#fff" />
-                    )}
-                  </TouchableOpacity>
+                    onButtonPress={() =>
+                      createNewUserHandler({ isValid, values })
+                    }
+                    isLoading={isLoading}
+                    buttonTextStyles={styles.signInText}
+                    buttonDisabled={isLoading}
+                  />
 
                   <View
                     style={[
@@ -314,9 +321,13 @@ const SignUpScreen = () => {
                       { marginBottom: height * 0.03 },
                     ]}
                   >
-                    <View style={styles.divider} />
+                    <View
+                      style={[styles.divider, { backgroundColor: borderColor }]}
+                    />
                     <Text style={styles.dividerText}>Or Sign up with</Text>
-                    <View style={styles.divider} />
+                    <View
+                      style={[styles.divider, { backgroundColor: borderColor }]}
+                    />
                   </View>
 
                   <GoogleBtn
@@ -329,8 +340,8 @@ const SignUpScreen = () => {
                     ]}
                     onPress={handleGoogleSignIn}
                     iconColor={Colors.dark.generalBg}
-                    isLoading={isLoading || isGoogleLoading}
-                    buttonText="Sign up with Google"
+                    isLoading={isGoogleLoading}
+                    buttonText="Google"
                     buttonTextStyle={styles.googleText}
                   />
 
@@ -378,7 +389,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
 
   label: {
@@ -387,7 +398,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
     paddingHorizontal: 14,
     fontSize: 15,
@@ -397,7 +408,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
     paddingHorizontal: 14,
   },
@@ -427,7 +438,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   signInText: {
-    color: "#FFF",
+    color: Colors.light.white,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -439,12 +450,12 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: "#dddddd",
+    // backgroundColor: "#dddddd",
   },
   dividerText: {
     marginHorizontal: 10,
     fontSize: 13,
-    color: "#777",
+    color: Colors.light.dividerText,
   },
 
   googleBtn: {
@@ -467,7 +478,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   footerText: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
   signupText: {
     color: Colors.dark.generalBg,

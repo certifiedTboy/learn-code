@@ -40,17 +40,17 @@ const CoursesScreen = () => {
   );
 
   const cardBackgroundColor = useThemeColor(
-    { light: "#EAF0FF", dark: "#1E1E1E" },
+    { light: Colors.light.courseCardBg, dark: Colors.dark.courseCardBg },
     "background",
   );
 
   const courseTitleColor = useThemeColor(
-    { light: Colors.dark.generalBg, dark: "#fff" },
+    { light: Colors.dark.generalBg, dark: Colors.dark.white },
     "text",
   );
 
   const chipBackgroundColor = useThemeColor(
-    { light: "#EAF0FF", dark: "#1E1E1E" },
+    { light: Colors.light.courseCardBg, dark: Colors.dark.courseCardBg },
     "background",
   );
 
@@ -60,7 +60,7 @@ const CoursesScreen = () => {
   );
 
   const searchInputBorderColor = useThemeColor(
-    { light: Colors.light.textMuted, dark: Colors.dark.textMuted },
+    { light: Colors.light.courseCardBg, dark: Colors.dark.courseCardBg },
     "background",
   );
   const inputTextColor = useThemeColor(
@@ -69,12 +69,12 @@ const CoursesScreen = () => {
   );
 
   const cardColor = useThemeColor(
-    { light: "#EAF0FF", dark: "#1E1E1E" },
+    { light: Colors.light.courseCardBg, dark: Colors.dark.courseCardBg },
     "background",
   );
 
   const authorTextColor = useThemeColor(
-    { light: "#666666", dark: "#AAAAAA" },
+    { light: Colors.light.authorText, dark: Colors.dark.authorText },
     "text",
   );
 
@@ -119,7 +119,7 @@ const CoursesScreen = () => {
           {
             borderWidth: 1,
             borderColor: cardBackgroundColor,
-            shadowColor: Colors.dark.textMuted,
+            shadowColor: Colors.dark.generalBg,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.1,
             shadowRadius: 8,
@@ -175,7 +175,7 @@ const CoursesScreen = () => {
       >
         {/* Search */}
         <TextInput
-          placeholder="Search Here"
+          placeholder="Search Course Here..."
           style={[
             styles.search,
             {
@@ -185,7 +185,7 @@ const CoursesScreen = () => {
               paddingVertical: height * 0.018,
             },
           ]}
-          placeholderTextColor="#999"
+          placeholderTextColor={Colors.light.searchPlaceholder}
           value={searchQuery}
           onChangeText={handleSearch}
         />
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   },
   seeAll: {
     fontSize: 13,
-    color: "#777",
+    color: Colors.light.dividerText,
   },
   cardRow: {
     flexDirection: "row",
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   rating: {
-    color: "#F5A623",
+    color: Colors.light.ratingStar,
     fontSize: 12,
   },
   author: {
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   largeCard: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.light.white,
     borderRadius: 12,
     marginBottom: 16,
     overflow: "hidden",

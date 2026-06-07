@@ -3,7 +3,9 @@ import {
   upsertRegisteredCourse,
 } from "@/helpers/db/course-db";
 import { showNotification } from "@/helpers/notification";
+import { AuthContext } from "@/lib/context/auth-context";
 import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
+import { useContext } from "react";
 import {
   CloudStorage,
   CloudStorageProvider,
@@ -15,7 +17,11 @@ const useBackup = () => {
   const { handleGoogleSignIn } = useGoogleAuth();
   const { setRegisteredCourses } = useRegisteredCourseContext();
 
-  const path = "file.json";
+  const { user } = useContext(AuthContext);
+
+  const path = `${user?.email.split("@")[0]}.json`;
+
+  // const path = "file.json";
 
   const writeToCloud = async () => {
     try {

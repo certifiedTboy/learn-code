@@ -78,7 +78,7 @@ export const createRegisteredCourseTable = async () => {
 };
 
 /**
- * Inserts or updates a user profile in the user_profile table.
+ * Inserts or updates a course in the courses table.
  */
 export const upsertCourse = async (course: {
   _id: string;
@@ -105,51 +105,68 @@ export const upsertCourse = async (course: {
         return null;
       }
 
-      // 🔥 Step 1: Delete all existing records
-      await db.runAsync(`DELETE FROM courses`);
+      if (!course?._id) {
+        console.log("Course ID is missing:", course);
+        return null;
+      }
 
-      // 🔥 Step 2: Insert fresh record
       await db.runAsync(
         `
-      INSERT INTO courses (
-        _id,
-        name,
-        description,
-        price,
-        rating,
-        completed,
-        subscribers,
-        totalTopics,
-        requiredDuration,
-        contents,
-        createdAt,
-        updatedAt,
-        skills,
-        course_image
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
+        INSERT INTO courses (
+          _id,
+          name,
+          description,
+          price,
+          rating,
+          completed,
+          subscribers,
+          totalTopics,
+          requiredDuration,
+          contents,
+          createdAt,
+          updatedAt,
+          skills,
+          course_image
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(_id) DO UPDATE SET
+          name = excluded.name,
+          description = excluded.description,
+          price = excluded.price,
+          rating = excluded.rating,
+          completed = excluded.completed,
+          subscribers = excluded.subscribers,
+          totalTopics = excluded.totalTopics,
+          requiredDuration = excluded.requiredDuration,
+          contents = excluded.contents,
+          createdAt = excluded.createdAt,
+          updatedAt = excluded.updatedAt,
+          skills = excluded.skills,
+          course_image = excluded.course_image
+        `,
         [
           course._id,
           course.name,
           course.description,
           course.price,
           course.rating,
-          course.completed,
+          course.completed ? 1 : 0,
           course.subscribers,
           course.totalTopics,
           course.requiredDuration,
-          JSON.stringify(course.contents),
+          JSON.stringify(course.contents ?? []),
           course.createdAt,
           course.updatedAt,
-          JSON.stringify(course.skills),
+          JSON.stringify(course.skills ?? []),
           course.image,
         ],
       );
 
-      console.log("Course replaced:", course.name);
+      console.log("Course inserted/updated:", course.name);
+      return true;
     } catch (error) {
-      console.log("Error replacing course:", error);
+      console.log("Error upserting course:", error);
+      return false;
     }
   });
 };
@@ -209,7 +226,6 @@ export const getCourseById = async (_id: string) => {
  */
 
 export const getAllCourse = async () => {
-  console.log("Fetching all courses...");
   try {
     const db = await getDatabase();
 
@@ -232,6 +248,10 @@ export const getAllCourse = async () => {
     console.log("Error getting all courses:", error);
   }
 };
+
+/**
+ * upersert registered course
+ */
 
 export const upsertRegisteredCourse = async (course: {
   _id: string;
@@ -260,56 +280,74 @@ export const upsertRegisteredCourse = async (course: {
         return null;
       }
 
-      await db.runAsync("BEGIN TRANSACTION");
+      if (!course?._id) {
+        console.log("Registered course ID is missing:", course);
+        return null;
+      }
 
-      // 🔥 Step 2: Insert fresh record
       await db.runAsync(
         `
-      INSERT OR REPLACE INTO registered_courses (
-        _id,
-        name,
-        description,
-        price,
-        rating,
-        completed,
-        subscribers,
-        totalTopics,
-        requiredDuration,
-        contents,
-        createdAt,
-        updatedAt,
-        skills,
-        course_image,
-        dateRegistered,
-        completion
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
+        INSERT INTO registered_courses (
+          _id,
+          name,
+          description,
+          price,
+          rating,
+          completed,
+          subscribers,
+          totalTopics,
+          requiredDuration,
+          contents,
+          createdAt,
+          updatedAt,
+          skills,
+          course_image,
+          dateRegistered,
+          completion
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(_id) DO UPDATE SET
+          name = excluded.name,
+          description = excluded.description,
+          price = excluded.price,
+          rating = excluded.rating,
+          completed = excluded.completed,
+          subscribers = excluded.subscribers,
+          totalTopics = excluded.totalTopics,
+          requiredDuration = excluded.requiredDuration,
+          contents = excluded.contents,
+          createdAt = excluded.createdAt,
+          updatedAt = excluded.updatedAt,
+          skills = excluded.skills,
+          course_image = excluded.course_image,
+          dateRegistered = excluded.dateRegistered,
+          completion = excluded.completion
+        `,
         [
           course._id,
-          course.name,
-          course.description,
-          course.price,
-          course.rating,
-          course.completed,
-          course.subscribers,
-          course.totalTopics,
-          course.requiredDuration,
-          JSON.stringify(course.contents),
-          course.createdAt,
-          course.updatedAt,
-          JSON.stringify(course.skills),
-          course.image,
-          course.dateRegistered,
-          course.completion,
+          course.name ?? "",
+          course.description ?? "",
+          course.price ?? "0",
+          course.rating ?? "0",
+          course.completed ? 1 : 0,
+          course.subscribers ?? 0,
+          course.totalTopics ?? 0,
+          course.requiredDuration ?? 0,
+          JSON.stringify(course.contents ?? []),
+          course.createdAt ?? "",
+          course.updatedAt ?? "",
+          JSON.stringify(course.skills ?? []),
+          course.image ?? "",
+          course.dateRegistered ?? new Date().toISOString(),
+          course.completion ?? "0",
         ],
       );
 
-      await db.runAsync("COMMIT");
-
-      console.log("Registered Course upserted:", course._id);
+      console.log("Registered Course inserted/updated:", course._id);
+      return true;
     } catch (error) {
-      console.log("Error replacing course:", error);
+      console.log("Error upserting registered course:", error);
+      return false;
     }
   });
 };
@@ -482,29 +520,23 @@ export const markSubTopicAsCompleted = async (
           ? Math.round((completedSubTopics / totalSubTopics) * 100)
           : 0;
 
-      await db.withTransactionAsync(async () => {
-        await db.runAsync(
-          `
+      await db.runAsync(
+        `
         UPDATE courses
         SET contents = ?
         WHERE _id = ?
         `,
-          [JSON.stringify(updatedContents), courseId],
-        );
+        [JSON.stringify(updatedContents), courseId],
+      );
 
-        await db.runAsync(
-          `
+      await db.runAsync(
+        `
         UPDATE registered_courses
         SET contents = ?, completion = ?
         WHERE _id = ?
         `,
-          [
-            JSON.stringify(updatedContents),
-            `${completionPercentage}%`,
-            courseId,
-          ],
-        );
-      });
+        [JSON.stringify(updatedContents), `${completionPercentage}%`, courseId],
+      );
     } catch (error) {
       console.log("Error marking subtopic as completed:", error);
       return null;

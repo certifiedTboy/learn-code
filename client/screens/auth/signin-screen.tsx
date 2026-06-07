@@ -1,6 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import FormTextInput from "@/components/ui/form-text-input";
 import GoogleBtn from "@/components/ui/google-btn";
+import SubmitButton from "@/components/ui/submit-button";
 import { Colors } from "@/constants/Colors";
 import { showNotification } from "@/helpers/notification";
 import useGoogleAuth from "@/hooks/use-google-auth";
@@ -13,11 +15,9 @@ import { AuthContext } from "@/lib/context/auth-context";
 import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -59,8 +59,13 @@ const SignInScreen = () => {
   );
 
   const placeHolderColor = useThemeColor(
-    { light: "#555", dark: "#555" },
+    { light: Colors.light.placeholder, dark: Colors.dark.placeholder },
     "text",
+  );
+
+  const borderColor = useThemeColor(
+    { light: Colors.light.border, dark: Colors.dark.border },
+    "background",
   );
 
   const handleLoginInputchange = (field: string, value: string) => {
@@ -189,70 +194,78 @@ const SignInScreen = () => {
             >
               Please sign in with your account
             </ThemedText>
-            <View style={{ marginBottom: height * 0.025 }}>
-              <ThemedText style={[styles.label, { fontSize: width * 0.035 }]}>
-                Email Here
-              </ThemedText>
-              <TextInput
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                style={[
-                  styles.input,
-                  { color: inputTextColor, paddingVertical: height * 0.018 },
-                ]}
-                placeholderTextColor={placeHolderColor}
-                onChangeText={(value) => handleLoginInputchange("email", value)}
-              />
-            </View>
-            <View style={{ marginBottom: height * 0.025 }}>
-              <ThemedText style={[styles.label, { fontSize: width * 0.035 }]}>
-                Password
-              </ThemedText>
-              <View style={styles.passwordWrapper}>
-                <TextInput
-                  placeholder="Enter your password"
-                  secureTextEntry={!passwordVisible}
-                  style={[
-                    styles.passwordInput,
-                    { color: inputTextColor, paddingVertical: height * 0.018 },
-                  ]}
-                  placeholderTextColor={placeHolderColor}
-                  onChangeText={(value) =>
-                    handleLoginInputchange("password", value)
-                  }
-                />
-                <TouchableOpacity
-                  onPress={() => setPasswordVisible(!passwordVisible)}
-                >
-                  <Text style={styles.eyeIcon}>
-                    {passwordVisible ? "🙈" : "👁️"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+
+            <FormTextInput
+              placeholderText="Enter your email"
+              labelText="Email"
+              keyboardType="email-address"
+              inputContainerStyle={{ marginBottom: height * 0.025 }}
+              labelStyle={[styles.label, { fontSize: width * 0.035 }]}
+              formInputStyle={[
+                styles.input,
+                {
+                  color: inputTextColor,
+                  paddingVertical: height * 0.018,
+                  borderColor,
+                },
+              ]}
+              placeholderTextColor={placeHolderColor}
+              handleTextChange={handleLoginInputchange}
+              value={loginData.email}
+              textInputField="email"
+            />
+
+            <FormTextInput
+              placeholderText="Enter your password"
+              labelText="Password"
+              inputContainerStyle={{ marginBottom: height * 0.025 }}
+              labelStyle={[styles.label, { fontSize: width * 0.035 }]}
+              formInputStyle={[
+                styles.passwordInput,
+                {
+                  color: inputTextColor,
+                  paddingVertical: height * 0.018,
+                  borderColor,
+                },
+              ]}
+              placeholderTextColor={placeHolderColor}
+              handleTextChange={handleLoginInputchange}
+              passwordVisible={passwordVisible}
+              value={loginData.password}
+              textInputField="password"
+              onShowPassword={() => setPasswordVisible(!passwordVisible)}
+              passwordWrapperStyle={[styles.passwordWrapper, { borderColor }]}
+            />
+
             <TouchableOpacity
               style={[styles.forgotContainer, { marginBottom: height * 0.04 }]}
               onPress={() => navigation.navigate("RequestPasswordResetScreen")}
             >
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
+
+            <SubmitButton
+              buttonText="SIGN IN"
+              buttonStyles={[
                 styles.signInButton,
                 { paddingVertical: height * 0.02, marginBottom: height * 0.04 },
               ]}
-              onPress={handleSubmit}
-            >
-              <Text style={styles.signInText}>SIGN IN</Text>
-              {isLoading && <ActivityIndicator size="small" color="#FFF" />}
-            </TouchableOpacity>
+              onButtonPress={handleSubmit}
+              isLoading={isLoading}
+              buttonTextStyles={styles.signInText}
+              buttonDisabled={isLoading}
+            />
+
             <View
               style={[styles.dividerContainer, { marginBottom: height * 0.03 }]}
             >
-              <View style={styles.divider} />
+              <View
+                style={[styles.divider, { backgroundColor: borderColor }]}
+              />
               <Text style={styles.dividerText}>Or Sign in with</Text>
-              <View style={styles.divider} />
+              <View
+                style={[styles.divider, { backgroundColor: borderColor }]}
+              />
             </View>
 
             <GoogleBtn
@@ -265,8 +278,8 @@ const SignInScreen = () => {
               ]}
               onPress={handleGoogleSignIn}
               iconColor={Colors.dark.generalBg}
-              isLoading={isLoading || isGoogleLoading}
-              buttonText="Signin with Google"
+              isLoading={isGoogleLoading}
+              buttonText="Google"
               buttonTextStyle={styles.googleText}
             />
 
@@ -297,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   subtitle: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
 
   label: {
@@ -306,7 +319,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
 
     paddingHorizontal: 14,
@@ -317,13 +330,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    // borderColor: "#E0E0E0",
     borderRadius: 10,
     paddingHorizontal: 14,
   },
   passwordInput: {
     flex: 1,
-
     fontSize: 15,
   },
   eyeIcon: {
@@ -350,7 +362,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   signInText: {
-    color: "#FFF",
+    color: Colors.light.white,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -362,12 +374,12 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: "#DDD",
+    // backgroundColor: "#DDD",
   },
   dividerText: {
     marginHorizontal: 10,
     fontSize: 13,
-    color: "#777",
+    color: Colors.light.dividerText,
   },
 
   googleBtn: {
@@ -389,7 +401,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   footerText: {
-    color: "#666",
+    color: Colors.light.subtitle,
   },
   signupText: {
     color: Colors.dark.generalBg,

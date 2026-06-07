@@ -3,15 +3,12 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { authApis } from "../apis/auth-apis";
 import { courseApis } from "../apis/course-apis";
 import { userApis } from "../apis/user-apis";
-import authSlice from "./auth-slice";
 
 export const store = configureStore({
   reducer: {
     [userApis.reducerPath]: userApis.reducer,
     [courseApis.reducerPath]: courseApis.reducer,
     [authApis.reducerPath]: authApis.reducer,
-
-    authState: authSlice,
   },
 
   devTools: process.env.NODE_ENV !== "production",

@@ -5,18 +5,17 @@ import { showNotification } from "@/helpers/notification";
 import useFlutterwavePayment from "@/hooks/use-flutterwave-payment";
 import usePaystackPayment from "@/hooks/use-paystack-payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { AuthContext } from "@/lib/context/auth-context";
 import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSelector } from "react-redux";
 
 const PaymentOptionsScreen = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const { course } = useContext(CourseDetailsContext);
-
-  const { currentUser } = useSelector((state: any) => state.authState);
+  const { user } = useContext(AuthContext);
 
   const {
     payNow,
@@ -149,8 +148,8 @@ const PaymentOptionsScreen = () => {
         <FlutterwavePayment
           courseId={course?._id}
           amount={+course?.price}
-          email={currentUser?.email}
-          userId={currentUser?._id}
+          email={user?.email!}
+          userId={user?._id!}
         />
 
         <Text style={styles.securityText}>
