@@ -46,7 +46,7 @@ export function DashboardLayout({ children }: LayoutProps) {
         <div className="flex items-center gap-2 text-primary">
           <GraduationCap className="h-6 w-6" />
           <span className="font-display font-bold text-lg text-foreground">
-            LearnOS
+            Learn Code
           </span>
         </div>
         <Button
@@ -70,7 +70,7 @@ export function DashboardLayout({ children }: LayoutProps) {
             <GraduationCap className="h-6 w-6" />
           </div>
           <span className="font-display font-bold text-xl tracking-wide text-foreground">
-            LearnOS
+            Learn Code
           </span>
         </div>
 

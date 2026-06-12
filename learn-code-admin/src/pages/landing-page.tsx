@@ -208,8 +208,8 @@ const LandingPage = () => {
                 Learn Anywhere, Anytime
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Download the LearnOS app to access courses offline, track your
-                progress, and continue your learning journey on the go.
+                Download the Learn Code app to access courses offline, track
+                your progress, and continue your learning journey on the go.
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                 <a
@@ -227,7 +227,7 @@ const LandingPage = () => {
                   </div>
                 </a>
                 <a
-                  href="https://play.google.com/store/apps/details?id=com.yourcompany.learnos"
+                  href="https://play.google.com/store/apps/details?id=com.yourcompany.learncode"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 bg-black/50 hover:bg-black border border-white/10 px-6 py-3 rounded-xl transition-all duration-300 w-full sm:w-auto justify-center"

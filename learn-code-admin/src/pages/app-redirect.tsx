@@ -8,7 +8,7 @@ const AppRedirect = () => {
     // TODO: Replace with your actual app custom scheme and store URLs
     const appScheme = `learncode://payment-success?${queryString}`;
     const playStoreUrl =
-      "https://play.google.com/store/apps/details?id=com.yourcompany.learnos";
+      "https://play.google.com/store/apps/details?id=com.yourcompany.learncode";
     const appStoreUrl = "https://apps.apple.com/app/id123456789";
 
     const userAgent =
@@ -55,7 +55,7 @@ const AppRedirect = () => {
           Redirecting...
         </h1>
         <p className="text-muted-foreground">
-          We are taking you back to the LearnOS app.
+          We are taking you back to the Learn Code app.
         </p>
         <p className="text-sm text-muted-foreground mt-4">
           If nothing happens, you will be redirected to the app store.
