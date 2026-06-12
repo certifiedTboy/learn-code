@@ -1,4 +1,4 @@
-import { User } from "../../lib/context/auth-context";
+import { User } from "../../features/context/auth-context";
 import { getDatabase } from "./db";
 
 /**

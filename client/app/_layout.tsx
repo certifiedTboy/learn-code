@@ -1,11 +1,11 @@
 import Notification from "@/components/common/Notification";
 import { Colors } from "@/constants/Colors";
+import AuthContextProvider from "@/features/context/auth-context";
+import CourseDetailsContextProvider from "@/features/context/course-details-context";
+import RegisteredCourseContextProvider from "@/features/context/registered-course-context";
+import { store } from "@/features/redux/store";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import AuthContextProvider from "@/lib/context/auth-context";
-import CourseDetailsContextProvider from "@/lib/context/course-details-context";
-import RegisteredCourseContextProvider from "@/lib/context/registered-course-context";
-import { store } from "@/lib/redux/store";
 import {
   DarkTheme,
   DefaultTheme,

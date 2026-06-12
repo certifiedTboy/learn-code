@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
-import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
+import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import { useCallback, useEffect, useState } from "react";

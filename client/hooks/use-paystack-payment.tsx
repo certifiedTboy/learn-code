@@ -1,5 +1,5 @@
+import { AuthContext } from "@/features/context/auth-context";
 import { generatePaymentReference } from "@/helpers/payment";
-import { AuthContext } from "@/lib/context/auth-context";
 import { useContext, useState } from "react";
 import { usePaystack } from "react-native-paystack-webview";
 
@@ -16,7 +16,7 @@ const usePaystackPayment = () => {
 
   const { popup } = usePaystack();
 
-  const payNow = (courseId: string, amount: number) => {
+  const payNow = (courseId: string, amount: number, courseName: string) => {
     popup.checkout({
       email: user?.email!,
       amount: amount,
@@ -25,6 +25,7 @@ const usePaystackPayment = () => {
       metadata: {
         userId: user?._id,
         courseId,
+        courseName,
         custom_fields: [
           {
             display_name: "Order ID",

@@ -1,26 +1,26 @@
 import { Colors } from "@/constants/Colors";
+import {
+  useGetNewVerificationCodeMutation,
+  useVerifyUserAccountMutation,
+} from "@/features/apis/auth-apis";
 import { validateVerificationform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useGetScreenOrientation } from "@/hooks/use-get-screen-orientation";
 import { useTimeCountdown } from "@/hooks/use-time-countdown";
 import {
-    useGetNewVerificationCodeMutation,
-    useVerifyUserAccountMutation,
-} from "@/lib/apis/auth-apis";
-import {
-    BottomSheetModal,
-    BottomSheetModalProvider,
-    BottomSheetScrollView,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Formik } from "formik";
 import { useCallback, useEffect, useRef } from "react";
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useWindowDimensions,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { OtpInput } from "react-native-otp-entry";

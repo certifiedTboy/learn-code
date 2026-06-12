@@ -1,10 +1,10 @@
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { getAllRegisteredCourse, getCourseById } from "@/helpers/db/course-db";
 import { isAtLeast31DaysAgo } from "@/helpers/payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import CourseDetailsTab from "@/screens/courses/course-details-tab";
 import {
   NavigationProp,

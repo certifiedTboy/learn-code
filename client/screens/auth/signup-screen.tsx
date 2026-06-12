@@ -5,15 +5,15 @@ import GoogleBtn from "@/components/ui/google-btn";
 import Icon from "@/components/ui/Icon";
 import SubmitButton from "@/components/ui/submit-button";
 import { Colors } from "@/constants/Colors";
+import {
+  useCreateNewUserMutation,
+  useLoginWithGoogleMutation,
+} from "@/features/apis/auth-apis";
+import { AuthContext } from "@/features/context/auth-context";
 import { validateRegform } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import {
-  useCreateNewUserMutation,
-  useLoginWithGoogleMutation,
-} from "@/lib/apis/auth-apis";
-import { AuthContext } from "@/lib/context/auth-context";
 import OTPBottomSheetModal from "@/screens/onboarding/otp-bottom-sheet-modal";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";

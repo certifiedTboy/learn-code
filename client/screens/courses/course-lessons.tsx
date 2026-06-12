@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
+import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import React, { useContext } from "react";
 import {
   ScrollView,

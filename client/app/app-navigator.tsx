@@ -1,9 +1,9 @@
 import FloatingBtn from "@/components/ui/float-btn";
 import FloatingBtn2 from "@/components/ui/float-btn2";
 import Icon from "@/components/ui/Icon";
+import { AuthContext } from "@/features/context/auth-context";
+import ChatContextProvider from "@/features/context/chat-context";
 import useBackup from "@/hooks/use-backup";
-import { AuthContext } from "@/lib/context/auth-context";
-import ChatContextProvider from "@/lib/context/chat-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { useNavigationState } from "@react-navigation/native";
 import Tooltip from "@/components/ui/tooltip";

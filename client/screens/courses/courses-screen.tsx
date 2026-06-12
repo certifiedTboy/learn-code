@@ -1,9 +1,9 @@
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
+import { useGetAllCoursesMutation } from "@/features/apis/course-apis";
 import { getAllCourse, upsertCourse } from "@/helpers/db/course-db";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useGetAllCoursesMutation } from "@/lib/apis/course-apis";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import {

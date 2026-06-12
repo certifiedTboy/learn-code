@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
+import { AuthContext } from "@/features/context/auth-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { AuthContext } from "@/lib/context/auth-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useContext, useState } from "react";
 import {

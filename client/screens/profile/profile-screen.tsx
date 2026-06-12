@@ -1,9 +1,9 @@
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { AuthContext } from "@/features/context/auth-context";
 import useGoogleAuth from "@/hooks/use-google-auth";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { AuthContext } from "@/lib/context/auth-context";
 import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext } from "react";
 import {

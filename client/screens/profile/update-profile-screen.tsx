@@ -2,11 +2,11 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { useUpdateUserProfileMutation } from "@/features/apis/user-apis";
+import { AuthContext } from "@/features/context/auth-context";
 import { UpdateProfileSchema } from "@/helpers/form-validators";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useUpdateUserProfileMutation } from "@/lib/apis/user-apis";
-import { AuthContext } from "@/lib/context/auth-context";
 import { Formik } from "formik";
 import { useContext, useEffect } from "react";
 import {

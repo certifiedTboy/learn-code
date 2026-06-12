@@ -1,10 +1,10 @@
+import { AuthContext } from "@/features/context/auth-context";
+import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
 import {
   getAllRegisteredCourse,
   upsertRegisteredCourse,
 } from "@/helpers/db/course-db";
 import { showNotification } from "@/helpers/notification";
-import { AuthContext } from "@/lib/context/auth-context";
-import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
 import { useContext } from "react";
 import {
   CloudStorage,

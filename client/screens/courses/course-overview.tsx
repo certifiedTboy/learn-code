@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
+import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import { useContext } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -41,7 +41,10 @@ const CourseOverview = () => {
     <ScrollView contentContainerStyle={[styles.content, { backgroundColor }]}>
       <View style={styles.headerRow}>
         <Text style={[styles.title, { color: textColor }]}>{course?.name}</Text>
-        <Text style={styles.price}>{course?.price}</Text>
+        <Text style={styles.price}>
+          {"\u20A6"}
+          {course?.price}
+        </Text>
       </View>
 
       <Text style={[styles.author, { color: subtitleColor }]}>
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    // flexWrap: "wrap",
   },
   title: {
     fontSize: 20,

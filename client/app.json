@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "learn-code",
+    "name": "Learn Code",
     "slug": "learn-code",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app-icon.png",
     "scheme": "learncode",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,10 +17,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        // "backgroundColor": "#E6F4FE",
+        // "foregroundImage": "./assets/images/android-icon-foreground.png",
+        // "backgroundImage": "./assets/images/android-icon-background.png",
+        // "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/app-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -35,11 +37,14 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/app-icon.png",
+          "imageWidth": 300,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
+            "image": "./assets/images/app-icon.png",
+            "imageWidth": 300,
+            "resizeMode": "contain",
             "backgroundColor": "#000000"
           }
         }

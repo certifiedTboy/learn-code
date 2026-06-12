@@ -1,10 +1,10 @@
 import { ThemedView } from "@/components/themed-view";
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { AuthContext } from "@/features/context/auth-context";
+import { ChatContext } from "@/features/context/chat-context";
 import { generateRandomRoomId } from "@/helpers/chat";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { AuthContext } from "@/lib/context/auth-context";
-import { ChatContext } from "@/lib/context/chat-context";
 import TypingIndicator from "@/screens/ai/TypingIndication";
 import { useFocusEffect } from "@react-navigation/native";
 import React, {

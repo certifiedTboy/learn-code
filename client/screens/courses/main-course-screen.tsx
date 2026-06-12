@@ -3,7 +3,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import CourseItem from "@/screens/courses/course-item";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 // import CourseCheckedItem from "@/components/courses/CourseCheckedItem";
-import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
+import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
 import { useCallback, useEffect } from "react";
 import {
   ScrollView,

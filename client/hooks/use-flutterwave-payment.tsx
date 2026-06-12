@@ -24,11 +24,13 @@ const useFlutterwavePayment = () => {
     amount,
     userId,
     courseId,
+    courseName,
   }: {
     email: string;
     amount: number;
     userId: string;
     courseId: string;
+    courseName: string;
   }) => {
     const handleOnRedirect = (data: RedirectParams) => {
       // @ts-ignore
@@ -55,6 +57,7 @@ const useFlutterwavePayment = () => {
             courseId,
             userId,
             email,
+            courseName,
           },
         }}
         // style={styles.button}

@@ -1,12 +1,12 @@
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
+import { AuthContext } from "@/features/context/auth-context";
+import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { upsertRegisteredCourse } from "@/helpers/db/course-db";
 import { showNotification } from "@/helpers/notification";
 import useFlutterwavePayment from "@/hooks/use-flutterwave-payment";
 import usePaystackPayment from "@/hooks/use-paystack-payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { AuthContext } from "@/lib/context/auth-context";
-import { CourseDetailsContext } from "@/lib/context/course-details-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -120,13 +120,16 @@ const PaymentOptionsScreen = () => {
       <View style={[styles.card, { backgroundColor: cardBackgroundColor }]}>
         {/* Course Info */}
         <Text style={[styles.title, { color: courseText }]}>
-          Graphic Design Course
+          {course?.name}
         </Text>
-        <Text style={styles.author}>By Syd Hassan</Text>
+        <Text style={styles.author}>Adebisi Tosin</Text>
 
         <View style={styles.priceRow}>
           <Text style={{ color: courseText }}>Price</Text>
-          <Text style={styles.price}>$72</Text>
+          <Text style={styles.price}>
+            {"\u20A6"}
+            {course?.price}
+          </Text>
         </View>
 
         <View style={styles.divider} />
@@ -139,7 +142,7 @@ const PaymentOptionsScreen = () => {
           style={styles.button}
           onPress={() => {
             resetPaymentStatus();
-            payNow(course?._id, +course?.price);
+            payNow(course?._id, +course?.price, course?.name);
           }}
         >
           <Text style={styles.buttonText}>Pay with Paystack</Text>
@@ -150,6 +153,7 @@ const PaymentOptionsScreen = () => {
           amount={+course?.price}
           email={user?.email!}
           userId={user?._id!}
+          courseName={course?.name}
         />
 
         <Text style={styles.securityText}>

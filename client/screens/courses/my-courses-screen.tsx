@@ -1,7 +1,7 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
+import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useRegisteredCourseContext } from "@/lib/context/registered-course-context";
 import CourseCard from "@/screens/courses/course-card";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";

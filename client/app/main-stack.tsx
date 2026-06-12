@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
+import { useGetCurrentUserMutation } from "@/features/apis/user-apis";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useGetCurrentUserMutation } from "@/lib/apis/user-apis";
 import AIChatScreen from "@/screens/ai/ai-chat-screen";
 import CourseContentScreen from "@/screens/courses/course-content-screen";
 import CourseDetailsScreen from "@/screens/courses/course-details-screen";

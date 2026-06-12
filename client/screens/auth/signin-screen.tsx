@@ -4,14 +4,14 @@ import FormTextInput from "@/components/ui/form-text-input";
 import GoogleBtn from "@/components/ui/google-btn";
 import SubmitButton from "@/components/ui/submit-button";
 import { Colors } from "@/constants/Colors";
-import { showNotification } from "@/helpers/notification";
-import useGoogleAuth from "@/hooks/use-google-auth";
-import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   useLoginUserMutation,
   useLoginWithGoogleMutation,
-} from "@/lib/apis/auth-apis";
-import { AuthContext } from "@/lib/context/auth-context";
+} from "@/features/apis/auth-apis";
+import { AuthContext } from "@/features/context/auth-context";
+import { showNotification } from "@/helpers/notification";
+import useGoogleAuth from "@/hooks/use-google-auth";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import {
