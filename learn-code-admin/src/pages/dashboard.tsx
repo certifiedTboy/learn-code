@@ -47,7 +47,7 @@ export default function Dashboard() {
     },
     {
       label: "Est. Revenue",
-      value: `$${totalRevenue?.toLocaleString()}`,
+      value: `₦ ${totalRevenue?.toLocaleString()}`,
       icon: Clock,
       color: "text-green-400",
       bg: "bg-green-400/10",
