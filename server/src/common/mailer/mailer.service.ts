@@ -99,6 +99,7 @@ export class EmailService {
     firstName: string,
     amount: string,
     paymentId: string,
+    courseName: string,
   ) {
     try {
       await this.mailerService.sendMail({
@@ -109,6 +110,34 @@ export class EmailService {
           firstName,
           amount,
           paymentId,
+          courseName,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.log(error);
+      }
+    }
+  }
+
+  async paymentUpdateSuccessMail(
+    to: string,
+    subject: string,
+    firstName: string,
+    amount: string,
+    paymentId: string,
+    courseName: string,
+  ) {
+    try {
+      await this.mailerService.sendMail({
+        to,
+        subject,
+        template: 'payment-update',
+        context: {
+          firstName,
+          amount,
+          paymentId,
+          courseName,
         },
       });
     } catch (error: unknown) {

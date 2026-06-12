@@ -88,6 +88,8 @@ export class CourseServices {
     courseId: string,
     userId: string,
     paymentId: number | string,
+    courseName: string,
+    amount: number,
   ) {
     const course = await this.courseModel.findById(courseId);
     const user = await this.usersService.checkUserExistById(userId);
@@ -102,6 +104,19 @@ export class CourseServices {
         user.registeredCourses[courseExists].dateRegistered = new Date();
         await user.save();
 
+        await this.queueService.addJob(
+          'update-course-payment',
+          {
+            email: user!.email,
+            subject: 'Course Payment Updated',
+            firstName: user?.firstName || user!.email,
+            paymentId,
+            amount,
+            courseName,
+          },
+          10000,
+        );
+
         return user;
       } else {
         user.registeredCourses.push({
@@ -113,6 +128,19 @@ export class CourseServices {
         course.subscribers += 1;
         await course.save();
         await user.save();
+
+        await this.queueService.addJob(
+          'complete-course-payment',
+          {
+            email: user!.email,
+            subject: 'Course Payment Completed',
+            firstName: user?.firstName || user!.email,
+            paymentId,
+            amount,
+            courseName,
+          },
+          10000,
+        );
 
         return user;
       }
@@ -157,6 +185,8 @@ export class CourseServices {
       response?.data?.data?.meta?.courseId,
       response?.data?.data?.meta?.userId,
       response?.data?.data?.id,
+      response?.data?.data?.meta?.courseName,
+      response?.data?.data?.amount,
     );
 
     return result;
@@ -175,11 +205,15 @@ export class CourseServices {
       const userId = paymentData?.data?.metadata?.userId;
       const courseId = paymentData?.data?.metadata?.courseId;
       const paymentId = paymentData?.data?.id;
+      const courseName = paymentData?.data?.metadata?.courseName;
+      const amount = paymentData?.data?.amount;
 
       const result = await this.handleSuccessPayment(
         courseId,
         userId,
         paymentId,
+        courseName,
+        amount / 100,
       );
 
       return result;

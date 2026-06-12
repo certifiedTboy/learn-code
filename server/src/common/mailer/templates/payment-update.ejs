@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Course Registration Confirmed</title>
+    <title>Payment Update Confirmed</title>
 
     <style>
       body {
@@ -48,9 +48,9 @@
       }
 
       .highlight-box {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-        border-left: 4px solid #2e7d32;
+        background-color: #e3f2fd;
+        color: #1976d2;
+        border-left: 4px solid #1976d2;
         padding: 15px 20px;
         margin: 25px 0;
         border-radius: 4px;
@@ -135,7 +135,7 @@
     <div class="container">
       <!-- Header -->
       <div class="header">
-        <h1>Registration Confirmed</h1>
+        <h1>Payment Updated</h1>
       </div>
 
       <!-- Content -->
@@ -143,18 +143,17 @@
         <p>Hello <strong><%= locals.firstName || 'Learner' %></strong>,</p>
 
         <p>
-          Congratulations! Your payment was successfully processed, and your
-          course registration is now complete. We are happy to have you on
-          board.
+          Your payment have been successfully updated for your course
+          registration. Thank you for keeping your account up to date!
         </p>
 
         <!-- Highlight Box for Status -->
-        <div class="highlight-box">PAYMENT SUCCESSFUL</div>
+        <div class="highlight-box">UPDATE SUCCESSFUL</div>
 
         <!-- Payment Details -->
         <table class="receipt-table">
           <tr>
-            <th colspan="2">Receipt Details</th>
+            <th colspan="2">Transaction Details</th>
           </tr>
           <tr>
             <td class="label">Course Name</td>
@@ -167,8 +166,8 @@
             <td class="value"><%= locals.paymentId || 'N/A' %></td>
           </tr>
           <tr>
-            <td class="label">Amount Paid</td>
-            <td class="value">&#8358;<%= locals.amount || 'Paid in Full' %></td>
+            <td class="label">Amount</td>
+            <td class="value">&#8358;<%= locals.amount || 'N/A' %></td>
           </tr>
           <tr>
             <td class="label">Date</td>
@@ -176,7 +175,9 @@
           </tr>
         </table>
 
-        <a href="https://learncode.com/dashboard" class="btn">Start Learning</a>
+        <a href="https://learncode.com/dashboard" class="btn"
+          >View My Courses</a
+        >
 
         <p style="margin-top: 35px; font-size: 14px">
           If you have any questions, feel free to contact our support team at

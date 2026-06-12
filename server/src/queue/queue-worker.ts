@@ -44,10 +44,31 @@ export class QueueWorker extends WorkerHost {
       );
     }
 
+    if (job.name === 'complete-course-payment') {
+      await this.emailService.paymentSuccessMail(
+        job?.data?.email!,
+        job?.data?.subject!,
+        job?.data?.firstName!,
+        job?.data?.amount!,
+        job?.data?.paymentId!,
+        job?.data?.courseName!,
+      );
+    }
+
+    if (job.name === 'update-course-payment') {
+      await this.emailService.paymentUpdateSuccessMail(
+        job?.data?.email!,
+        job?.data?.subject!,
+        job?.data?.firstName!,
+        job?.data?.amount!,
+        job?.data?.paymentId!,
+        job?.data?.courseName!,
+      );
+    }
+
     if (job.name === 'update-course-progress') {
       const courseData = job?.data?.courseData;
       const userId = job?.data?.userId;
-
       await this.courseServices.updateCourseProgress(courseData, userId);
     }
   }
