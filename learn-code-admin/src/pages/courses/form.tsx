@@ -292,7 +292,7 @@ export default function CourseForm() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
-                  <Label>Price ($)</Label>
+                  <Label>Price (&#8358;)</Label>
                   <Input
                     onChange={handleInputChange}
                     name="price"

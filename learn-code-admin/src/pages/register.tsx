@@ -35,7 +35,6 @@ export default function Register() {
 
     if (Object.values(error)[0]) return;
 
-
     delete formData.confirmPassword;
 
     createAdminAccount({
@@ -97,44 +96,6 @@ export default function Register() {
             {isLoading && <Loader />}
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
-                {/* <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    First Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      {...register("firstName")}
-                      placeholder="John"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {errors.firstName && (
-                    <p className="text-xs text-destructive">
-                      {errors.firstName.message}
-                    </p>
-                  )}
-                </div> */}
-
-                {/* <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Last Name
-                  </label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      {...register("lastName")}
-                      placeholder="Doe"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {errors.lastName && (
-                    <p className="text-xs text-destructive">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div> */}
-
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">
                     Email
@@ -231,16 +192,17 @@ export default function Register() {
           >
             <div className="flex justify-end items-center gap-3 text-primary mb-8">
               <span className="font-display font-bold text-3xl text-foreground">
-                LearnOS
+                Learn Code
               </span>
               <GraduationCap className="h-12 w-12" />
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Empower your <br />
+              Empowering
+              <br />
               <span className="text-gradient">students</span> globally.
             </h1>
             <p className="text-xl text-muted-foreground max-w-md ml-auto">
-              Join thousands of creators using LearnOS to deliver premium
+              Join thousands of creators using Learn Code to deliver premium
               educational experiences.
             </p>
           </motion.div>

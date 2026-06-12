@@ -152,7 +152,7 @@ export default function Dashboard() {
                     <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
                       <div className="flex gap-3">
                         <span className="px-2.5 py-1 bg-primary/90 text-primary-foreground text-xs font-semibold rounded-md backdrop-blur-md">
-                          ${course?.price}
+                          &#8358;{course?.price}
                         </span>
 
                         <span className="flex items-center text-xs gap-1">
@@ -200,7 +200,9 @@ export default function Dashboard() {
                 your platform by creating your first course.
               </p>
               <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow cursor-pointer">Create First Course</Button>
+                <Button className="shadow-glow cursor-pointer">
+                  Create First Course
+                </Button>
               </Link>
             </div>
           )}

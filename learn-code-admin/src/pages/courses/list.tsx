@@ -190,7 +190,7 @@ export default function CoursesList() {
 
                     <div className="flex items-center justify-between pt-4 border-t border-border/50">
                       <div className="font-display font-bold text-lg text-primary">
-                        ${course.price}
+                        &#8358;{course.price}
                       </div>
                       <div className="text-xs bg-secondary px-2.5 py-1 rounded-md text-secondary-foreground border border-white/5">
                         {course.totalTopics} Topics
@@ -214,7 +214,9 @@ export default function CoursesList() {
             </p>
             {!searchTerm && (
               <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow cursor-pointer">Create Course</Button>
+                <Button className="shadow-glow cursor-pointer">
+                  Create Course
+                </Button>
               </Link>
             )}
           </div>

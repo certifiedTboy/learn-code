@@ -68,7 +68,7 @@ export default function UpdatePassword() {
             <div className="flex items-center gap-3 text-primary mb-8">
               <GraduationCap className="h-12 w-12" />
               <span className="font-display font-bold text-3xl text-foreground">
-                LearnOS
+                Learn Code
               </span>
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">

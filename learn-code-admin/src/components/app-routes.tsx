@@ -13,6 +13,7 @@ import CoursesList from "../pages/courses/list";
 import CourseForm from "../pages/courses/form";
 import CourseView from "../pages/courses/view";
 import UserProfile from "../pages/user-profile";
+import AppRedirect from "../pages/app-redirect";
 
 import Redirect from "./redirect";
 
@@ -22,6 +23,7 @@ const AppRoutes = () => {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/payment-success" component={AppRedirect} />
       <Route path="/register" component={Register} />
       <Route path="/verify-acount" component={VerifyAccount} />
       <Route path="/reset-password" component={ResetPassword} />
