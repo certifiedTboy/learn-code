@@ -15,6 +15,10 @@ import CourseView from "../pages/courses/view";
 import UserProfile from "../pages/user-profile";
 import AppRedirect from "../pages/app-redirect";
 import RegisteredUsers from "../pages/registered-users";
+import LandingPage from "../pages/landing-page";
+import PrivacyPolicy from "../pages/privacy-policy";
+import TermsAndConditions from "../pages/term-conditions";
+import Contacts from "../pages/contacts";
 
 import Redirect from "./redirect";
 
@@ -23,6 +27,10 @@ const AppRoutes = () => {
 
   return (
     <Switch>
+      <Route path="/" component={LandingPage} />
+      <Route path="/contacts" component={Contacts} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-and-conditions" component={TermsAndConditions} />
       <Route path="/login" component={Login} />
       <Route path="/payment-success" component={AppRedirect} />
       <Route path="/register" component={Register} />
