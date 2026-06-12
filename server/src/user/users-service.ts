@@ -430,6 +430,19 @@ export class UsersService {
   }
 
   /**
+   * @method findAllUsersByAdmin
+   * @description Retrieves all users from the database.
+   */
+  async findAllUsersByAdmin() {
+    return this.userModel
+      .find({ role: 'user' })
+      .select(
+        '-passcode -verificationCode -verificationCodeExpiresIn -__v, -passwordResetToken, -passwordResetTokenExpiresIn',
+      )
+      .exec();
+  }
+
+  /**
    * @method updateUserOnlineStatus
    * @description Updates the online status of a user.
    * @param {string} userId - The ID of the user to update.

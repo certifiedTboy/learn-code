@@ -19,7 +19,7 @@ import { UpdateUserProfileDTO } from './dto/update-user-profile.dto';
 import { GenerateNewTokenDto } from './dto/generate-token.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ResponseHandler } from '../common/response-handler/response-handler';
-import { AuthGuard } from '../guard/auth-guard';
+import { AdminGuard, AuthGuard } from '../guard/auth-guard';
 
 /**
  * @class UsersController
@@ -40,10 +40,10 @@ export class UsersController {
    * @description Retrieves all users from the database.
    */
   @Get('')
-  // @UseGuards(AuthGuard)
+  @UseGuards(AdminGuard)
   async getAllUsers() {
     try {
-      const result = await this.usersService.findAllUsers();
+      const result = await this.usersService.findAllUsersByAdmin();
 
       return ResponseHandler.ok(
         200,

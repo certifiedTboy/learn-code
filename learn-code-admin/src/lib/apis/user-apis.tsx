@@ -19,6 +19,12 @@ export const userApis = createApi({
   }),
 
   endpoints: (builder) => ({
+    getAllRegisteredUsers: builder.mutation({
+      query: () => ({
+        url: "/users",
+        method: "GET",
+      }),
+    }),
     getAdminProfile: builder.mutation({
       query: () => ({
         url: "/auth/me",
@@ -38,4 +44,5 @@ export const userApis = createApi({
   }),
 });
 
-export const { useGetAdminProfileMutation } = userApis;
+export const { useGetAdminProfileMutation, useGetAllRegisteredUsersMutation } =
+  userApis;

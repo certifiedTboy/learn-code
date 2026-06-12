@@ -14,6 +14,7 @@ import CourseForm from "../pages/courses/form";
 import CourseView from "../pages/courses/view";
 import UserProfile from "../pages/user-profile";
 import AppRedirect from "../pages/app-redirect";
+import RegisteredUsers from "../pages/registered-users";
 
 import Redirect from "./redirect";
 
@@ -30,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/reset-password/update" component={UpdatePassword} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/courses" component={CoursesList} />
+      <Route path="/dashboard/registered-users" component={RegisteredUsers} />
       <Route path="/dashboard/profile" component={UserProfile} />
       <Route path="/dashboard/courses/new" component={CourseForm} />
       <Route path="/dashboard/courses/:id/edit" component={CourseForm} />

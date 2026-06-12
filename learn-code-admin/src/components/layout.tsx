@@ -26,6 +26,11 @@ export function DashboardLayout({ children }: LayoutProps) {
   const navItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
+    {
+      href: "/dashboard/registered-users",
+      label: "Registered Users",
+      icon: Settings,
+    },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ];
 
@@ -34,8 +39,6 @@ export function DashboardLayout({ children }: LayoutProps) {
     window.location.href = "/login";
   };
 
-
-  
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}
