@@ -6,12 +6,15 @@ import {
   Get,
   UseGuards,
   Req,
+  Inject,
 } from '@nestjs/common';
 import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { UsersService } from './users-service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { VerifyUserDto } from './dto/verify-user.dto';
@@ -33,7 +36,12 @@ import { AdminGuard, AuthGuard } from '../guard/auth-guard';
   version: '1',
 })
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  private clientType: string = '';
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * @method getAllUsers
@@ -41,8 +49,15 @@ export class UsersController {
    */
   @Get('')
   @UseGuards(AdminGuard)
-  async getAllUsers() {
+  async getAllUsers(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Fetching all users',
+        clientType: this.clientType,
+      });
       const result = await this.usersService.findAllUsersByAdmin();
 
       return ResponseHandler.ok(
@@ -52,6 +67,11 @@ export class UsersController {
       );
     } catch (error) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
           description: error.message,
@@ -75,11 +95,28 @@ export class UsersController {
   @Post('create')
   async createUser(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
     try {
-      const clientType = req.headers['x-client-type'] as string;
-      const result = await this.usersService.create(createUserDto, clientType);
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Creating a new user',
+        email: createUserDto.email,
+        clientType: this.clientType,
+      });
+      const result = await this.usersService.create(
+        createUserDto,
+        this.clientType,
+      );
+
       return ResponseHandler.ok(201, 'User created successfully', result || {});
     } catch (error) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: createUserDto.email,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
           description: error.message,
@@ -100,8 +137,15 @@ export class UsersController {
    * @param {VerifyUserDto} verifyUserDto - The data transfer object containing the verification code.
    */
   @Patch('verify')
-  async verifyUser(@Body() verifyUserDto: VerifyUserDto) {
+  async verifyUser(@Req() req: Request, @Body() verifyUserDto: VerifyUserDto) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Verifying user',
+        clientType: this.clientType,
+      });
       const result = await this.usersService.verifyUser(verifyUserDto);
 
       /**
@@ -116,6 +160,11 @@ export class UsersController {
       return ResponseHandler.ok(200, 'User verified successfully', result!);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
           description: error.message,
@@ -141,6 +190,15 @@ export class UsersController {
   async getCurrentUser(@Req() req: Request) {
     try {
       const { email } = req.user;
+
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Fetching current user',
+        email,
+        clientType: this.clientType,
+      });
       // console.log(req.user);
       const user = await this.usersService.checkIfUserExist({
         email,
@@ -154,6 +212,12 @@ export class UsersController {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: req.user?.email,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
           description: error.message,
@@ -178,6 +242,13 @@ export class UsersController {
     @Body() updateUserProfileDto: UpdateUserProfileDTO,
   ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Updating user profile',
+        clientType: this.clientType,
+      });
       const result = await this.usersService.updateProfile(
         req?.user?._id,
         updateUserProfileDto,
@@ -186,6 +257,11 @@ export class UsersController {
       return ResponseHandler.ok(200, 'Profile updated successfully', result);
     } catch (error) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('Something went wrong', {
           cause: error.cause,
           description: error.message,
@@ -209,9 +285,18 @@ export class UsersController {
    */
   @Post('new-verification-code')
   async generateNewVerificationCode(
+    @Req() req: Request,
     @Body() generateNewTokenDto: GenerateNewTokenDto,
   ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Generating new verification code',
+        email: generateNewTokenDto.email,
+        clientType: this.clientType,
+      });
       const { email } = generateNewTokenDto;
 
       if (!email) {
@@ -234,6 +319,12 @@ export class UsersController {
       return ResponseHandler.ok(201, 'New Verification code sent', updatedUser);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: generateNewTokenDto.email,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -255,8 +346,19 @@ export class UsersController {
    * @throws {Error} - Throws an error if the passcode reset link generation process fails.
    */
   @Post('password/reset')
-  async requestPasscodeReset(@Body() passcodeResetDto: GenerateNewTokenDto) {
+  async requestPasscodeReset(
+    @Req() req: Request,
+    @Body() passcodeResetDto: GenerateNewTokenDto,
+  ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Requesting password reset code',
+        email: passcodeResetDto.email,
+        clientType: this.clientType,
+      });
       const { email } = passcodeResetDto;
 
       if (!email) {
@@ -273,6 +375,12 @@ export class UsersController {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: passcodeResetDto.email,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -295,8 +403,19 @@ export class UsersController {
    * @throws {Error} - Throws an error if the passcode update process fails.
    */
   @Patch('password/reset/update')
-  async updatePassword(@Body() updatePasswordDto: UpdatePasswordDto) {
+  async updatePassword(
+    @Req() req: Request,
+    @Body() updatePasswordDto: UpdatePasswordDto,
+  ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Updating user password',
+        clientType: this.clientType,
+      });
+
       const { password, passwordResetCode } = updatePasswordDto;
 
       if (!password || !passwordResetCode) {
@@ -331,6 +450,11 @@ export class UsersController {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,

@@ -8,11 +8,13 @@ import {
   Res,
   BadRequestException,
   InternalServerErrorException,
-  Headers,
+  Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AuthService } from './auth-services';
-import { AuthDto, GoogleAuthDto } from './dto/auth.dto';
+import { AuthDto } from './dto/auth.dto';
 import { AuthGuard } from '../guard/auth-guard';
 import { ResponseHandler } from '../common/response-handler/response-handler';
 import { UsersService } from '../user/users-service';
@@ -30,9 +32,12 @@ import { CreateGoogleUserDto } from 'src/user/dto/create-user.dto';
   version: '1',
 })
 export class AuthControllers {
+  private clientType: string = '';
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
   ) {}
 
   /**
@@ -47,13 +52,30 @@ export class AuthControllers {
     try {
       const { password, email } = authDto;
 
-      const clientType = req.headers['x-client-type'] as string;
+      this.clientType = req.headers['x-client-type'] as string;
 
-      const result = await this.authService.signIn(password, email, clientType);
+      this.logger.info({
+        level: 'info',
+        message: 'Signin in user with email and password',
+        email: authDto.email,
+        clientType: this.clientType,
+      });
+
+      const result = await this.authService.signIn(
+        password,
+        email,
+        this.clientType,
+      );
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: authDto.email,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -67,14 +89,29 @@ export class AuthControllers {
    * @param {GoogleAuthDto} authDto - The data transfer object containing user credentials.
    */
   @Post('google/login')
-  async loginWithGoogle(@Body() createUserDto: CreateGoogleUserDto) {
+  async loginWithGoogle(
+    @Req() req: Request,
+    @Body() createUserDto: CreateGoogleUserDto,
+  ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+      this.logger.info({
+        level: 'info',
+        message: 'Signin in user with google',
+        email: createUserDto.email,
+        clientType: this.clientType,
+      });
       const result = await this.authService.googleSignin(createUserDto);
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {
-      console.log(error);
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: createUserDto.email,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -90,8 +127,16 @@ export class AuthControllers {
   @Get('me')
   @UseGuards(AuthGuard)
   async getCurrentUser(@Req() req: Request) {
+    const currentUser = req.user as { email: string; _id: string };
     try {
-      const currentUser = req.user;
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Fetching current user',
+        email: currentUser?.email,
+        clientType: this.clientType,
+      });
 
       if (!currentUser) {
         throw new BadRequestException('', {
@@ -107,6 +152,12 @@ export class AuthControllers {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          email: currentUser?.email,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -122,11 +173,23 @@ export class AuthControllers {
   @Get('logout')
   logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'User logging out',
+        clientType: this.clientType,
+      });
       res.clearCookie('accessToken');
 
       return ResponseHandler.ok(200, 'User logged out successfully', undefined);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -146,6 +209,13 @@ export class AuthControllers {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Generating new token',
+        clientType: this.clientType,
+      });
       const refreshToken = req.headers['authorization']?.split(' ')[1];
 
       if (!refreshToken) {
@@ -170,6 +240,11 @@ export class AuthControllers {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,

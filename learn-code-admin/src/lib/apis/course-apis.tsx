@@ -12,6 +12,7 @@ export const courseApis = createApi({
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
+        headers.set("x-client-type", "web");
       }
       return headers;
     },

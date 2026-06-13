@@ -1,18 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, VersioningType } from '@nestjs/common';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, ConsoleLogger } from '@nestjs/common';
 // import { BadRequestException } from '@nestjs/common';
-import * as express from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/exceptions/http-exceptions.filter';
 
-async function bootstrap() {
+const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
-    rawBody: true, // <-- REQUIRED for Stripe
+    logger: false,
+    // rawBody: true, // <-- REQUIRED for Stripe
+    // logger: new ConsoleLogger({
+    //   colors: true,
+    //   prefix: 'learn-code-api',
+    //   json: true,
+    //   timestamp: true,
+    // }),
   });
+
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   /**
    *
@@ -88,5 +97,5 @@ async function bootstrap() {
   await app.listen(port!, () => {
     console.log(`Server is running on port ${port}`);
   });
-}
+};
 bootstrap();

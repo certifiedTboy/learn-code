@@ -7,11 +7,13 @@ import {
   Body,
   Put,
   Delete,
-  Res,
+  Inject,
   // Headers,
   // RawBodyRequest,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { Request } from 'express';
 import {
   BadRequestException,
@@ -32,21 +34,38 @@ import { AdminGuard, AuthGuard } from '../guard/auth-guard';
   version: '1',
 })
 export class CourseControllers {
+  private clientType: string = '';
+
   constructor(
     private readonly courseService: CourseServices,
     private configService: ConfigService,
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
   ) {}
 
   @Get('')
   @UseGuards(AuthGuard)
   async getAllCourses(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Fetching all courses',
+        clientType: this.clientType,
+      });
+
       // const { limit, skip } = ChatHelpers.getPaginationParams(page);
       const courses = await this.courseService.getCourses();
 
       return ResponseHandler.ok(200, 'Courses retrieved successfully', courses);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -63,6 +82,13 @@ export class CourseControllers {
   @UseGuards(AuthGuard)
   async getRegisteredCoursesByUser(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Fetching registered courses by user',
+        clientType: this.clientType,
+      });
       const userId = req.user._id;
       const courses = await this.courseService.getRegisteredCourses(userId);
 
@@ -73,6 +99,11 @@ export class CourseControllers {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -84,8 +115,18 @@ export class CourseControllers {
 
   @Post('create')
   @UseGuards(AdminGuard)
-  async createCourse(@Body() createCourseDto: CreateCourseDto) {
+  async createCourse(
+    @Req() req: Request,
+    @Body() createCourseDto: CreateCourseDto,
+  ) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Creating a new course',
+        clientType: this.clientType,
+      });
       const createdCourse =
         await this.courseService.createCourse(createCourseDto);
 
@@ -98,6 +139,11 @@ export class CourseControllers {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -117,6 +163,13 @@ export class CourseControllers {
     try {
       if (id && Array.isArray(id))
         throw new BadRequestException('Invalid course ID');
+
+      this.clientType = req.headers['x-client-type'] as string;
+      this.logger.info({
+        level: 'info',
+        message: `Updating course with id ${id}`,
+        clientType: this.clientType,
+      });
       const updatedCourse = await this.courseService.updateCourseById(
         createCourseDto,
         id,
@@ -131,6 +184,11 @@ export class CourseControllers {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -149,12 +207,24 @@ export class CourseControllers {
       throw new BadRequestException('Invalid course ID');
 
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: `Deleting course with id ${id}`,
+        clientType: this.clientType,
+      });
       await this.courseService.deleteCourseById(id);
 
       return ResponseHandler.ok(200, 'Course deleted successfully', {});
     } catch (error: unknown) {
       // console.log(error);
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new BadRequestException('', {
           cause: error.cause,
           description: error.message,
@@ -171,6 +241,13 @@ export class CourseControllers {
   @Post('payment/webhook')
   async paystackSuccessPayment(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Processing Paystack payment webhook',
+        clientType: this.clientType || 'mobile',
+      });
       const signature = req.headers['x-paystack-signature'] as string;
       const result = await this.courseService.verifyPaystackPayment(
         req.body,
@@ -180,6 +257,11 @@ export class CourseControllers {
       ResponseHandler.ok(200, 'Payment verified successfully', result);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType || 'mobile',
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -200,6 +282,13 @@ export class CourseControllers {
   @Post('payment/flutterwave/webhook')
   async handleFlutterwaveSuccessPayment(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Processing Flutterwave payment webhook',
+        clientType: this.clientType || 'mobile',
+      });
       const result = await this.courseService.verifyFlutterwavePayment(
         req.body.id,
       );
@@ -207,6 +296,11 @@ export class CourseControllers {
       ResponseHandler.ok(200, 'Payment verified successfully', result);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType || 'mobile',
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,
@@ -228,6 +322,13 @@ export class CourseControllers {
   @UseGuards(AuthGuard)
   async updateRegisteredCourseProgress(@Req() req: Request) {
     try {
+      this.clientType = req.headers['x-client-type'] as string;
+
+      this.logger.info({
+        level: 'info',
+        message: 'Updating registered course progress',
+        clientType: this.clientType,
+      });
       const result = await this.courseService.addCourseProgressUpdateToQueue(
         req.body,
         req.user._id,
@@ -236,6 +337,11 @@ export class CourseControllers {
       ResponseHandler.ok(200, 'Course progress updated successfully', {});
     } catch (error: unknown) {
       if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.cause,
+          clientType: this.clientType,
+        });
         throw new InternalServerErrorException('', {
           cause: error.cause,
           description: error.message,

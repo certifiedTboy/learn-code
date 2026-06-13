@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
+import { loggerConfig } from './common/logger/logger.config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { HttpExceptionFilter } from './common/exceptions/http-exceptions.filter';
@@ -16,7 +18,7 @@ import { BullModule } from '@nestjs/bullmq';
 @Module({
   imports: [
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, WinstonModule.forRoot(loggerConfig)],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URI'),
       }),

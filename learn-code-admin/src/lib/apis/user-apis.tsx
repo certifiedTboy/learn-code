@@ -13,6 +13,7 @@ export const userApis = createApi({
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
+        headers.set("x-client-type", "web");
       }
       return headers;
     },
