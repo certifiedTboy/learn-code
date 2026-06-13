@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { useAuth } from "../hooks/use-auth";
+import { useEffect, type SubmitEvent } from "react";
+// import { useAuth } from "../hooks/use-auth";
 import { useSelector } from "react-redux";
 import useForm from "../hooks/useForm";
 import { userProfileSchema } from "../helpers/data-validator-schema";
@@ -19,7 +19,9 @@ export default function UserProfile() {
     }
   }, [currentUser]);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    e: SubmitEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
   };
 
@@ -117,7 +119,7 @@ export default function UserProfile() {
                 >
                   Save Changes
                 </button>
-              </div> 
+              </div>
             </form>
           </div>
         </div>

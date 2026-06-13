@@ -29,13 +29,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
-import { useToast } from "../hooks/use-toast";
+// import { useToast } from "../hooks/use-toast";
 import { useUsers } from "../hooks/use-users";
 
 type FilterType = "all" | "subscribed" | "unsubscribed";
 
 export default function RegisteredUsers() {
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const { users } = useUsers();
 

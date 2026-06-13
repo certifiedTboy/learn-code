@@ -16,7 +16,7 @@ export default function VerifyAccount() {
   const { isAuthenticated } = useAuth();
   const [
     verifyAdminAccount,
-    { isLoading, error: errorResponse, isSuccess, isError, data: responseData },
+    { isLoading, error: errorResponse, isSuccess, isError, data: __ },
   ] = useVerifyAdminAccountMutation();
 
   const { toast } = useToast();

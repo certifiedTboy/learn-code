@@ -1,7 +1,6 @@
 import {
   ArrowLeft,
   Mail,
-  MapPin,
   Phone,
   MessageSquare,
   MessageCircleCheck,

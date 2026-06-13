@@ -42,7 +42,7 @@ export const authApis = createApi({
         body: payload,
       }),
 
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(__, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
 
@@ -59,7 +59,7 @@ export const authApis = createApi({
         method: "GET",
       }),
 
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(__, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
 

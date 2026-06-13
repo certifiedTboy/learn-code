@@ -30,7 +30,7 @@ export const userApis = createApi({
         url: "/auth/me",
         method: "GET",
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(__, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
 
