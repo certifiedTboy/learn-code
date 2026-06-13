@@ -27,8 +27,9 @@ export class AuthService {
    * If valid, generates a JWT token for the user.
    * @param {string} password - The user's password.
    * @param {string} email - The user's email address.
+   * @param {string} clientType - The source of the request
    */
-  async signIn(password: string, email: string) {
+  async signIn(password: string, email: string, clientType: string) {
     const user = await this.usersService.checkIfUserExist({ email });
 
     if (!user) {
@@ -45,11 +46,18 @@ export class AuthService {
       });
     }
 
+    if (user?.role === 'user' && clientType === 'web') {
+      throw new UnauthorizedException('', {
+        cause: 'Not authorized',
+        description: 'Not authorized',
+      });
+    }
+
     if (!user.password) {
-      throw new UnauthorizedException("", {
+      throw new UnauthorizedException('', {
         cause: 'Request password reset',
-        description: 'Request password reset'
-      })
+        description: 'Request password reset',
+      });
     }
     if (user && user.isVerified) {
       const passwordMatch = await PasscodeHashing.verifyPassword(

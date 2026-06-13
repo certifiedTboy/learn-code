@@ -8,6 +8,7 @@ import {
   Res,
   BadRequestException,
   InternalServerErrorException,
+  Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './auth-services';
@@ -42,11 +43,13 @@ export class AuthControllers {
    * @param {AuthDto} authDto - The data transfer object containing user credentials.
    */
   @Post('login')
-  async login(@Body() authDto: AuthDto) {
+  async login(@Req() req: Request, @Body() authDto: AuthDto) {
     try {
       const { password, email } = authDto;
 
-      const result = await this.authService.signIn(password, email);
+      const clientType = req.headers['x-client-type'] as string;
+
+      const result = await this.authService.signIn(password, email, clientType);
 
       return ResponseHandler.ok(200, 'login successful', result);
     } catch (error: unknown) {

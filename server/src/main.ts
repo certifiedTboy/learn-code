@@ -30,20 +30,22 @@ async function bootstrap() {
 
   // Enable CORS for React Native app
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'https://2c8c1a26d806.ngrok-free.app',
-    ],
+    origin: ['http://localhost:5173', 'https://2c8c1a26d806.ngrok-free.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-client-type',
+      'x-platform',
+    ],
     credentials: true,
   });
 
   app.use(cookieParser());
-  app.use(
-    '/courses/stripe/payment/webhook',
-    express.raw({ type: 'application/json' }),
-  );
+  // app.use(
+  //   '/courses/stripe/payment/webhook',
+  //   express.raw({ type: 'application/json' }),
+  // );
 
   const configService: ConfigService = app.get(ConfigService);
   const port = configService.get<string>('PORT');
@@ -76,9 +78,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Learn Code API')
-    .setDescription(
-      'Learn Code API documentation',
-    )
+    .setDescription('Learn Code API documentation')
     .setVersion('1.0')
     // .addTag('cats')
     .build();

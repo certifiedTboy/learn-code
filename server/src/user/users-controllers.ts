@@ -74,10 +74,9 @@ export class UsersController {
    */
   @Post('create')
   async createUser(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
-    const { source } = req.query;
     try {
-      const result = await this.usersService.create(createUserDto);
-
+      const clientType = req.headers['x-client-type'] as string;
+      const result = await this.usersService.create(createUserDto, clientType);
       return ResponseHandler.ok(201, 'User created successfully', result || {});
     } catch (error) {
       if (error instanceof Error) {

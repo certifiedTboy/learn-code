@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PasscodeHashing } from '../helpers/passcode-hashing';
@@ -20,18 +21,30 @@ import { QueueService } from '../queue/queue-service';
  */
 @Injectable()
 export class UsersService {
+  private adminUser: string;
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly accessJwtService: AccessJwtService,
     private readonly queueService: QueueService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.adminUser = this.configService.get<string>('EMAIL_USER')!;
+  }
 
   /**
    * @method create
    * @description Creates a new user and sends a verification email.
    * @param {CreateUserDto} createUserDto - The data transfer object containing user details.
+   * @param {string} clientType - source of http request
    */
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto, clientType: string) {
+    if (clientType === 'web' && this.adminUser !== createUserDto.email) {
+      throw new BadRequestException('', {
+        cause: 'Not authorized',
+        description: 'Not authorized',
+      });
+    }
+
     // check if user with the same email or phone number already exists
     const userWithEmailExist = await this.checkIfUserExist({
       email: createUserDto.email,

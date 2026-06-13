@@ -63,6 +63,8 @@ export default function Login() {
     }
   }, [isSuccess, isError, isAuthenticated]);
 
+  console.log("error:", errorResponse);
+
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Left side - Branding */}
