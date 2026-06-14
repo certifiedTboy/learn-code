@@ -1,31 +1,31 @@
 import { ThemedView } from "@/components/themed-view";
 import { Colors } from "@/constants/Colors";
 import {
-    createCourseTable,
-    createRegisteredCourseTable,
+  createCourseTable,
+  createRegisteredCourseTable,
 } from "@/helpers/db/course-db";
 import { createUserProfileTable } from "@/helpers/db/user-db";
 import OnboardingSwiper from "@/screens/onboarding/onboarding-swiper";
 import {
-    NavigationProp,
-    useFocusEffect,
-    useNavigation,
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
 } from "@react-navigation/native";
 import { useCallback, useRef, useState } from "react";
 import {
-    FlatList,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 
 const slides = [
   {
     id: "1",
-    title: "Welcome to Cybex IT Group\nwhere learning meets innovation!",
+    title: "Welcome to Learn Code,\nwhere learning meets innovation!",
     subtitle:
       "Empowering your journey through\ncutting-edge IT education and expertise",
     image: require("@/assets/images/Isolation_Mode.png"),

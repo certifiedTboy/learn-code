@@ -15,6 +15,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -293,6 +294,17 @@ const SignInScreen = () => {
             </View>
           </View>
         </KeyboardAvoidingView>
+
+        <TouchableOpacity
+          onPress={() =>
+            Linking.openURL(
+              "https://f18btrht-5173.uks1.devtunnels.ms/privacy-policy",
+            )
+          }
+          style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
+        >
+          <Text style={styles.signupText}>Privacy Policy</Text>
+        </TouchableOpacity>
       </ScrollView>
     </ThemedView>
   );

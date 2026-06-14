@@ -1,5 +1,6 @@
 // components/CourseCard.js
 import { Colors } from "@/constants/Colors";
+import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
@@ -18,12 +19,14 @@ const CourseCard = ({
   author,
   progress,
   image,
+  isExpired,
 }: {
   id: string;
   name: string;
   author: string;
   progress: number;
   image: any;
+  isExpired?: boolean;
 }) => {
   const { width } = useWindowDimensions();
 
@@ -48,13 +51,26 @@ const CourseCard = ({
 
   return (
     <TouchableOpacity
-      style={[styles.card, { width: width - 32, backgroundColor: cardColor }]}
+      style={[
+        styles.card,
+        {
+          width: width - 32,
+          backgroundColor: cardColor,
+          opacity: isExpired ? 0.5 : 1,
+        },
+      ]}
       onPress={() =>
-        // @ts-ignore
-        navigation.navigate("main-course-screen", {
-          id,
-          name,
-        })
+        isExpired
+          ? showNotification({
+              type: "error",
+              title: "Expired Subscription",
+              message: "Expired Subscription",
+            })
+          : // @ts-ignore
+            navigation.navigate("main-course-screen", {
+              id,
+              name,
+            })
       }
     >
       <Image source={image} style={styles.image} />

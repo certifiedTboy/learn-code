@@ -1,11 +1,20 @@
 import { Colors } from "@/constants/Colors";
 import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 const CourseOverview = () => {
   const { course } = useContext(CourseDetailsContext);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const characterLimit = 150;
+  const description = course?.description || "";
+  const isLongDescription = description.length > characterLimit;
+  const displayDescription =
+    isExpanded || !isLongDescription
+      ? description
+      : `${description.substring(0, characterLimit)}...`;
 
   const backgroundColor = useThemeColor(
     { light: Colors.light.background, dark: Colors.dark.background },
@@ -40,7 +49,11 @@ const CourseOverview = () => {
   return (
     <ScrollView contentContainerStyle={[styles.content, { backgroundColor }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: textColor }]}>{course?.name}</Text>
+        <View style={styles.titleContainer}>
+          <Text style={[styles.title, { color: textColor }]}>
+            {course?.name}
+          </Text>
+        </View>
         <Text style={styles.price}>
           {"\u20A6"}
           {course?.price}
@@ -52,10 +65,17 @@ const CourseOverview = () => {
       </Text>
 
       <Text style={[styles.description, { color: textColor }]}>
-        {course?.description}
+        {displayDescription}
       </Text>
 
-      <Text style={styles.readMore}>Read More</Text>
+      {isLongDescription && (
+        <Text
+          style={styles.readMore}
+          onPress={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? "Read Less" : "Read More"}
+        </Text>
+      )}
 
       {/* Stats */}
       <View style={styles.statsRow}>
@@ -104,7 +124,9 @@ const CourseOverview = () => {
             style={[styles.skillChip, { backgroundColor: chipColor }]}
           >
             <Text style={[styles.skillText, { color: skillTextColor }]}>
-              {skill}
+              {skill && skill[skill?.length - 1] === ","
+                ? skill?.slice(0, -1)
+                : skill}
             </Text>
           </View>
         ))}
@@ -137,7 +159,11 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    // flexWrap: "wrap",
+    alignItems: "flex-start",
+  },
+  titleContainer: {
+    flex: 1,
+    marginRight: 16,
   },
   title: {
     fontSize: 20,

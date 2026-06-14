@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { Platform } from "react-native";
 
 let baseUrl = process.env.EXPO_PUBLIC_API_URL;
 
@@ -11,6 +12,8 @@ export const userApis = createApi({
       const authToken = await AsyncStorage.getItem("access_token");
 
       headers.set("Authorization", `Bearer ${authToken}`);
+      headers.set("x-client-type", "mobile");
+      headers.set("X-Platform", Platform.OS);
       return headers;
     },
   }),

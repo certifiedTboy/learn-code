@@ -79,6 +79,8 @@ const UpdatePasswordScreen = ({
   }) => {
     const { isValid, password, confirmPassword } = values;
 
+    console.log("values:", values);
+
     if (!isValid) {
       return showNotification({
         type: "error",
@@ -249,7 +251,7 @@ const UpdatePasswordScreen = ({
                       marginBottom: height * 0.04,
                     },
                   ]}
-                  onButtonPress={() => () =>
+                  onButtonPress={() =>
                     updatePasswordSubmitHandler({ isValid, ...values })
                   }
                   isLoading={isLoading}

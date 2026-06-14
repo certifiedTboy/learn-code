@@ -329,8 +329,9 @@ export class CourseControllers {
         message: 'Updating registered course progress',
         clientType: this.clientType,
       });
+
       const result = await this.courseService.addCourseProgressUpdateToQueue(
-        req.body,
+        req.body.courses,
         req.user._id,
       );
 

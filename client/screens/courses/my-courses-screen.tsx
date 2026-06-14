@@ -1,6 +1,7 @@
 import Icon from "@/components/ui/Icon";
 import { Colors } from "@/constants/Colors";
 import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
+import { isAtLeast31DaysAgo } from "@/helpers/payment";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import CourseCard from "@/screens/courses/course-card";
 import { useFocusEffect } from "@react-navigation/native";
@@ -40,6 +41,7 @@ const MyCoursesScreen = () => {
               author="By Emmanuel Tosin"
               progress={Number(course?.completion?.replace("%", "") || 0)}
               image={{ uri: course?.course_image || course?.image }}
+              isExpired={isAtLeast31DaysAgo(course?.dateRegistered)}
             />
           ))
         ) : (

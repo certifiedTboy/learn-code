@@ -11,6 +11,7 @@ export const Colors = {
     codeBlockText: "#cccccc",
     codeInlineBg: "#e0e0e0",
     codeInlineText: "#d14",
+    tint: "#0a7ea4",
     assistantBubbleBg: "#E7ECF6",
     white: "#ffffff",
     black: "#000000",

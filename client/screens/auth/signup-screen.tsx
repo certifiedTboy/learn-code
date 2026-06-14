@@ -1,6 +1,7 @@
 import SuccessModal from "@/components/common/success-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import CheckBox from "@/components/ui/checkbox";
 import GoogleBtn from "@/components/ui/google-btn";
 import Icon from "@/components/ui/Icon";
 import SubmitButton from "@/components/ui/submit-button";
@@ -19,6 +20,7 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { Formik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -37,6 +39,7 @@ const SignupSchema = validateRegform();
 const SignUpScreen = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [checked, setChecked] = useState(false);
   const [showBottomSheetModal, setShowBottomSheetModal] = useState(false);
 
   const { width, height } = useWindowDimensions();
@@ -90,6 +93,13 @@ const SignUpScreen = () => {
         type: "error",
         title: "Invalid Input",
         message: "Invalid input values.",
+      });
+
+    if (!checked)
+      return showNotification({
+        type: "error",
+        title: "Accept Our Terms",
+        message: "Accept Our Terms",
       });
 
     await createNewUser({
@@ -304,7 +314,7 @@ const SignUpScreen = () => {
                       styles.signInButton,
                       {
                         paddingVertical: height * 0.02,
-                        marginBottom: height * 0.04,
+                        marginBottom: height * 0.02,
                       },
                     ]}
                     onButtonPress={() =>
@@ -313,6 +323,11 @@ const SignUpScreen = () => {
                     isLoading={isLoading}
                     buttonTextStyles={styles.signInText}
                     buttonDisabled={isLoading}
+                  />
+
+                  <CheckBox
+                    checked={checked}
+                    setChecked={() => setChecked(!checked)}
                   />
 
                   <View
@@ -338,7 +353,17 @@ const SignUpScreen = () => {
                         marginBottom: height * 0.03,
                       },
                     ]}
-                    onPress={handleGoogleSignIn}
+                    onPress={() => {
+                      if (!checked) {
+                        showNotification({
+                          type: "error",
+                          title: "Accept Our Terms",
+                          message: "Accept Our Terms",
+                        });
+                      } else {
+                        handleGoogleSignIn();
+                      }
+                    }}
                     iconColor={Colors.dark.generalBg}
                     isLoading={isGoogleLoading}
                     buttonText="Google"
@@ -356,6 +381,21 @@ const SignUpScreen = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
+
+                <TouchableOpacity
+                  onPress={() =>
+                    Linking.openURL(
+                      "https://f18btrht-5173.uks1.devtunnels.ms/privacy-policy",
+                    )
+                  }
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  <Text style={styles.signupText}>Privacy Policy</Text>
+                </TouchableOpacity>
               </ScrollView>
             </ThemedView>
           )}

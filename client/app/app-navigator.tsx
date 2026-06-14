@@ -8,20 +8,50 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { useNavigationState } from "@react-navigation/native";
 import Tooltip from "@/components/ui/tooltip";
 import { Colors } from "@/constants/Colors";
-import { useContext, useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
 import MainStack from "./main-stack";
-
 import OnboardingStack from "./onboarding-stack";
 
 const AppNavigator = () => {
   const { checkUserIsAuthenticated, isAuthenticated } = useContext(AuthContext);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0.3)).current;
 
   const { writeToCloud, readFromCloud } = useBackup();
 
+  const backgroundColor = useThemeColor(
+    { light: Colors.light.background, dark: Colors.dark.background },
+    "background",
+  );
+
   useEffect(() => {
-    checkUserIsAuthenticated();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+
+    const verifyAuth = async () => {
+      try {
+        await checkUserIsAuthenticated();
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    verifyAuth();
   }, []);
 
   useEffect(() => {
@@ -56,6 +86,16 @@ const AppNavigator = () => {
   // };
 
   // export default CurrentScreenLogger;
+
+  if (isChecking) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor }]}>
+        <Animated.Text style={[styles.splashText, { opacity: fadeAnim }]}>
+          Learn Code
+        </Animated.Text>
+      </View>
+    );
+  }
 
   return (
     <>
@@ -131,5 +171,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  splashText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: Colors.light.generalBg,
   },
 });

@@ -1,3 +1,4 @@
+// import { useUpdateRegisteredCoursesProgressMutation } from "@/features/apis/course-apis";
 import { AuthContext } from "@/features/context/auth-context";
 import { useRegisteredCourseContext } from "@/features/context/registered-course-context";
 import {
@@ -16,6 +17,8 @@ import useGoogleAuth from "./use-google-auth";
 const useBackup = () => {
   const { handleGoogleSignIn } = useGoogleAuth();
   const { setRegisteredCourses } = useRegisteredCourseContext();
+  // const [updateRegisteredCoursesProgress] =
+  //   useUpdateRegisteredCoursesProgressMutation();
 
   const { user } = useContext(AuthContext);
 
@@ -45,6 +48,10 @@ const useBackup = () => {
             JSON.stringify(registeredCourses),
             CloudStorageScope.AppData,
           );
+
+          // updateRegisteredCoursesProgress({
+          //   courses: registeredCourses,
+          // });
 
           showNotification({
             type: "success",
