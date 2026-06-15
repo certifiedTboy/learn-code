@@ -119,6 +119,20 @@ const PrivacyPolicy = () => {
                   with their strict security and privacy standards.
                 </p>
               </section>
+
+              <section>
+                <h2 className="text-xl font-bold text-foreground mb-3">
+                  5. Push Notifications
+                </h2>
+                <p>
+                  With your permission, we may send push notifications or in-app
+                  notifications to your selected devices. These notifications
+                  may include course updates, reminders, promotional offers, and
+                  other relevant information. You can opt-out of receiving these
+                  notifications at any time by adjusting the permissions in your
+                  device settings or within the application settings.
+                </p>
+              </section>
             </div>
           </div>
         </div>
