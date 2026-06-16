@@ -4,6 +4,7 @@ import AuthContextProvider from "@/features/context/auth-context";
 import CourseDetailsContextProvider from "@/features/context/course-details-context";
 import RegisteredCourseContextProvider from "@/features/context/registered-course-context";
 import { store } from "@/features/redux/store";
+import { setNavigationRef } from "@/helpers/global-navigation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
@@ -11,7 +12,9 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { useNavigationContainerRef } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { PaystackProvider } from "react-native-paystack-webview";
@@ -31,6 +34,12 @@ export default function RootLayout() {
     { light: Colors.light.background, dark: Colors.dark.background },
     "background",
   );
+
+  const rootNavigationRef = useNavigationContainerRef();
+
+  useEffect(() => {
+    setNavigationRef(rootNavigationRef);
+  }, [rootNavigationRef]);
 
   return (
     <Provider store={store}>

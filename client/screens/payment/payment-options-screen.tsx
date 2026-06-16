@@ -4,8 +4,10 @@ import { AuthContext } from "@/features/context/auth-context";
 import { CourseDetailsContext } from "@/features/context/course-details-context";
 import { upsertRegisteredCourse } from "@/helpers/db/course-db";
 import { showNotification } from "@/helpers/notification";
+import { getNext31DaysDate } from "@/helpers/payment";
 import useFlutterwavePayment from "@/hooks/use-flutterwave-payment";
 import usePaystackPayment from "@/hooks/use-paystack-payment";
+import { useScheduleNotification } from "@/hooks/use-schedule-notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useContext, useEffect } from "react";
@@ -13,7 +15,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const PaymentOptionsScreen = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-
+  const { scheduleMonthlyNotification } = useScheduleNotification();
   const { course } = useContext(CourseDetailsContext);
   const { user } = useContext(AuthContext);
 
@@ -67,6 +69,17 @@ const PaymentOptionsScreen = () => {
           completion: "0%",
         });
 
+        scheduleMonthlyNotification(
+          "Expired Subscription",
+          `Pay Your subscription for ${course?.name} to continue learning.`,
+          {
+            ...getNext31DaysDate(),
+            route: "course-details",
+            courseId: course?._id,
+            courseName: course?.name,
+          },
+        );
+
         navigation.navigate("main-tabs");
       })();
     }
@@ -101,6 +114,17 @@ const PaymentOptionsScreen = () => {
           dateRegistered: new Date().toDateString(),
           completion: "0",
         });
+
+        scheduleMonthlyNotification(
+          "Expired Subscription",
+          `Pay Your subscription for ${course?.name} to continue learning.`,
+          {
+            ...getNext31DaysDate(),
+            route: "course-details",
+            courseId: course?._id,
+            courseName: course?.name,
+          },
+        );
 
         navigation.navigate("main-tabs");
       })();

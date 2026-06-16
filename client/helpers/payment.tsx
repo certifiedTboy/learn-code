@@ -13,3 +13,18 @@ export const isAtLeast31DaysAgo = (dateInput: string) => {
 
   return daysDiff >= 31;
 };
+
+export const getNext31DaysDate = (): {
+  day: number;
+  hour: number;
+  minute: number;
+} => {
+  const date = new Date();
+  date.setDate(date.getDate() + 31);
+
+  return {
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+  };
+};

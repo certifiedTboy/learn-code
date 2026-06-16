@@ -9,6 +9,7 @@ import PaymentOptionsScreen from "@/screens/payment/payment-options-screen";
 import AvailablePaymentOptionsScreen from "@/screens/profile/available-payment-options-screen";
 import HelpCenterScreen from "@/screens/profile/help-center-screen";
 import InviteFriendsScreen from "@/screens/profile/invite-friends-screen";
+import ScheduleLearningScreen from "@/screens/profile/schedule-learning-screen";
 import UpdateProfileScreen from "@/screens/profile/update-profile-screen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect } from "react";
@@ -123,6 +124,15 @@ const MainStack = () => {
         options={() => ({
           animation: "slide_from_right",
           title: "Invite Friends",
+        })}
+      />
+
+      <Stack.Screen
+        name="time-schedule"
+        component={ScheduleLearningScreen}
+        options={() => ({
+          animation: "slide_from_right",
+          title: "Schedule Learning Time",
         })}
       />
     </Stack.Navigator>

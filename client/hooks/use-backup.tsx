@@ -13,12 +13,14 @@ import {
   CloudStorageScope,
 } from "react-native-cloud-storage";
 import useGoogleAuth from "./use-google-auth";
-
+import { useScheduleNotification } from "./use-schedule-notification";
 const useBackup = () => {
   const { handleGoogleSignIn } = useGoogleAuth();
   const { setRegisteredCourses } = useRegisteredCourseContext();
   // const [updateRegisteredCoursesProgress] =
   //   useUpdateRegisteredCoursesProgressMutation();
+
+  const { triggerImmediateNotification } = useScheduleNotification();
 
   const { user } = useContext(AuthContext);
 
@@ -53,14 +55,18 @@ const useBackup = () => {
           //   courses: registeredCourses,
           // });
 
-          showNotification({
-            type: "success",
-            message: "Backup Successful!",
-            title: "Backup Successfuly!",
-          });
+          triggerImmediateNotification(
+            "Backup Completed",
+            "Backup to the cloud completed",
+          );
         }
       }
     } catch (error) {
+      showNotification({
+        type: "error",
+        message: "Backup to the cloud failed!",
+        title: "Backup to the cloud failed!",
+      });
       console.log("Error writing file to cloud:", error);
     }
   };
@@ -107,11 +113,10 @@ const useBackup = () => {
             });
           }
 
-          showNotification({
-            type: "success",
-            message: "Restore Successful!",
-            title: "Restore Successfuly!",
-          });
+          triggerImmediateNotification(
+            "Backup restore completed",
+            "Backup restore from cloud completed",
+          );
         }
       }
     } catch (error) {

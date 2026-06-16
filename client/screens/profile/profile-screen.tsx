@@ -29,6 +29,13 @@ const MENU_ITEMS = [
     icon: "card-outline",
     path: "available-payment-options",
   },
+  {
+    id: "3",
+    label: "Schedule Learning Time",
+    icon: "alarm-outline",
+    path: "time-schedule",
+  },
+
   // {
   //   id: "3",
   //   label: "Terms & Conditions",

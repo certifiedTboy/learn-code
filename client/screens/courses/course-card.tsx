@@ -2,7 +2,7 @@
 import { Colors } from "@/constants/Colors";
 import { showNotification } from "@/helpers/notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useNavigation } from "@react-navigation/native";
+import { type NavigationProp, useNavigation } from "@react-navigation/native";
 import React from "react";
 import {
   Image,
@@ -30,9 +30,7 @@ const CourseCard = ({
 }) => {
   const { width } = useWindowDimensions();
 
-  const navigation = useNavigation<{
-    navigate: (arg0: string) => void;
-  }>();
+  const navigation = useNavigation<NavigationProp<any>>();
 
   const cardColor = useThemeColor(
     { light: "#EAF0FF", dark: "#1E1E1E" },

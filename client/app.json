@@ -4,7 +4,7 @@
     "slug": "learn-code",
     "version": "1.0.0",
     "orientation": "default",
-    "icon": "./assets/images/app-icon.png",
+    "icon": "./assets/images/app_icon.png",
     "scheme": "learncode",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,11 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        // "backgroundColor": "#E6F4FE",
-        // "foregroundImage": "./assets/images/android-icon-foreground.png",
-        // "backgroundImage": "./assets/images/android-icon-background.png",
-        // "monochromeImage": "./assets/images/android-icon-monochrome.png"
-        "foregroundImage": "./assets/images/app-icon.png",
+        "foregroundImage": "./assets/images/app_icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -37,16 +33,29 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/app-icon.png",
+          "image": "./assets/images/app_icon.png",
           "imageWidth": 300,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
-            "image": "./assets/images/app-icon.png",
+            "image": "./assets/images/app_icon.png",
             "imageWidth": 300,
             "resizeMode": "contain",
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/app_icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/sounds/notification.wav",
+            "./assets/sounds/notification_others.wav"
+          ],
+          "enableBackgroundRemoteNotifications": false
         }
       ],
       [
@@ -55,7 +64,8 @@
           "iosUrlScheme": "com.googleusercontent.apps.615183565746-36cmnbhvh3bc5b2egeq5uaa3lmhhmfn1"
         }
       ],
-      "react-native-cloud-storage"
+      "react-native-cloud-storage",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

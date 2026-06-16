@@ -5,6 +5,7 @@ import {
   createRegisteredCourseTable,
 } from "@/helpers/db/course-db";
 import { createUserProfileTable } from "@/helpers/db/user-db";
+import { useScheduleNotification } from "@/hooks/use-schedule-notification";
 import OnboardingSwiper from "@/screens/onboarding/onboarding-swiper";
 import {
   NavigationProp,
@@ -51,6 +52,8 @@ const OnboardingScreen = () => {
 
   const { width, height } = useWindowDimensions();
 
+  const { getDeviceNotificationStatus } = useScheduleNotification();
+
   const navigation = useNavigation<NavigationProp<any>>();
 
   const onViewableItemsChanged = useRef(
@@ -71,6 +74,7 @@ const OnboardingScreen = () => {
         await createUserProfileTable();
         await createCourseTable();
         await createRegisteredCourseTable();
+        await getDeviceNotificationStatus();
       })();
     }, []),
   );
