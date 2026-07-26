@@ -155,8 +155,8 @@ const AIChatScreen = () => {
             style={{
               body: {
                 color: Colors.light.text,
-                fontSize: width * 0.042,
-                lineHeight: width * 0.058,
+                fontSize: width * 0.025,
+                lineHeight: width * 0.038,
               },
               fence: {
                 backgroundColor: Colors.light.codeBlockBg,

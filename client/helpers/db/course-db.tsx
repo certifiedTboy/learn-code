@@ -356,37 +356,24 @@ export const upsertRegisteredCourse = async (course: {
  * get all registered courses
  */
 export const getAllRegisteredCourse = async () => {
-  console.log("Fetching all registered courses...");
   try {
     const db = await getDatabase();
 
-    if (db) {
-      const allCourserows = await db.getAllAsync(`SELECT * FROM courses`);
-
-      if (allCourserows && allCourserows.length > 0) {
-        const registeredCourserows = await db.getAllAsync(
-          `SELECT * FROM registered_courses`,
-        );
-
-        return registeredCourserows.map((course: any) => {
-          const matchedCourse = allCourserows.find(
-            (newCourse: any) => newCourse?._id === course._id,
-          );
-
-          if (matchedCourse) {
-            return {
-              ...matchedCourse,
-              completion: course?.completion,
-              dateRegistered: course?.dateRegistered,
-            };
-          }
-
-          return []; // or course, depending on your use case
-        });
-      } else {
-        return [];
-      }
+    if (!db) {
+      console.log("Database not ready");
+      return null;
     }
+
+    const rows = await db.getAllAsync(`SELECT * FROM registered_courses`);
+
+    return rows.map((row: any) => ({
+      ...row,
+      contents: row.contents ? JSON.parse(row.contents) : null,
+      skills: row.skills ? JSON.parse(row.skills) : [], // Parse skills JSON string into an array
+      image: row?.course_image ?? "",
+      dateRegistered: row?.dateRegistered ?? "",
+      completion: row?.completion ?? "0",
+    }));
   } catch (error) {
     console.log("Error getting registered courses:", error);
   }
@@ -444,6 +431,109 @@ export const getRegisteredCourseById = async (_id: string) => {
   }
 };
 
+// export const markSubTopicAsCompleted = async (
+//   courseId: string,
+//   mainTopic: string,
+//   subTopicTitle: string,
+// ) => {
+//   return runWithLock(async () => {
+//     try {
+//       const db = await getDatabase();
+
+//       if (!db) {
+//         console.log("Database not ready");
+//         return null;
+//       }
+
+//       if (!courseId || !mainTopic || !subTopicTitle) {
+//         console.log("Missing required parameters");
+//         return null;
+//       }
+
+//       const course = await getRegisteredCourseById(courseId);
+
+//       if (!course) {
+//         console.log("Course not found");
+//         return null;
+//       }
+
+//       const contents =
+//         typeof course.contents === "string"
+//           ? JSON.parse(course.contents)
+//           : course.contents;
+
+//       let totalSubTopics = 0;
+//       let completedSubTopics = 0;
+//       let foundSubTopic = false;
+
+//       const updatedContents = contents.map((chapter: any) => {
+//         const updatedSubTopics = chapter.subTopics.map((sub: any) => {
+//           const isTargetSubTopic =
+//             chapter.mainTopic === mainTopic && sub.title === subTopicTitle;
+
+//           const isCompleted = isTargetSubTopic
+//             ? true
+//             : Boolean(sub.isCompleted);
+
+//           if (isTargetSubTopic) {
+//             foundSubTopic = true;
+//           }
+
+//           totalSubTopics += 1;
+
+//           if (isCompleted) {
+//             completedSubTopics += 1;
+//           }
+
+//           return {
+//             ...sub,
+//             isCompleted,
+//           };
+//         });
+
+//         return {
+//           ...chapter,
+//           subTopics: updatedSubTopics,
+//         };
+//       });
+
+//       if (!foundSubTopic) {
+//         console.log("Subtopic not found");
+//         return null;
+//       }
+
+//       const completionPercentage =
+//         totalSubTopics > 0
+//           ? Math.round((completedSubTopics / totalSubTopics) * 100)
+//           : 0;
+
+//       await db.runAsync(
+//         `
+//         UPDATE courses
+//         SET contents = ?
+//         WHERE _id = ?
+//         `,
+//         [JSON.stringify(updatedContents), courseId],
+//       );
+
+//       await db.runAsync(
+//         `
+//         UPDATE registered_courses
+//         SET contents = ?, completion = ?
+//         WHERE _id = ?
+//         `,
+//         [JSON.stringify(updatedContents), `${completionPercentage}%`, courseId],
+//       );
+
+//       console.log("Subtopic marked as completed:", subTopicTitle);
+//     } catch (error) {
+//       console.log("Error marking subtopic as completed:", error);
+//       return null;
+//     }
+//   });
+
+// };
+
 export const markSubTopicAsCompleted = async (
   courseId: string,
   mainTopic: string,
@@ -475,12 +565,21 @@ export const markSubTopicAsCompleted = async (
           ? JSON.parse(course.contents)
           : course.contents;
 
+      if (!Array.isArray(contents)) {
+        console.log("Invalid course contents");
+        return null;
+      }
+
       let totalSubTopics = 0;
       let completedSubTopics = 0;
       let foundSubTopic = false;
 
       const updatedContents = contents.map((chapter: any) => {
-        const updatedSubTopics = chapter.subTopics.map((sub: any) => {
+        const subTopics = Array.isArray(chapter.subTopics)
+          ? chapter.subTopics
+          : [];
+
+        const updatedSubTopics = subTopics.map((sub: any) => {
           const isTargetSubTopic =
             chapter.mainTopic === mainTopic && sub.title === subTopicTitle;
 
@@ -522,30 +621,25 @@ export const markSubTopicAsCompleted = async (
 
       await db.runAsync(
         `
-        UPDATE courses
-        SET contents = ?
-        WHERE _id = ?
-        `,
-        [JSON.stringify(updatedContents), courseId],
-      );
-
-      await db.runAsync(
-        `
         UPDATE registered_courses
         SET contents = ?, completion = ?
         WHERE _id = ?
         `,
         [JSON.stringify(updatedContents), `${completionPercentage}%`, courseId],
       );
+
+      console.log("Subtopic marked as completed:", subTopicTitle);
+
+      return {
+        success: true,
+        completion: `${completionPercentage}%`,
+        contents: updatedContents,
+      };
     } catch (error) {
       console.log("Error marking subtopic as completed:", error);
       return null;
     }
   });
-
-  // const updatedCourse = await getRegisteredCourseById(courseId);
-
-  // return updatedCourse;
 };
 
 export const deleteAllRegisteredCourses = async () => {

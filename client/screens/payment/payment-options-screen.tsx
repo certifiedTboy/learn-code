@@ -64,12 +64,12 @@ const PaymentOptionsScreen = () => {
           createdAt: course?.createdAt,
           updatedAt: course?.updatedAt,
           skills: course?.skills,
-          image: course?.image,
+          image: course?.course_image || course?.image,
           dateRegistered: new Date().toDateString(),
           completion: "0%",
         });
 
-        scheduleMonthlyNotification(
+        await scheduleMonthlyNotification(
           "Expired Subscription",
           `Pay Your subscription for ${course?.name} to continue learning.`,
           {
@@ -77,6 +77,7 @@ const PaymentOptionsScreen = () => {
             route: "course-details",
             courseId: course?._id,
             courseName: course?.name,
+            scheduleType: "monthly",
           },
         );
 
@@ -110,12 +111,12 @@ const PaymentOptionsScreen = () => {
           createdAt: course?.createdAt,
           updatedAt: course?.updatedAt,
           skills: course?.skills,
-          image: course?.image,
+          image: course?.course_image || course?.image,
           dateRegistered: new Date().toDateString(),
           completion: "0",
         });
 
-        scheduleMonthlyNotification(
+        await scheduleMonthlyNotification(
           "Expired Subscription",
           `Pay Your subscription for ${course?.name} to continue learning.`,
           {
@@ -123,6 +124,7 @@ const PaymentOptionsScreen = () => {
             route: "course-details",
             courseId: course?._id,
             courseName: course?.name,
+            scheduleType: "monthly",
           },
         );
 
@@ -131,8 +133,9 @@ const PaymentOptionsScreen = () => {
     }
 
     if (flutterPaymentSuccess === false) {
+      console.log("flutter status:", flutterPaymentSuccess);
       showNotification({
-        title: "Payment Failed",
+        title: "Flutter Payment Failed",
         message: "Payment Failed",
         type: "error",
       });

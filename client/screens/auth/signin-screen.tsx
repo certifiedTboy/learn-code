@@ -1,3 +1,8 @@
+/**
+ * SignInScreen Component
+ * Handles user authentication via standard Email/Password credentials and Google OAuth.
+ * Uses RTK Query for API calls and updates global authentication state on success.
+ */
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import FormTextInput from "@/components/ui/form-text-input";
@@ -26,17 +31,21 @@ import {
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 const SignInScreen = () => {
+  // Local state for tracking form inputs
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
   });
+  // Toggles the visibility of the password input field
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const { width, height } = useWindowDimensions();
 
+  // RTK Query mutation for standard Email/Password login
   const [loginUser, { isLoading, isError, error, isSuccess, data }] =
     useLoginUserMutation();
 
+  // RTK Query mutation for Google OAuth login verification
   const [
     loginWithGoogle,
     {
@@ -48,12 +57,15 @@ const SignInScreen = () => {
     },
   ] = useLoginWithGoogleMutation();
 
+  // Access global auth context to store session tokens upon successful login
   const { updateAuthenticatedState } = useContext(AuthContext);
 
+  // Custom hook wrapping Google Sign-In logic and returning user profile data
   const { handleGoogleSignIn, userData } = useGoogleAuth();
 
   const navigation = useNavigation<NavigationProp<any>>();
 
+  // Theme-aware color configurations
   const inputTextColor = useThemeColor(
     { light: Colors.light.text, dark: Colors.dark.text },
     "text",
@@ -69,16 +81,25 @@ const SignInScreen = () => {
     "background",
   );
 
+  /**
+   * Updates the local form state dynamically based on user input.
+   * @param field - The name of the form field (e.g., 'email' or 'password')
+   * @param value - The current string value of the input
+   */
   const handleLoginInputchange = (field: string, value: string) => {
     setLoginData({ ...loginData, [field]: value });
   };
 
+  /**
+   * Validates input presence and triggers the standard login mutation.
+   */
   const handleSubmit = () => {
     if (!loginData.email || !loginData.password) return;
 
     loginUser(loginData);
   };
 
+  // Side-effect: Display an error notification if the standard login API call fails
   useEffect(() => {
     if (isError) {
       showNotification({
@@ -92,6 +113,7 @@ const SignInScreen = () => {
     }
   }, [isError]);
 
+  // Side-effect: Display an error notification if the Google login API call fails
   useEffect(() => {
     if (isGoogleError) {
       showNotification({
@@ -107,6 +129,7 @@ const SignInScreen = () => {
     }
   }, [isGoogleError]);
 
+  // Side-effect: Trigger backend verification when Google OAuth returns user data successfully
   useEffect(() => {
     if (userData) {
       loginWithGoogle({
@@ -118,8 +141,10 @@ const SignInScreen = () => {
     }
   }, [userData]);
 
+  // Side-effect: Handle successful standard login response
   useEffect(() => {
     if (isSuccess) {
+      // Construct normalized user payload from the API response
       const userData = {
         _id: data?.data?.user?._id,
         email: data?.data?.user?.email,
@@ -129,18 +154,22 @@ const SignInScreen = () => {
         isVerified: data?.data?.user?.isVerified,
       };
 
+      // Persist the authenticated session and tokens globally
       updateAuthenticatedState(
         data?.data?.refreshToken,
         data?.data?.accessToken,
         userData,
         // data?.data?.user?.registeredCourses,
       );
+      // Route user to the main authenticated area
       navigation.navigate("CoursesScreen");
     }
   }, [isSuccess]);
 
+  // Side-effect: Handle successful Google login response
   useEffect(() => {
     if (isGoogleSuccess) {
+      // Construct normalized user payload from the API response
       const userData = {
         _id: googleData?.data?.user?._id,
         email: googleData?.data?.user?.email,
@@ -150,12 +179,14 @@ const SignInScreen = () => {
         isVerified: googleData?.data?.user?.isVerified,
       };
 
+      // Persist the authenticated session and tokens globally
       updateAuthenticatedState(
         googleData?.data?.refreshToken,
         googleData?.data?.accessToken,
         userData,
         // googleData?.data?.user?.registeredCourses,
       );
+      // Route user to the main authenticated area
       navigation.navigate("CoursesScreen");
     }
   }, [isGoogleSuccess]);
@@ -196,6 +227,7 @@ const SignInScreen = () => {
               Please sign in with your account
             </ThemedText>
 
+            {/* Email Input Field */}
             <FormTextInput
               placeholderText="Enter your email"
               labelText="Email"
@@ -216,6 +248,7 @@ const SignInScreen = () => {
               textInputField="email"
             />
 
+            {/* Password Input Field */}
             <FormTextInput
               placeholderText="Enter your password"
               labelText="Password"
@@ -238,6 +271,7 @@ const SignInScreen = () => {
               passwordWrapperStyle={[styles.passwordWrapper, { borderColor }]}
             />
 
+            {/* Forgot Password Link */}
             <TouchableOpacity
               style={[styles.forgotContainer, { marginBottom: height * 0.04 }]}
               onPress={() => navigation.navigate("RequestPasswordResetScreen")}
@@ -245,6 +279,7 @@ const SignInScreen = () => {
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
+            {/* Main Submit Button */}
             <SubmitButton
               buttonText="SIGN IN"
               buttonStyles={[
@@ -257,6 +292,7 @@ const SignInScreen = () => {
               buttonDisabled={isLoading}
             />
 
+            {/* Social Login Divider */}
             <View
               style={[styles.dividerContainer, { marginBottom: height * 0.03 }]}
             >
@@ -269,6 +305,7 @@ const SignInScreen = () => {
               />
             </View>
 
+            {/* Google OAuth Login Button */}
             <GoogleBtn
               styles={[
                 styles.googleBtn,

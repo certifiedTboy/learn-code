@@ -1,9 +1,16 @@
+/**
+ * Global Notification Component
+ * Serves as the root container for `react-native-toast-message`.
+ * Configures custom UI styling for success and error toasts,
+ * adapting to the user's current light or dark theme.
+ */
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { StyleSheet, View } from "react-native";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 
 const Notification = () => {
+  // Dynamic colors derived from the active theme (light/dark)
   const errorBorderColor = useThemeColor(
     { light: Colors.light.errorText, dark: Colors.dark.errorText },
     "background",
@@ -24,14 +31,15 @@ const Notification = () => {
     "text",
   );
 
-  /*
-  1. Create the config
-*/
+  /**
+   * Custom configurations for different toast types.
+   * We override the default "success" and "error" layouts here.
+   */
   const toastConfig = {
-    /*
-    Overwrite 'success' type,
-    by modifying the existing `BaseToast` component
-  */
+    /**
+     * Success Toast Configuration
+     * Overwrites 'success' type by modifying the existing `BaseToast` component.
+     */
     success: (props: any) => (
       <BaseToast
         {...props}
@@ -53,10 +61,10 @@ const Notification = () => {
         }}
       />
     ),
-    /*
-    Overwrite 'error' type,
-    by modifying the existing `ErrorToast` component
-  */
+    /**
+     * Error Toast Configuration
+     * Overwrites 'error' type by modifying the existing `ErrorToast` component.
+     */
     error: (props: any) => (
       <ErrorToast
         {...props}
@@ -78,19 +86,6 @@ const Notification = () => {
         }}
       />
     ),
-    /*
-    Or create a completely new type - `tomatoToast`,
-    building the layout from scratch.
-
-    I can consume any custom `props` I want.
-    They will be passed when calling the `show` method (see below)
-  */
-    //   tomatoToast: ({ text1, props }: any) => (
-    //     <View style={{ height: 10, width: 200, backgroundColor: "#333" }}>
-    //       <Text>{text1}</Text>
-    //       <Text>{props.uuid}</Text>
-    //     </View>
-    //   ),
   };
 
   return (

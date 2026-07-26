@@ -5,13 +5,9 @@ import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface RedirectParams {
-  status: "successful" | "cancelled";
+  status: "successful" | "cancelled" | "failed" | "completed";
   transaction_id?: string;
   tx_ref: string;
-}
-
-interface FlutterwavePaymentMeta {
-  [k: string]: any;
 }
 
 const useFlutterwavePayment = () => {
@@ -33,8 +29,12 @@ const useFlutterwavePayment = () => {
     courseName: string;
   }) => {
     const handleOnRedirect = (data: RedirectParams) => {
+      console.log("flutter wave data:", data);
       // @ts-ignore
-      if (data && data?.status === "completed") {
+      if (
+        (data && data?.status === "completed") ||
+        data?.status === "successful"
+      ) {
         setPaymentSuccess(true);
       } else {
         setPaymentSuccess(false);
@@ -52,7 +52,7 @@ const useFlutterwavePayment = () => {
           },
           amount,
           currency: "NGN",
-          payment_options: "card",
+          payment_options: "card, banktransfer, ussd",
           meta: {
             courseId,
             userId,

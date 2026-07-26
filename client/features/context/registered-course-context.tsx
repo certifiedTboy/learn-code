@@ -52,6 +52,7 @@ const RegisteredCourseContextProvider = ({
 
   const onGetRegisteredCourseById = async (id: string) => {
     const course = await getRegisteredCourseById(id);
+
     setRegisteredCourse(course);
   };
 

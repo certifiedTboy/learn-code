@@ -8,7 +8,7 @@ import { useScheduleNotification } from "@/hooks/use-schedule-notification";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -79,14 +79,13 @@ const ScheduleLearningScreen = () => {
     { id: "19:00", label: "Evening (07:00 PM)", icon: "moon-outline" },
   ];
 
-  const handleSchedule = () => {
+  const handleSchedule = async () => {
     if (!selectedCourseId || !selectedTime) {
-      showNotification({
+      return showNotification({
         type: "error",
         title: "Incomplete",
         message: "Select a course and a time.",
       });
-      return;
     }
 
     const course = registeredCourses?.find(
@@ -97,12 +96,13 @@ const ScheduleLearningScreen = () => {
     // Pass the required course metadata to the scheduled notification
     // Note: The current hook schedules for 10:00 AM daily natively,
     // but you can later modify useScheduleNotification to accept the selectedTime argument
-    scheduleDailyNotification(
+    await scheduleDailyNotification(
       "Learning Time",
       `It's time to continue your learning on ${course?.name}!`,
       {
         courseId: selectedCourseId,
         courseName: course?.name,
+        scheduleType: "daily-course-reminder",
         route: "main-course-screen",
         hour,
         minute,

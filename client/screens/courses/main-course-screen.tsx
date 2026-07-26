@@ -15,7 +15,7 @@ import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 
 const MainCourseScreen = ({ route }: { route: any }) => {
-  const { onGetRegisteredCourseById, registeredCourse } =
+  const { onGetRegisteredCourseById, registeredCourse, registeredCourses } =
     useRegisteredCourseContext();
 
   const navigation = useNavigation();

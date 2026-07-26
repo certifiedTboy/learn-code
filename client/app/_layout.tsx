@@ -15,11 +15,14 @@ import {
 import { useNavigationContainerRef } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { StyleSheet } from "react-native";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { PaystackProvider } from "react-native-paystack-webview";
 import "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 import AppNavigator from "./app-navigator";
 
@@ -56,14 +59,15 @@ export default function RootLayout() {
             >
               <RegisteredCourseContextProvider>
                 <CourseDetailsContextProvider>
-                  <SafeAreaView
-                    style={[{ backgroundColor }, styles.container]}
-                    edges={["bottom", "left", "right"]}
-                  >
-                    <Notification />
-
+                  <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+                    <SafeAreaView
+                      style={{ backgroundColor }}
+                      edges={["bottom", "left", "right"]}
+                    >
+                      <Notification />
+                    </SafeAreaView>
                     <AppNavigator />
-                  </SafeAreaView>
+                  </SafeAreaProvider>
                 </CourseDetailsContextProvider>
               </RegisteredCourseContextProvider>
             </PaystackProvider>
@@ -73,9 +77,3 @@ export default function RootLayout() {
     </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

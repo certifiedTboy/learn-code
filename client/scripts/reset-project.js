@@ -11,11 +11,13 @@ const path = require("path");
 const readline = require("readline");
 
 const root = process.cwd();
+// Define the legacy Expo directories that come with the template
 const oldDirs = ["app", "components", "hooks", "constants", "scripts"];
 const exampleDir = "app-example";
 const newAppDir = "app";
 const exampleDirPath = path.join(root, exampleDir);
 
+// Boilerplate content for the newly generated /app/index.tsx screen
 const indexContent = `import { Text, View } from "react-native";
 
 export default function Index() {
@@ -33,6 +35,7 @@ export default function Index() {
 }
 `;
 
+// Boilerplate content for the newly generated /app/_layout.tsx navigation structure
 const layoutContent = `import { Stack } from "expo-router";
 
 export default function RootLayout() {
@@ -45,6 +48,11 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+/**
+ * Core function to handle moving or deleting the old directories
+ * and scaffolding the new fresh 'app' directory structure.
+ * @param {string} userInput - 'y' to move files to /app-example, 'n' to delete them.
+ */
 const moveDirectories = async (userInput) => {
   try {
     if (userInput === "y") {
@@ -53,7 +61,7 @@ const moveDirectories = async (userInput) => {
       console.log(`📁 /${exampleDir} directory created.`);
     }
 
-    // Move old directories to new app-example directory or delete them
+    // Iterate over the target old directories and either relocate or remove them
     for (const dir of oldDirs) {
       const oldDirPath = path.join(root, dir);
       if (fs.existsSync(oldDirPath)) {
@@ -91,7 +99,7 @@ const moveDirectories = async (userInput) => {
         userInput === "y"
           ? `\n3. Delete the /${exampleDir} directory when you're done referencing it.`
           : ""
-      }`
+      }`,
     );
   } catch (error) {
     console.error(`❌ Error during script execution: ${error.message}`);
@@ -108,5 +116,5 @@ rl.question(
       console.log("❌ Invalid input. Please enter 'Y' or 'N'.");
       rl.close();
     }
-  }
+  },
 );
