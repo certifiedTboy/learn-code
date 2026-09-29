@@ -20,7 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --detectOpenHandles --forceExit"
   },
   "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
     "@aws-sdk/client-s3": "^3.990.0",
+    "@aws-sdk/credential-provider-node": "^3.972.84",
     "@google/genai": "^1.41.0",
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/bull": "^11.0.2",
@@ -35,6 +37,8 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^11.1.1",
+    "@smithy/protocol-http": "^5.6.2",
+    "@smithy/signature-v4": "^5.7.4",
     "axios": "^1.13.2",
     "bullmq": "^5.56.5",
     "class-transformer": "^0.5.1",

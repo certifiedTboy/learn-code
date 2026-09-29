@@ -1,0 +1,9 @@
+export declare const clientId: string | undefined;
+export declare const clientSecret: string | undefined;
+export declare const refreshToken: string | undefined;
+export declare const accessToken: string | undefined;
+export declare const redirectUri: string | undefined;
+export declare const host: string | undefined;
+export declare const port: string | undefined;
+export declare const user: string | undefined;
+export declare const DB_URI: string | undefined;
