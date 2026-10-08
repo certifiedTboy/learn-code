@@ -28,21 +28,13 @@ let UsersService = class UsersService {
     accessJwtService;
     queueService;
     configService;
-    adminUser;
     constructor(userModel, accessJwtService, queueService, configService) {
         this.userModel = userModel;
         this.accessJwtService = accessJwtService;
         this.queueService = queueService;
         this.configService = configService;
-        this.adminUser = this.configService.get('EMAIL_USER');
     }
-    async create(createUserDto, clientType) {
-        if (clientType === 'web' && this.adminUser !== createUserDto.email) {
-            throw new common_1.BadRequestException('', {
-                cause: 'Not authorized',
-                description: 'Not authorized',
-            });
-        }
+    async create(createUserDto, _clientType) {
         const userWithEmailExist = await this.checkIfUserExist({
             email: createUserDto.email,
         });
@@ -101,7 +93,7 @@ let UsersService = class UsersService {
         }, 10000);
         return user;
     }
-    async createGoogleUser(createUserDto) {
+    async createGoogleUser(createUserDto, role = 'user') {
         const userWithEmailExist = await this.checkIfUserExist({
             email: createUserDto.email,
         });
@@ -112,6 +104,7 @@ let UsersService = class UsersService {
             const createdUser = new this.userModel({
                 ...createUserDto,
                 isVerified: true,
+                role,
             });
             const user = await createdUser.save();
             await this.queueService.addJob('email-account-setup-success', {

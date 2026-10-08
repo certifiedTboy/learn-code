@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import { PasscodeHashing } from '../helpers/passcode-hashing';
 import { UsersService } from '../user/users-service';
 import { AccessJwtService } from '../common/jwt/access-jwt.service';
@@ -18,6 +24,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly accessJwtService: AccessJwtService,
     private readonly refreshJwtService: RefreshJwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -29,7 +36,7 @@ export class AuthService {
    * @param {string} email - The user's email address.
    * @param {string} clientType - The source of the request
    */
-  async signIn(password: string, email: string, clientType: string) {
+  async signIn(password: string, email: string, _clientType: string) {
     const user = await this.usersService.checkIfUserExist({ email });
 
     if (!user) {
@@ -46,12 +53,12 @@ export class AuthService {
       });
     }
 
-    if (user?.role === 'user' && clientType === 'web') {
-      throw new UnauthorizedException('', {
-        cause: 'Not authorized',
-        description: 'Not authorized',
-      });
-    }
+    // if (user?.role === 'user' && clientType === 'web') {
+    //   throw new UnauthorizedException('', {
+    //     cause: 'Not authorized',
+    //     description: 'Not authorized',
+    //   });
+    // }
 
     if (!user.password) {
       throw new UnauthorizedException('', {
@@ -90,7 +97,7 @@ export class AuthService {
   /**
    * @method googleSignin
    * @description Handles user sign-in operation with google oauth.
-   * @param {CreateGoogleUserDto} createUserDto - The user's password.
+   * @param {CreateGoogleUserDto} createUserDto - The data transfer object containing user credentials.
    */
   async googleSignin(createUserDto: CreateGoogleUserDto) {
     const user = await this.usersService.createGoogleUser(createUserDto);
@@ -109,6 +116,46 @@ export class AuthService {
         user,
       };
     }
+  }
+
+  async googleAdminSignin(idToken: string) {
+    const clientId = this.configService.get<string>('EMAIL_CLIENT_ID');
+    if (!clientId) {
+      throw new InternalServerErrorException(
+        'Google sign-in is not configured',
+      );
+    }
+
+    const response = await axios.get(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      },
+    );
+
+    const userData: CreateGoogleUserDto = {
+      firstName: response?.data?.given_name,
+      lastName: response?.data?.family_name,
+      email: response?.data?.email,
+      profilePicture: response?.data?.picture,
+    };
+
+    const user = await this.usersService.createGoogleUser(userData);
+
+    const tokenPayload = {
+      email: user.email,
+      _id: user._id.toString(),
+      role: user.role,
+      sub: user.email,
+    };
+
+    return {
+      accessToken: await this.accessJwtService.signToken(tokenPayload),
+      refreshToken: await this.refreshJwtService.signToken(tokenPayload),
+      user,
+    };
   }
 
   /**

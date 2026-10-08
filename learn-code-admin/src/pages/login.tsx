@@ -11,6 +11,8 @@ import { loginSchema } from "../helpers/data-validator-schema";
 import { useLoginAdminAccountMutation } from "../lib/apis/auth-apis";
 import { useAuth } from "../hooks/use-auth";
 import { storeToken } from "../helpers/user-session";
+import GoogleAuthButton from "../components/google-auth-button";
+import { useGoogleAuth } from "../hooks/use-google-auth";
 
 export default function Login() {
   const {
@@ -21,6 +23,8 @@ export default function Login() {
     handleInputChange,
   } = useForm(loginSchema);
   const [, setLocation] = useLocation();
+
+  const { handleGoogleSignIn, isLoading: googleIsLoading } = useGoogleAuth();
 
   const { isAuthenticated } = useAuth();
 
@@ -63,8 +67,6 @@ export default function Login() {
     }
   }, [isSuccess, isError, isAuthenticated]);
 
-  console.log("error:", errorResponse);
-
   return (
     <div className="min-h-screen w-full flex bg-background">
       {/* Left side - Branding */}
@@ -83,13 +85,14 @@ export default function Login() {
               </span>
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Manage your <br />
-              <span className="text-gradient">educational content</span> <br />
-              with precision.
+              Turn learning goals <br />
+              <span className="text-gradient">into real-world skills</span>{" "}
+              <br />
+              one lesson at a time.
             </h1>
             <p className="text-xl text-muted-foreground max-w-md">
-              The professional platform for creators to build, scale, and
-              analyze their online courses.
+              Pick up practical coding skills with guided courses, hands-on
+              projects, and a community that keeps you moving.
             </p>
           </motion.div>
         </div>
@@ -170,21 +173,31 @@ export default function Login() {
                   )}
                 </div>
               </div>
-
               <Button
                 type="submit"
                 className="w-full cursor-pointer h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
               >
                 Sign In
               </Button>
+              <Link
+                href="/reset-password"
+                className="text-sm -mt-2 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+              >
+                Forgot password? <ArrowRight className="w-4 h-4" />
+              </Link>
             </form>
 
-            <Link
-              href="/reset-password"
-              className="text-sm mt-5 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              Forgot password? <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="my-6 flex items-center gap-4">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Or continue with
+              </span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <GoogleAuthButton
+              onClick={async () => await handleGoogleSignIn()}
+              isLoading={googleIsLoading}
+            />
           </div>
         </motion.div>
       </div>

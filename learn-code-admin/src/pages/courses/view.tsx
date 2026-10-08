@@ -1,4 +1,4 @@
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   Clock,
@@ -17,9 +17,13 @@ import {
 } from "../../components/ui/accordion";
 import { DashboardLayout } from "../../components/layout";
 import { useCourses } from "../../hooks/use-courses";
+import { useAuth } from "../../hooks/use-auth";
 
 export default function CourseView() {
   const [, params] = useRoute("/courses/:id");
+  const [, setLocation] = useLocation();
+
+  const { user } = useAuth();
   const courseId = params?.id;
   const { getCourse } = useCourses();
   const course = courseId ? getCourse(courseId) : undefined;
@@ -44,7 +48,11 @@ export default function CourseView() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-8 pb-20">
         <Link
-          href="/dashboard/courses"
+          href={
+            user && user?.role === "admin"
+              ? "/dashboard/courses"
+              : "/dashboard/my-courses"
+          }
           className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -106,7 +114,7 @@ export default function CourseView() {
           </h2>
 
           {course.contents && course.contents.length > 0 ? (
-            <div className="glass-panel rounded-2xl overflow-hidden">
+            <div className="glass-panel rounded-2xl overflow-hidden cursor-pointer">
               <Accordion type="single" collapsible className="w-full">
                 {course.contents.map((section, idx) => (
                   <AccordionItem
@@ -114,7 +122,7 @@ export default function CourseView() {
                     key={idx}
                     className="border-border/50 px-6"
                   >
-                    <AccordionTrigger className="hover:no-underline py-6 text-left">
+                    <AccordionTrigger className="hover:no-underline py-6 text-left cursor-pointer">
                       <div className="flex flex-col md:flex-row md:items-center justify-between w-full pr-4 gap-2">
                         <div>
                           <span className="text-sm font-semibold text-primary uppercase tracking-wider mb-1 block">
@@ -138,6 +146,22 @@ export default function CourseView() {
                         {section.subTopics?.map((topic, topicIdx) => (
                           <div
                             key={topicIdx}
+                            onClick={() =>
+                              setLocation(
+                                `/courses/${course._id}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                {
+                                  state: {
+                                    mainTopic: section.mainTopic,
+                                    mainContent: {
+                                      title: topic.title,
+                                      contentURI: topic.contentURI,
+                                      isVideo: topic.isVideo,
+                                    },
+                                    courseName: course.name,
+                                  },
+                                },
+                              )
+                            }
                             className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer"
                           >
                             <div className="flex items-center gap-4">
@@ -155,6 +179,17 @@ export default function CourseView() {
                               </span>
                             </div>
                             <Button
+                              onClick={() =>
+                                setLocation(
+                                  `/courses/${course.id}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                  {
+                                    state: {
+                                      mainTopic: section.mainTopic,
+                                      subTopics: section.subTopics,
+                                    },
+                                  },
+                                )
+                              }
                               variant="ghost"
                               size="sm"
                               className="opacity-0 group-hover:opacity-100 transition-opacity"

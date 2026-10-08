@@ -1,12 +1,17 @@
 import { DashboardLayout } from "../components/layout";
 import { motion } from "framer-motion";
-import { Users, BookOpen, Clock, TrendingUp, Plus } from "lucide-react";
+import { Users, BookOpen, Clock, TrendingUp, Plus, Search } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { useCourses } from "../hooks/use-courses";
+import { useAuth } from "../hooks/use-auth";
+import { AdminCourseCard } from "./courses/admin-course-card";
+import { UserCourseCard } from "./courses/user-coruse-card";
 
 export default function Dashboard() {
   const { courses } = useCourses();
+  const { user } = useAuth();
 
   const totalCourses = courses?.length;
   const totalSubscribers = courses?.reduce(
@@ -87,123 +92,99 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        <div className="glass-panel p-4 rounded-xl flex items-center gap-3">
+          <Search className="w-5 h-5 text-muted-foreground ml-2" />
+          <Input
+            placeholder="Search courses..."
+            className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 shadow-none text-base"
+            // value={searchTerm}
+            // onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
         {/* Stats Grid */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              // @ts-ignore
-              variants={item}
-              className="glass-panel p-6 rounded-2xl flex items-start gap-4"
-            >
-              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {stat.label}
-                </p>
-                <h3 className="text-2xl font-display font-bold text-foreground mt-1">
-                  {stat.value}
-                </h3>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        {user && user?.role === "admin" && (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={container}
+            initial="hidden"
+            animate="show"
+          >
+            {stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                // @ts-ignore
+                variants={item}
+                className="glass-panel p-6 rounded-2xl flex items-start gap-4"
+              >
+                <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-2xl font-display font-bold text-foreground mt-1">
+                    {stat.value}
+                  </h3>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Recent Courses Section */}
         <div className="mt-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-display font-bold">Recent Courses</h2>
-            <Link
-              href="/dashboard/courses"
-              className="text-primary text-sm hover:underline"
-            >
-              View all
-            </Link>
-          </div>
+          {user && user?.role === "admin" && (
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-display font-bold">Recent Courses</h2>
+              <Link
+                href="/dashboard/courses"
+                className="text-primary text-sm hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+          )}
 
           {courses?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses?.slice(0, 3)?.map((course) => (
-                <motion.div
-                  key={course.id}
-                  whileHover={{ y: -5 }}
-                  className="glass-panel rounded-2xl overflow-hidden group border border-white/5 hover:border-primary/30 transition-all duration-300 flex flex-col"
-                >
-                  <div className="h-40 bg-secondary/50 relative overflow-hidden">
-                    {course?.image ? (
-                      <img
-                        src={course?.image}
-                        alt={course?.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-background">
-                        <BookOpen className="w-12 h-12 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center">
-                      <div className="flex gap-3">
-                        <span className="px-2.5 py-1 bg-primary/90 text-primary-foreground text-xs font-semibold rounded-md backdrop-blur-md">
-                          &#8358;{course?.price}
-                        </span>
+              {user &&
+                user?.role === "admin" &&
+                courses &&
+                courses?.length > 0 &&
+                courses
+                  ?.slice(0, 3)
+                  ?.map((course) => (
+                    <AdminCourseCard key={course.id} course={course} />
+                  ))}
 
-                        <span className="flex items-center text-xs gap-1">
-                          <Clock className="w-3 h-3" />{" "}
-                          {course.requiredDuration}w
-                        </span>
-                      </div>
-                      <span className="flex items-center gap-1 text-xs text-white bg-black/50 px-2 py-1 rounded-md backdrop-blur-md">
-                        <Users className="w-3 h-3" /> {course?.subscribers}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-5 flex flex-col flex-1">
-                    <h3 className="font-display font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                      {course?.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                      {course?.description}
-                    </p>
-                    <div className="flex justify-between items-center pt-4 border-t border-border/50">
-                      <span className="text-xs text-muted-foreground">
-                        {course?.totalTopics} Topics
-                      </span>
-                      <Link href={`/dashboard/courses/${course.id}/edit`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 text-xs hover:bg-primary/20 hover:text-primary"
-                        >
-                          Edit Course
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+              {user &&
+                user?.role === "user" &&
+                courses &&
+                courses?.length > 0 &&
+                courses?.map((course) => (
+                  <UserCourseCard key={course.id} course={course} />
+                ))}
             </div>
           ) : (
             <div className="glass-panel rounded-2xl p-12 text-center flex flex-col items-center justify-center">
               <h3 className="text-xl font-display font-bold mb-2">
                 No courses yet
               </h3>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                You haven't created any educational content yet. Start building
-                your platform by creating your first course.
-              </p>
-              <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow cursor-pointer">
-                  Create First Course
-                </Button>
-              </Link>
+              {user && user?.role === "admin" && (
+                <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                  You haven't created any educational content yet. Start
+                  building your platform by creating your first course.
+                </p>
+              )}
+              {user && user?.role === "admin" && (
+                <Link href="/dashboard/courses/new">
+                  <Button className="shadow-glow cursor-pointer">
+                    Create First Course
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
         </div>

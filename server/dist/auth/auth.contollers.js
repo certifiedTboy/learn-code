@@ -87,6 +87,26 @@ let AuthControllers = class AuthControllers {
             }
         }
     }
+    async loginAdminWithGoogle(req, idToken) {
+        this.clientType = req.headers['x-client-type'];
+        if (!idToken) {
+            throw new common_1.BadRequestException('Google identity token is required');
+        }
+        try {
+            const result = await this.authService.googleAdminSignin(idToken);
+            return response_handler_1.ResponseHandler.ok(200, 'login successful', result);
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                this.logger.error({
+                    level: 'error',
+                    message: error.message,
+                    clientType: this.clientType,
+                });
+            }
+            throw error;
+        }
+    }
     async getCurrentUser(req) {
         const currentUser = req.user;
         try {
@@ -198,6 +218,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_user_dto_1.CreateGoogleUserDto]),
     __metadata("design:returntype", Promise)
 ], AuthControllers.prototype, "loginWithGoogle", null);
+__decorate([
+    (0, common_1.Post)('google/admin/login'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)('idToken')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AuthControllers.prototype, "loginAdminWithGoogle", null);
 __decorate([
     (0, common_1.Get)('me'),
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),

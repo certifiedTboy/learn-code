@@ -10,6 +10,8 @@ import useForm from "../hooks/useForm";
 import { useCreateAdminAccountMutation } from "../lib/apis/auth-apis";
 import { useAuth } from "../hooks/use-auth";
 import Loader from "../components/ui/loader";
+import GoogleAuthButton from "../components/google-auth-button";
+import { useGoogleAdminAuth } from "../hooks/use-google-admin-auth";
 
 export default function Register() {
   const [, setLocation] = useLocation();
@@ -21,6 +23,8 @@ export default function Register() {
   ] = useCreateAdminAccountMutation();
 
   const { toast } = useToast();
+  const { continueWithGoogle, isLoading: isGoogleLoading } =
+    useGoogleAdminAuth();
 
   const {
     error,
@@ -177,6 +181,17 @@ export default function Register() {
                 Create Account
               </Button>
             </form>
+            <div className="my-6 flex items-center gap-4">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Or continue with
+              </span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <GoogleAuthButton
+              isLoading={isGoogleLoading}
+              onClick={continueWithGoogle}
+            />
           </div>
         </motion.div>
       </div>
@@ -197,13 +212,13 @@ export default function Register() {
               <GraduationCap className="h-12 w-12" />
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Empowering
+              Code your next
               <br />
-              <span className="text-gradient">students</span> globally.
+              <span className="text-gradient">chapter</span> starts here.
             </h1>
             <p className="text-xl text-muted-foreground max-w-md ml-auto">
-              Join thousands of creators using Learn Code to deliver premium
-              educational experiences.
+              Build your skills from the ground up with expert-led lessons,
+              practical challenges, and a clear path from curious to capable.
             </p>
           </motion.div>
         </div>

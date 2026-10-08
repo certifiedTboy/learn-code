@@ -8,6 +8,7 @@ import type { RootState } from "../redux/store/store";
 interface User {
   name: string;
   role: string;
+  email: string;
 }
 
 interface AuthContextType {
@@ -16,7 +17,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: { name: "", role: "" },
+  user: { name: "", role: "", email: "" },
   isAuthenticated: false,
 });
 
@@ -52,8 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user: {
-          name: currentUser?.firstName && currentUser?.lastName ? `${currentUser?.firstName} ${currentUser?.lastName}` : "Admin",
+          name:
+            currentUser?.firstName && currentUser?.lastName
+              ? `${currentUser?.firstName} ${currentUser?.lastName}`
+              : "Admin",
           role: currentUser?.role || "admin",
+          email: currentUser?.email!,
         },
         isAuthenticated,
       }}

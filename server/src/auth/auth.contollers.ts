@@ -86,7 +86,7 @@ export class AuthControllers {
 
   /**
    * @method loginWithGoodle
-   * @param {GoogleAuthDto} authDto - The data transfer object containing user credentials.
+   * @param {CreateGoogleUserDto} createUserDto - The data transfer object containing user credentials.
    */
   @Post('google/login')
   async loginWithGoogle(
@@ -117,6 +117,32 @@ export class AuthControllers {
           description: error.message,
         });
       }
+    }
+  }
+
+  @Post('google/admin/login')
+  async loginAdminWithGoogle(
+    @Req() req: Request,
+    @Body('idToken') idToken: string,
+  ) {
+    this.clientType = req.headers['x-client-type'] as string;
+    if (!idToken) {
+      throw new BadRequestException('Google identity token is required');
+    }
+
+    try {
+      const result = await this.authService.googleAdminSignin(idToken);
+
+      return ResponseHandler.ok(200, 'login successful', result);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.logger.error({
+          level: 'error',
+          message: error.message,
+          clientType: this.clientType,
+        });
+      }
+      throw error;
     }
   }
 

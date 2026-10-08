@@ -151,12 +151,12 @@ export default function VerifyAccount() {
               <GraduationCap className="h-12 w-12" />
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Empowering <br />
-              <span className="text-gradient">students</span> globally.
+              Your next skill <br />
+              <span className="text-gradient">is within reach.</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-md ml-auto">
-              Join thousands of creators using Learn Code to deliver premium
-              educational experiences.
+              One quick confirmation brings you closer to coding lessons,
+              hands-on projects, and a learning journey built around you.
             </p>
           </motion.div>
         </div>

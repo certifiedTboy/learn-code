@@ -10,6 +10,7 @@ import ResetPassword from "../pages/reset-password";
 import UpdatePassword from "../pages/update-password";
 import Dashboard from "../pages/dashboard";
 import CoursesList from "../pages/courses/list";
+import RegisteredCourses from "../pages/courses/registered-courses";
 import CourseForm from "../pages/courses/form";
 import CourseView from "../pages/courses/view";
 import UserProfile from "../pages/user-profile";
@@ -18,6 +19,7 @@ import RegisteredUsers from "../pages/registered-users";
 import LandingPage from "../pages/landing-page";
 import PrivacyPolicy from "../pages/privacy-policy";
 import TermsAndConditions from "../pages/term-conditions";
+import { CourseContent } from "../pages/courses/course-content";
 import Contacts from "../pages/contacts";
 
 import Redirect from "./redirect";
@@ -39,11 +41,13 @@ const AppRoutes = () => {
       <Route path="/reset-password/update" component={UpdatePassword} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/courses" component={CoursesList} />
+      <Route path="/dashboard/my-courses" component={RegisteredCourses} />
       <Route path="/dashboard/registered-users" component={RegisteredUsers} />
       <Route path="/dashboard/profile" component={UserProfile} />
       <Route path="/dashboard/courses/new" component={CourseForm} />
       <Route path="/dashboard/courses/:id/edit" component={CourseForm} />
       <Route path="/courses/:id" component={CourseView} />
+      <Route path="/courses/:id/content" component={CourseContent} />
       <Route
         path="/"
         component={() => (

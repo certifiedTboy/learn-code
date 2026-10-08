@@ -13,6 +13,7 @@ import {
 import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
 import { deleteToken } from "../helpers/user-session";
+import { useGoogleAuth } from "../hooks/use-google-auth";
 
 interface LayoutProps {
   children: ReactNode;
@@ -22,8 +23,9 @@ export function DashboardLayout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { revokeAccess } = useGoogleAuth();
 
-  const navItems = [
+  const adminNavItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/courses", label: "Courses", icon: BookOpen },
     {
@@ -34,8 +36,16 @@ export function DashboardLayout({ children }: LayoutProps) {
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ];
 
+  const userNavItems = [
+    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
+
+    { href: "/dashboard/profile", label: "Settings", icon: Settings },
+  ];
+
   const onLogoutUser = async () => {
     await deleteToken();
+    await revokeAccess();
     window.location.href = "/login";
   };
 
@@ -75,16 +85,18 @@ export function DashboardLayout({ children }: LayoutProps) {
         </div>
 
         <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6 space-y-2">
-          {navItems.map((item) => {
-            const isActive =
-              location === item.href ||
-              (item.href !== "/dashboard" && location.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`
+          {user &&
+            user?.role === "admin" &&
+            adminNavItems.map((item) => {
+              const isActive =
+                location === item.href ||
+                (item.href !== "/dashboard" && location.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
                   ${
                     isActive
@@ -92,23 +104,60 @@ export function DashboardLayout({ children }: LayoutProps) {
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }
                 `}
-              >
-                <item.icon
-                  className={`h-5 w-5 ${isActive ? "text-primary" : "group-hover:text-primary/70 transition-colors"}`}
-                />
-                {item.label}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
+                >
+                  <item.icon
+                    className={`h-5 w-5 ${isActive ? "text-primary" : "group-hover:text-primary/70 transition-colors"}`}
                   />
-                )}
-              </Link>
-            );
-          })}
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+
+          {user &&
+            user?.role === "user" &&
+            userNavItems.map((item) => {
+              const isActive =
+                location === item.href ||
+                (item.href !== "/dashboard" && location.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
+                  ${
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium shadow-[inset_0_0_0_1px_rgba(0,188,212,0.2)]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  }
+                `}
+                >
+                  <item.icon
+                    className={`h-5 w-5 ${isActive ? "text-primary" : "group-hover:text-primary/70 transition-colors"}`}
+                  />
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute left-0 w-1 h-8 bg-primary rounded-r-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
         </nav>
 
         <div className="mt-auto flex-none border-t border-border/50 p-4">

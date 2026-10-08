@@ -18,7 +18,8 @@ interface CoursesContextType {
 const CoursesContext = createContext<CoursesContextType | null>(null);
 
 export function CoursesProvider({ children }: { children: ReactNode }) {
-  const [getAllCourses, { data, isSuccess }] = useGetAllCoursesMutation();
+  const [getAllCourses, { data, isSuccess, error }] =
+    useGetAllCoursesMutation();
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {

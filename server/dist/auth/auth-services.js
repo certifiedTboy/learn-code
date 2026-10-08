@@ -11,6 +11,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
+const axios_1 = require("axios");
 const passcode_hashing_1 = require("../helpers/passcode-hashing");
 const users_service_1 = require("../user/users-service");
 const access_jwt_service_1 = require("../common/jwt/access-jwt.service");
@@ -19,12 +21,14 @@ let AuthService = class AuthService {
     usersService;
     accessJwtService;
     refreshJwtService;
-    constructor(usersService, accessJwtService, refreshJwtService) {
+    configService;
+    constructor(usersService, accessJwtService, refreshJwtService, configService) {
         this.usersService = usersService;
         this.accessJwtService = accessJwtService;
         this.refreshJwtService = refreshJwtService;
+        this.configService = configService;
     }
-    async signIn(password, email, clientType) {
+    async signIn(password, email, _clientType) {
         const user = await this.usersService.checkIfUserExist({ email });
         if (!user) {
             throw new common_1.UnauthorizedException('', {
@@ -36,12 +40,6 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('', {
                 cause: `Unverified account`,
                 description: 'Account is unverified.',
-            });
-        }
-        if (user?.role === 'user' && clientType === 'web') {
-            throw new common_1.UnauthorizedException('', {
-                cause: 'Not authorized',
-                description: 'Not authorized',
             });
         }
         if (!user.password) {
@@ -87,6 +85,35 @@ let AuthService = class AuthService {
             };
         }
     }
+    async googleAdminSignin(idToken) {
+        const clientId = this.configService.get('EMAIL_CLIENT_ID');
+        if (!clientId) {
+            throw new common_1.InternalServerErrorException('Google sign-in is not configured');
+        }
+        const response = await axios_1.default.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+            },
+        });
+        const userData = {
+            firstName: response?.data?.given_name,
+            lastName: response?.data?.family_name,
+            email: response?.data?.email,
+            profilePicture: response?.data?.picture,
+        };
+        const user = await this.usersService.createGoogleUser(userData);
+        const tokenPayload = {
+            email: user.email,
+            _id: user._id.toString(),
+            role: user.role,
+            sub: user.email,
+        };
+        return {
+            accessToken: await this.accessJwtService.signToken(tokenPayload),
+            refreshToken: await this.refreshJwtService.signToken(tokenPayload),
+            user,
+        };
+    }
     async generateNewToken(refreshToken) {
         const { email } = await this.refreshJwtService.verifyToken(refreshToken);
         const userData = await this.usersService.checkIfUserExist({ email });
@@ -113,6 +140,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
         access_jwt_service_1.AccessJwtService,
-        refresh_jwt_service_1.RefreshJwtService])
+        refresh_jwt_service_1.RefreshJwtService,
+        config_1.ConfigService])
 ], AuthService);
 //# sourceMappingURL=auth-services.js.map
