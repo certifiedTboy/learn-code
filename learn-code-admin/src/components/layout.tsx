@@ -40,7 +40,7 @@ export function DashboardLayout({ children }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
+    <div className="h-dvh bg-background flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border/50 sticky top-0 z-50">
         <div className="flex items-center gap-2 text-primary">
@@ -61,7 +61,7 @@ export function DashboardLayout({ children }: LayoutProps) {
       {/* Sidebar */}
       <aside
         className={`
-        fixed inset-y-0 left-0 z-40 w-64 glass-panel border-r border-border/50 flex flex-col transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-40 w-64 min-h-0 glass-panel border-r border-border/50 flex flex-col transition-transform duration-300 ease-in-out md:h-full
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0
       `}
       >
@@ -74,7 +74,7 @@ export function DashboardLayout({ children }: LayoutProps) {
           </span>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6 space-y-2">
           {navItems.map((item) => {
             const isActive =
               location === item.href ||
@@ -111,7 +111,7 @@ export function DashboardLayout({ children }: LayoutProps) {
           })}
         </nav>
 
-        <div className="p-4 mt-auto border-t border-border/50">
+        <div className="mt-auto flex-none border-t border-border/50 p-4">
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
             <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium border border-white/10">
               {user.name.charAt(0).toUpperCase()}
@@ -138,7 +138,7 @@ export function DashboardLayout({ children }: LayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto w-full">
+      <main className="min-h-0 w-full flex-1 overflow-y-auto">
         <div className="p-4 md:p-8 max-w-7xl mx-auto">{children}</div>
       </main>
 
