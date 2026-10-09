@@ -1,65 +1,22 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import { DashboardLayout } from "../../components/layout";
 import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Users, Clock, BookOpen, Star } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
-import Loader from "../../components/ui/loader";
-import { useDeleteCourseMutation } from "../../lib/apis/course-apis";
-import { useToast } from "../../hooks/use-toast";
 import { useCourses } from "../../hooks/use-courses";
+import { RegistereCourseCard } from "./registered-course-card";
 
 export default function RegisteredCourses() {
-  const [deleteCourse, { isLoading, isSuccess, error, isError }] =
-    useDeleteCourseMutation();
-  const { courses, deleteCourse: deleteLocalCourse } = useCourses();
-  const { toast } = useToast();
+  const { registeredCourses } = useCourses();
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const [, setLocation] = useLocation();
-
-  const filteredCourses = courses?.filter(
+  const filteredCourses = registeredCourses?.filter(
     (c) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-
-  const handleDelete = () => {
-    if (!deleteId) return;
-    deleteCourse(deleteId);
-  };
-
-  useEffect(() => {
-    if (isSuccess) {
-      deleteLocalCourse(deleteId!);
-      toast({ title: "Course deleted successfully" });
-      setDeleteId(null);
-    }
-
-    if (isError) {
-      const message =
-        error && "data" in error
-          ? (error.data as any)?.message
-          : "Something went wrong";
-      toast({
-        variant: "destructive",
-        title: message,
-      });
-    }
-  }, [isSuccess, isError]);
 
   return (
     <DashboardLayout>
@@ -87,65 +44,7 @@ export default function RegisteredCourses() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
               {filteredCourses?.map((course) => (
-                <motion.div
-                  onClick={() => setLocation(`/courses/${course.id}`)}
-                  key={course?.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="glass-panel cursor-pointer rounded-2xl overflow-hidden group border border-white/5 hover:border-primary/30 transition-all duration-300 flex flex-col"
-                >
-                  <div className="h-48 relative overflow-hidden bg-secondary">
-                    {course?.image ? (
-                      <img
-                        src={course.image}
-                        alt={course.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-background">
-                        <BookOpen className="w-12 h-12 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
-
-                    <div className="absolute bottom-3 left-4 right-4">
-                      <h3 className="font-display font-bold text-xl text-white mb-1 line-clamp-1 shadow-black drop-shadow-md">
-                        {course.name}
-                      </h3>
-                      <div className="flex items-center gap-3 text-xs font-medium text-white/80">
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />{" "}
-                          {course.rating || "0.0"}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />{" "}
-                          {course.requiredDuration}w
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" /> {course.subscribers}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 flex flex-col flex-1 bg-card/40">
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1">
-                      {course.description}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                      {/* <div className="font-display font-bold text-lg text-primary">
-                        &#8358;{course.price}
-                      </div> */}
-                      <div className="text-xs bg-secondary px-2.5 py-1 rounded-md text-secondary-foreground border border-white/5">
-                        {course.totalTopics} Topics
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                <RegistereCourseCard {...course} key={course?._id} />
               ))}
             </AnimatePresence>
           </div>
@@ -170,33 +69,6 @@ export default function RegisteredCourses() {
           </div>
         )}
       </div>
-
-      <AlertDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-      >
-        {isLoading && <Loader />}
-        <AlertDialogContent className="glass-panel border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground">
-              This action cannot be undone. This will permanently delete the
-              course and all its data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-secondary/50 border-0 hover:bg-secondary">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              Delete Course
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </DashboardLayout>
   );
 }

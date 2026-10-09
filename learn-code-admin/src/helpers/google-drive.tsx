@@ -24,7 +24,13 @@ async function driveRequest(
 }
 
 // 1. List files in the hidden application folder.
-export async function listAppData(accessToken: string) {
+export async function listAppData() {
+  const accessToken = localStorage.getItem("gtkn");
+
+  if (!accessToken) {
+    return console.log("token is not provided");
+  }
+
   const params = new URLSearchParams({
     spaces: "appDataFolder",
     fields: "files(id,name,mimeType,modifiedTime)",
@@ -36,17 +42,31 @@ export async function listAppData(accessToken: string) {
     accessToken,
   );
 
-  return (await response.json()).files ?? [];
+  const files = (await response.json())?.files ?? [];
+
+  return files;
 }
 
 // 2. Read and parse a JSON file.
-export async function readJsonFile(accessToken: string, fileId: string) {
+export async function readJsonFile(fileName: string) {
+  const accessToken = localStorage.getItem("gtkn");
+
+  if (!accessToken) {
+    return console.log("token is not provided");
+  }
+
+  const files = await listAppData();
+
+  const fileId = files.find((file: any) => file.name === fileName)?.id;
+
   const response = await driveRequest(
     `${DRIVE_API}/files/${fileId}?alt=media`,
     accessToken,
   );
 
-  return response.json();
+  const data = await response.json();
+
+  return data;
 }
 
 // 3. Create a new JSON file in appDataFolder.

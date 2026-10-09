@@ -5,6 +5,7 @@ interface CurrentUser {
   lastName: string;
   email: string;
   role: string;
+  registeredCourses: any[];
 }
 
 interface AuthState {

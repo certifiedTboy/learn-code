@@ -20,11 +20,14 @@ export default function Dashboard() {
   );
   const avgRating = courses?.length
     ? (
-        courses?.reduce((acc, c) => acc + (c.rating || 0), 0) / courses.length
+        courses.reduce(
+          (acc, c) => acc + (Number(c.rating) || 0),
+          0,
+        ) / courses.length
       ).toFixed(1)
     : "0.0";
   const totalRevenue = courses?.reduce(
-    (acc, c) => acc + (c.price || 0) * (c.subscribers || 0),
+    (acc, c) => acc + (Number(c.price) || 0) * (c.subscribers || 0),
     0,
   );
 

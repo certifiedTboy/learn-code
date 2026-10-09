@@ -155,7 +155,7 @@ export default function CoursesList() {
                           </Link>
                           <DropdownMenuItem
                             className="text-destructive focus:bg-destructive/10 cursor-pointer"
-                            onClick={() => setDeleteId(course.id)}
+                            onClick={() => setDeleteId(course.id!)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" /> Delete
                           </DropdownMenuItem>

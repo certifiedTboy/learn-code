@@ -12,7 +12,8 @@ import Dashboard from "../pages/dashboard";
 import CoursesList from "../pages/courses/list";
 import RegisteredCourses from "../pages/courses/registered-courses";
 import CourseForm from "../pages/courses/form";
-import CourseView from "../pages/courses/view";
+import AdminCourseDetails from "../pages/courses/admin-course-details";
+import UserCourseDetails from "@/pages/courses/user-course-details";
 import UserProfile from "../pages/user-profile";
 import AppRedirect from "../pages/app-redirect";
 import RegisteredUsers from "../pages/registered-users";
@@ -46,7 +47,12 @@ const AppRoutes = () => {
       <Route path="/dashboard/profile" component={UserProfile} />
       <Route path="/dashboard/courses/new" component={CourseForm} />
       <Route path="/dashboard/courses/:id/edit" component={CourseForm} />
-      <Route path="/courses/:id" component={CourseView} />
+      <Route path="/courses/:id" component={AdminCourseDetails} />
+      <Route path="/dashboard/my-courses/:id" component={UserCourseDetails} />
+      <Route
+        path="/dashboard/my-courses/:id/content"
+        component={CourseContent}
+      />
       <Route path="/courses/:id/content" component={CourseContent} />
       <Route
         path="/"

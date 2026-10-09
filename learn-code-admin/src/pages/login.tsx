@@ -13,6 +13,10 @@ import { useAuth } from "../hooks/use-auth";
 import { storeToken } from "../helpers/user-session";
 import GoogleAuthButton from "../components/google-auth-button";
 import { useGoogleAuth } from "../hooks/use-google-auth";
+import {
+  createCourseTable,
+  createRegisteredCourseTable,
+} from "@/helpers/course-database";
 
 export default function Login() {
   const {
@@ -66,6 +70,25 @@ export default function Login() {
       setLocation("/dashboard");
     }
   }, [isSuccess, isError, isAuthenticated]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          await createCourseTable();
+          await createRegisteredCourseTable();
+
+          console.log("table created");
+        } catch (error) {
+          console.log("table creation failed: ", error);
+        }
+      })();
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex bg-background">

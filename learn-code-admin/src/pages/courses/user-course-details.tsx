@@ -17,16 +17,14 @@ import {
 } from "../../components/ui/accordion";
 import { DashboardLayout } from "../../components/layout";
 import { useCourses } from "../../hooks/use-courses";
-import { useAuth } from "../../hooks/use-auth";
 
-export default function CourseView() {
-  const [, params] = useRoute("/courses/:id");
+export default function UserCourseDetails() {
+  const [, params] = useRoute("/dashboard/my-courses/:id");
   const [, setLocation] = useLocation();
 
-  const { user } = useAuth();
   const courseId = params?.id;
-  const { getCourse } = useCourses();
-  const course = courseId ? getCourse(courseId) : undefined;
+  const { getRegisteredCourse } = useCourses();
+  const course = courseId ? getRegisteredCourse(courseId) : undefined;
 
   if (!course) {
     return (
@@ -48,11 +46,7 @@ export default function CourseView() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-8 pb-20">
         <Link
-          href={
-            user && user?.role === "admin"
-              ? "/dashboard/courses"
-              : "/dashboard/my-courses"
-          }
+          href="/dashboard/my-courses"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -148,7 +142,7 @@ export default function CourseView() {
                             key={topicIdx}
                             onClick={() =>
                               setLocation(
-                                `/courses/${course._id}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                `/dashboard/my-courses/${course._id}/content/?title=${encodeURIComponent(topic?.title)}`,
                                 {
                                   state: {
                                     mainTopic: section.mainTopic,
@@ -181,7 +175,7 @@ export default function CourseView() {
                             <Button
                               onClick={() =>
                                 setLocation(
-                                  `/courses/${course.id}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                  `/dashboard/my-courses/${course.id}/content/?title=${encodeURIComponent(topic?.title)}`,
                                   {
                                     state: {
                                       mainTopic: section.mainTopic,

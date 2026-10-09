@@ -14,7 +14,6 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (currentUser) {
-      console.log(currentUser);
       updateFormDataForContentUpdate(currentUser);
     }
   }, [currentUser]);

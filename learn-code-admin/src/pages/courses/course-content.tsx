@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, FileText, PlayCircle } from "lucide-react";
+import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { DashboardLayout } from "../../components/layout";
 import { Button } from "../../components/ui/button";

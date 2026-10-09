@@ -1,6 +1,6 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutDashboard,
   BookOpen,
@@ -9,11 +9,17 @@ import {
   Menu,
   X,
   GraduationCap,
+  CloudUpload,
+  CloudDownload,
+  CloudSync,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
 import { deleteToken } from "../helpers/user-session";
 import { useGoogleAuth } from "../hooks/use-google-auth";
+import { useBackup } from "@/hooks/use-backup";
+
+// import { useBackup } from "../hooks/use-backup";
 
 interface LayoutProps {
   children: ReactNode;
@@ -24,6 +30,8 @@ export function DashboardLayout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const { revokeAccess } = useGoogleAuth();
+  const { writeToCloud, readFromCloud } = useBackup();
+  const [isBackupMenuOpen, setIsBackupMenuOpen] = useState(false);
 
   const adminNavItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -197,6 +205,62 @@ export function DashboardLayout({ children }: LayoutProps) {
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
+      )}
+
+      {user && (
+        <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3">
+          <AnimatePresence>
+            {isBackupMenuOpen && (
+              <motion.div
+                className="flex flex-col items-end gap-3"
+                initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.18 }}
+              >
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsBackupMenuOpen(false);
+                    await writeToCloud();
+                  }}
+                  className="flex items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
+                >
+                  Back up to cloud
+                  <CloudUpload className="h-5 w-5 text-primary" />
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsBackupMenuOpen(false);
+                    await readFromCloud();
+                  }}
+                  className="flex items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
+                >
+                  Restore from cloud
+                  <CloudDownload className="h-5 w-5 text-primary" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <button
+            type="button"
+            aria-label={
+              isBackupMenuOpen
+                ? "Close cloud backup menu"
+                : "Cloud backup options"
+            }
+            aria-expanded={isBackupMenuOpen}
+            onClick={() => setIsBackupMenuOpen((open) => !open)}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-500 text-primary-foreground shadow-xl shadow-primary/30 transition hover:scale-105 hover:shadow-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          >
+            {isBackupMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <CloudSync className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       )}
     </div>
   );
