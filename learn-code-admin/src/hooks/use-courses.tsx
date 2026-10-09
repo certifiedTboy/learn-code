@@ -10,6 +10,8 @@ import { useGetAllCoursesMutation } from "../lib/apis/course-apis";
 import { type Course } from "../lib/mock-data";
 import type { RootState } from "../redux/store/store";
 import { getAllRegisteredCourse } from "@/helpers/course-database";
+import { markSubTopicAsCompleted } from "@/helpers/course-database";
+import { checkIfPaymentIsExpired } from "@/helpers/payment";
 
 interface CoursesContextType {
   courses: Course[];
@@ -18,6 +20,11 @@ interface CoursesContextType {
   updateCourse: (id: string, data: Partial<Omit<Course, "id">>) => void;
   deleteCourse: (id: string) => void;
   getRegisteredCourse: (id: string) => Course | undefined;
+  markTopicAsCompleted: (
+    courseId: string,
+    topicId: string,
+    subTopicId: string,
+  ) => void;
 }
 
 const CoursesContext = createContext<CoursesContextType | null>(null);
@@ -60,7 +67,9 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
           (course: any) => ({
             ...course,
             id: course.id ?? course._id,
-            contents: Array.isArray(course.contents) ? course.contents : [],
+            // isExpired: checkIfPaymentIsExpired(course?.dateRegistered),
+            isExpired: false,
+            contents: course.contents,
           }),
         ) as Course[];
 
@@ -84,6 +93,14 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
     setCourses((prev) => prev.filter((c) => c.id !== id));
   };
 
+  async function markTopicAsCompleted(
+    courseId: string,
+    topicId: string,
+    subTopicId: string,
+  ) {
+    await markSubTopicAsCompleted(courseId, topicId, subTopicId);
+  }
+
   return (
     <CoursesContext.Provider
       value={{
@@ -93,6 +110,7 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
         deleteCourse,
         registeredCourses,
         getRegisteredCourse,
+        markTopicAsCompleted,
       }}
     >
       {children}

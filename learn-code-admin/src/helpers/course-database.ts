@@ -481,6 +481,7 @@ export const markSubTopicAsCompleted = async (
     );
     await saveDatabase(database);
 
+    console.log("course updated!");
     return { success: true, completion, contents: updatedContents };
   }, false);
 };

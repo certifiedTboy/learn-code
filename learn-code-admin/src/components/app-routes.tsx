@@ -20,7 +20,8 @@ import RegisteredUsers from "../pages/registered-users";
 import LandingPage from "../pages/landing-page";
 import PrivacyPolicy from "../pages/privacy-policy";
 import TermsAndConditions from "../pages/term-conditions";
-import { CourseContent } from "../pages/courses/course-content";
+import { AdminCourseContent } from "../pages/courses/admin-course-content";
+import { UserCourseContent } from "@/pages/courses/user-course-content";
 import Contacts from "../pages/contacts";
 
 import Redirect from "./redirect";
@@ -51,9 +52,9 @@ const AppRoutes = () => {
       <Route path="/dashboard/my-courses/:id" component={UserCourseDetails} />
       <Route
         path="/dashboard/my-courses/:id/content"
-        component={CourseContent}
+        component={UserCourseContent}
       />
-      <Route path="/courses/:id/content" component={CourseContent} />
+      <Route path="/courses/:id/content" component={AdminCourseContent} />
       <Route
         path="/"
         component={() => (

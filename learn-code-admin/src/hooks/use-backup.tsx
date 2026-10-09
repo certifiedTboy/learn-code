@@ -1,7 +1,10 @@
 import { useAuth } from "./use-auth";
 import { useGoogleAuth } from "./use-google-auth";
 import { useToast } from "./use-toast";
-import { upsertRegisteredCourse } from "@/helpers/course-database";
+import {
+  upsertRegisteredCourse,
+  getAllRegisteredCourse,
+} from "@/helpers/course-database";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -124,7 +127,28 @@ export function useBackup() {
         file = await metadataResponse.json();
       }
 
-      await updateJsonFile(token, file.id, {});
+      const registeredCourses = await getAllRegisteredCourse();
+
+      let updatedCourse;
+
+      if (registeredCourses && registeredCourses.length > 0) {
+        updatedCourse = registeredCourses.map((course) => ({
+          ...course,
+          contents: course?.contents?.map((cont) => ({
+            ...cont,
+            subTopics: cont?.subTopics?.map((sub) => ({
+              ...sub,
+              isCompleted: sub?.isCompleted ?? false,
+            })),
+          })),
+        }));
+      }
+
+      await updateJsonFile(token, file.id, updatedCourse);
+      toast({
+        variant: "default",
+        title: "Backup Completed!",
+      });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -182,7 +206,7 @@ export function useBackup() {
 
       toast({
         variant: "default",
-        title: "Backup Restored",
+        title: "Backup Restored!",
       });
     } catch (error) {
       toast({

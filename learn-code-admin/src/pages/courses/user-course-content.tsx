@@ -1,18 +1,24 @@
+import { useEffect, useState } from "react";
 import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import { DashboardLayout } from "../../components/layout";
-import { Button } from "../../components/ui/button";
+import { useHistoryState } from "wouter/use-browser-location";
+import { DashboardLayout } from "@/components/layout";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { useCourses } from "@/hooks/use-courses";
 
 type MainContent = {
   title: string;
   contentURI: string;
   isVideo: boolean;
+  isCompleted: boolean;
 };
 
 type LessonState = {
   courseName: string;
   mainTopic: string;
   mainContent: MainContent;
+  courseId: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -24,15 +30,17 @@ function getLessonState(value: unknown): LessonState | null {
     return null;
   }
 
-  const { courseName, mainTopic, mainContent } = value;
-  const { title, contentURI, isVideo } = mainContent;
+  const { courseName, mainTopic, mainContent, courseId } = value;
+  const { title, contentURI, isVideo, isCompleted } = mainContent;
 
   if (
     typeof courseName !== "string" ||
     typeof mainTopic !== "string" ||
+    typeof courseId !== "string" ||
     typeof title !== "string" ||
     typeof contentURI !== "string" ||
-    typeof isVideo !== "boolean"
+    typeof isVideo !== "boolean" ||
+    typeof isCompleted !== "boolean"
   ) {
     return null;
   }
@@ -40,7 +48,8 @@ function getLessonState(value: unknown): LessonState | null {
   return {
     courseName,
     mainTopic,
-    mainContent: { title, contentURI, isVideo },
+    courseId,
+    mainContent: { title, contentURI, isVideo, isCompleted },
   };
 }
 
@@ -100,10 +109,14 @@ function getGoogleDocsEmbedUrl(value: string): string | null {
   return `https://docs.google.com/document/d/${encodeURIComponent(document[1])}/preview`;
 }
 
-export function CourseContent() {
-  const [, params] = useRoute("/courses/:id/content");
-  const lesson = getLessonState(window.history.state);
+export function UserCourseContent() {
+  const [tempCourseCompleted, setTempCourseCompleted] = useState(false);
+  const [, params] = useRoute("/dashboard/my-courses/:id/content");
+  const { user } = useAuth();
+  const { markTopicAsCompleted } = useCourses();
+  const lesson = getLessonState(useHistoryState<unknown>());
   const courseId = params?.id;
+
   const originalUrl = lesson
     ? parseHttpUrl(lesson.mainContent.contentURI)
     : null;
@@ -113,16 +126,55 @@ export function CourseContent() {
       : getGoogleDocsEmbedUrl(lesson.mainContent.contentURI)
     : null;
 
+  useEffect(() => {
+    if (lesson && !lesson?.mainContent?.isCompleted) {
+      setTempCourseCompleted(false);
+    }
+
+    if (lesson && lesson?.mainContent?.isCompleted) {
+      setTempCourseCompleted(true);
+    }
+  }, [lesson]);
+
+  async function handleMarkTopicAsComplted(
+    courseId: string,
+    mainTopic: string,
+    title: string,
+  ) {
+    const result = await markTopicAsCompleted(courseId, mainTopic, title);
+
+    //  @ts-ignore
+    if (result?.success) {
+      setTempCourseCompleted(true);
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
-        <Link
-          href={courseId ? `/courses/${courseId}` : "/dashboard/courses"}
-          className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to {lesson?.courseName || "Courses"}
-        </Link>
+        {user && user?.role === "admin" && (
+          <Link
+            href={courseId ? `/courses/${courseId}` : "/dashboard/courses"}
+            className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to {lesson?.courseName || "Courses"}
+          </Link>
+        )}
+
+        {user && user?.role === "user" && (
+          <Link
+            href={
+              courseId
+                ? `/dashboard/my-courses/${courseId}`
+                : "/dashboard/my-courses"
+            }
+            className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to {lesson?.courseName || "Courses"}
+          </Link>
+        )}
 
         {lesson ? (
           <>
@@ -182,31 +234,33 @@ export function CourseContent() {
                       ? "Use a valid YouTube video link for video lessons."
                       : "Use a Google Docs document link for document lessons."}
                   </p>
-                  {originalUrl && (
-                    <Button asChild variant="outline" className="mt-2">
-                      <a
-                        href={originalUrl.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Mark as completed
-                      </a>
-                    </Button>
-                  )}
+                  {originalUrl && <>{lesson?.mainContent?.isCompleted}</>}
                 </div>
               )}
 
-              {embedUrl && originalUrl && (
+              {user && user?.role === "user" && embedUrl && originalUrl && (
                 <div className="flex flex-wrap items-center justify-end gap-3 border-t border-white/10 px-4 py-3 sm:px-6">
-                  <Button asChild variant="outline" size="sm">
-                    <a
-                      href={originalUrl.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {!tempCourseCompleted ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setTempCourseCompleted(true);
+                        handleMarkTopicAsComplted(
+                          lesson?.courseId,
+                          lesson?.mainTopic,
+                          lesson?.mainContent?.title,
+                        );
+                      }}
                     >
-                      Mark as completed
-                    </a>
-                  </Button>
+                      <a href="#">Mark as completed</a>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline" size="sm">
+                      <a href="#">Completed</a>
+                    </Button>
+                  )}
                 </div>
               )}
             </section>

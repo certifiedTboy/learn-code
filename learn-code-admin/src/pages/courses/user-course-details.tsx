@@ -7,6 +7,7 @@ import {
   Star,
   PlayCircle,
   FileText,
+  Lock,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import {
@@ -17,6 +18,8 @@ import {
 } from "../../components/ui/accordion";
 import { DashboardLayout } from "../../components/layout";
 import { useCourses } from "../../hooks/use-courses";
+import { getRegisteredCourseById } from "@/helpers/course-database";
+import { useEffect } from "react";
 
 export default function UserCourseDetails() {
   const [, params] = useRoute("/dashboard/my-courses/:id");
@@ -25,6 +28,16 @@ export default function UserCourseDetails() {
   const courseId = params?.id;
   const { getRegisteredCourse } = useCourses();
   const course = courseId ? getRegisteredCourse(courseId) : undefined;
+  const registeredCourseId = course?.id ?? course?._id;
+
+  useEffect(() => {
+    (async () => {
+      if (courseId) {
+        const cs = await getRegisteredCourseById(courseId);
+        console.log("course from db: ", cs);
+      }
+    })();
+  }, [courseId]);
 
   if (!course) {
     return (
@@ -116,7 +129,9 @@ export default function UserCourseDetails() {
                     key={idx}
                     className="border-border/50 px-6"
                   >
-                    <AccordionTrigger className="hover:no-underline py-6 text-left cursor-pointer">
+                    <AccordionTrigger
+                      className={`hover:no-underline py-6 text-left cursor-pointer ${course.isExpired ? "opacity-50" : ""}`}
+                    >
                       <div className="flex flex-col md:flex-row md:items-center justify-between w-full pr-4 gap-2">
                         <div>
                           <span className="text-sm font-semibold text-primary uppercase tracking-wider mb-1 block">
@@ -131,7 +146,24 @@ export default function UserCourseDetails() {
                         </span>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pb-6">
+                    <AccordionContent
+                      className={`pb-6 ${course.isExpired ? "opacity-50" : ""}`}
+                    >
+                      {course.isExpired && (
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-background/50 px-4 py-3 mb-6">
+                          <div className="rounded-full bg-muted p-2 text-muted-foreground">
+                            <Lock className="h-4 w-4" aria-hidden="true" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              Course access has expired
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Lesson content is locked.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <p className="text-muted-foreground mb-6">
                         {section.description}
                       </p>
@@ -141,17 +173,20 @@ export default function UserCourseDetails() {
                           <div
                             key={topicIdx}
                             onClick={() =>
+                              !course?.isExpired &&
                               setLocation(
-                                `/dashboard/my-courses/${course._id}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                `/dashboard/my-courses/${registeredCourseId}/content/?title=${encodeURIComponent(topic?.title)}`,
                                 {
                                   state: {
-                                    mainTopic: section.mainTopic,
+                                    mainTopic: section?.mainTopic,
+                                    courseId: registeredCourseId,
                                     mainContent: {
-                                      title: topic.title,
-                                      contentURI: topic.contentURI,
-                                      isVideo: topic.isVideo,
+                                      title: topic?.title,
+                                      contentURI: topic?.contentURI,
+                                      isVideo: topic?.isVideo,
+                                      isCompleted: topic?.isCompleted,
                                     },
-                                    courseName: course.name,
+                                    courseName: course?.name,
                                   },
                                 },
                               )
@@ -172,24 +207,15 @@ export default function UserCourseDetails() {
                                 {topic.title}
                               </span>
                             </div>
-                            <Button
-                              onClick={() =>
-                                setLocation(
-                                  `/dashboard/my-courses/${course.id}/content/?title=${encodeURIComponent(topic?.title)}`,
-                                  {
-                                    state: {
-                                      mainTopic: section.mainTopic,
-                                      subTopics: section.subTopics,
-                                    },
-                                  },
-                                )
-                              }
-                              variant="ghost"
-                              size="sm"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              View
-                            </Button>
+                            {topic.isCompleted && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                Completed
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
