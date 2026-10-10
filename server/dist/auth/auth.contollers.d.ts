@@ -12,6 +12,7 @@ export declare class AuthControllers {
     constructor(authService: AuthService, usersService: UsersService, logger: Logger);
     login(req: Request, authDto: AuthDto): Promise<import("../common/response-handler/response-handler").ResponseHandlerInterface | undefined>;
     loginWithGoogle(req: Request, createUserDto: CreateGoogleUserDto): Promise<import("../common/response-handler/response-handler").ResponseHandlerInterface | undefined>;
+    loginAdminWithGoogle(req: Request, idToken: string): Promise<import("../common/response-handler/response-handler").ResponseHandlerInterface>;
     getCurrentUser(req: Request): Promise<import("../common/response-handler/response-handler").ResponseHandlerInterface | undefined>;
     logout(req: Request, res: Response): import("../common/response-handler/response-handler").ResponseHandlerInterface | undefined;
     getNewtoken(req: Request, res: Response): Promise<import("../common/response-handler/response-handler").ResponseHandlerInterface | undefined>;

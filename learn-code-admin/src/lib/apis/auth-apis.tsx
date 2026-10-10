@@ -54,6 +54,24 @@ export const authApis = createApi({
       },
     }),
 
+    loginAdminWithGoogle: builder.mutation({
+      query: (payload) => ({
+        url: "/auth/google/admin/login",
+        method: "POST",
+        body: payload,
+      }),
+
+      async onQueryStarted(__, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(setCurrentUser(data.data?.user));
+        } catch {
+          // The calling page reports the authentication error.
+        }
+      },
+    }),
+
     getNewToken: builder.mutation({
       query: () => ({
         url: `/auth/new-token`,
@@ -109,6 +127,7 @@ export const {
   useCreateAdminAccountMutation,
   useVerifyAdminAccountMutation,
   useLoginAdminAccountMutation,
+  useLoginAdminWithGoogleMutation,
   useGetNewTokenMutation,
   useGetNewVerificationCodeMutation,
   useRequestPasscodeResetMutation,

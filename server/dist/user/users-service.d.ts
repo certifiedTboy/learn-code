@@ -13,14 +13,13 @@ export declare class UsersService {
     private readonly accessJwtService;
     private readonly queueService;
     private readonly configService;
-    private adminUser;
     constructor(userModel: Model<UserDocument>, accessJwtService: AccessJwtService, queueService: QueueService, configService: ConfigService);
-    create(createUserDto: CreateUserDto, clientType: string): Promise<(import("mongoose").Document<unknown, {}, User, {}, {}> & User & Required<{
+    create(createUserDto: CreateUserDto, _clientType: string): Promise<(import("mongoose").Document<unknown, {}, User, {}, {}> & User & Required<{
         _id: import("mongoose").Types.ObjectId;
     }> & {
         __v: number;
     }) | null>;
-    createGoogleUser(createUserDto: CreateGoogleUserDto): Promise<import("mongoose").Document<unknown, {}, User, {}, {}> & User & Required<{
+    createGoogleUser(createUserDto: CreateGoogleUserDto, role?: 'user' | 'admin'): Promise<import("mongoose").Document<unknown, {}, User, {}, {}> & User & Required<{
         _id: import("mongoose").Types.ObjectId;
     }> & {
         __v: number;

@@ -21,29 +21,29 @@ import { QueueService } from '../queue/queue-service';
  */
 @Injectable()
 export class UsersService {
-  private adminUser: string;
+  // private adminUser: string;
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly accessJwtService: AccessJwtService,
     private readonly queueService: QueueService,
     private readonly configService: ConfigService,
   ) {
-    this.adminUser = this.configService.get<string>('EMAIL_USER')!;
+    // this.adminUser = this.configService.get<string>('EMAIL_USER')!;
   }
 
   /**
    * @method create
    * @description Creates a new user and sends a verification email.
    * @param {CreateUserDto} createUserDto - The data transfer object containing user details.
-   * @param {string} clientType - source of http request
+   * @param {string} _clientType - source of http request
    */
-  async create(createUserDto: CreateUserDto, clientType: string) {
-    if (clientType === 'web' && this.adminUser !== createUserDto.email) {
-      throw new BadRequestException('', {
-        cause: 'Not authorized',
-        description: 'Not authorized',
-      });
-    }
+  async create(createUserDto: CreateUserDto, _clientType: string) {
+    // if (clientType === 'web' && this.adminUser !== createUserDto.email) {
+    //   throw new BadRequestException('', {
+    //     cause: 'Not authorized',
+    //     description: 'Not authorized',
+    //   });
+    // }
 
     // check if user with the same email or phone number already exists
     const userWithEmailExist = await this.checkIfUserExist({
@@ -149,7 +149,10 @@ export class UsersService {
    * @description Creates a new user with google credentials
    * @param {CreateGoogleUserDto} createGoogleUserDto - The data transfer object containing user details.
    */
-  async createGoogleUser(createUserDto: CreateGoogleUserDto) {
+  async createGoogleUser(
+    createUserDto: CreateGoogleUserDto,
+    role: 'user' | 'admin' = 'user',
+  ) {
     // check if user with the same email or phone number already exists
     const userWithEmailExist = await this.checkIfUserExist({
       email: createUserDto.email,
@@ -161,6 +164,7 @@ export class UsersService {
       const createdUser = new this.userModel({
         ...createUserDto,
         isVerified: true,
+        role,
       });
       const user = await createdUser.save();
 

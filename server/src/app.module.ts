@@ -30,9 +30,10 @@ import { BullModule } from '@nestjs/bullmq';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get<string>('REDIS_HOST'),
-          port: configService.get<number>('REDIS_PORT'),
-          password: configService.get<string>('REDIS_PASSWORD'),
+          host: configService.get<string>('REDIS_HOST_2'),
+          port: configService.get<number>('REDIS_PORT_2'),
+          password: configService.get<string>('REDIS_PASSWORD_2'),
+          user: configService.get<string>('REDIS_USER'),
         },
         defaultJobOptions: {
           removeOnComplete: true,

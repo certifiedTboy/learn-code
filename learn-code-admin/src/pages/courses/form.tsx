@@ -1,25 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { useRoute, useLocation } from "wouter";
-import useForm from "../../hooks/useForm";
-import {
-  convertSkillsToArray,
-  convertSkillsToString,
-} from "../../helpers/course";
-import { courseFormSchema } from "../../helpers/data-validator-schema";
-import { DashboardLayout } from "../../components/layout";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Textarea } from "../../components/ui/textarea";
-import { Label } from "../../components/ui/label";
-import { Switch } from "../../components/ui/switch";
-import { useToast } from "../../hooks/use-toast";
-import { useCourses } from "../../hooks/use-courses";
+import useForm from "@/hooks/useForm";
+import { convertSkillsToArray, convertSkillsToString } from "@/helpers/course";
+import { courseFormSchema } from "@/helpers/data-validator-schema";
+import { DashboardLayout } from "@/components/layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { useCourses } from "@/hooks/use-courses";
 import {
   useCreateNewCourseMutation,
   useUpdateCourseMutation,
-} from "../../lib/apis/course-apis";
-import Loader from "../../components/ui/loader";
+} from "@/lib/apis/course-apis";
+import Loader from "@/components/ui/loader";
 import {
   ArrowLeft,
   Plus,
@@ -30,7 +27,7 @@ import {
   Upload,
 } from "lucide-react";
 import pdfToText from "react-pdftotext";
-import { convertCourseTextToReference } from "../../helpers/data-converter";
+import { convertCourseTextToReference } from "@/helpers/data-converter";
 
 export default function CourseForm() {
   const [match, params] = useRoute("/dashboard/courses/:id/edit");

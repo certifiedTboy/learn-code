@@ -1,4 +1,4 @@
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   Clock,
@@ -7,22 +7,26 @@ import {
   Star,
   PlayCircle,
   FileText,
+  Lock,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../components/ui/accordion";
-import { DashboardLayout } from "../../components/layout";
-import { useCourses } from "../../hooks/use-courses";
+} from "@/components/ui/accordion";
+import { DashboardLayout } from "@/components/layout";
+import { useCourses } from "@/hooks/use-courses";
 
-export default function CourseView() {
-  const [, params] = useRoute("/courses/:id");
+export default function UserCourseDetails() {
+  const [, params] = useRoute("/dashboard/my-courses/:id");
+  const [, setLocation] = useLocation();
+
   const courseId = params?.id;
-  const { getCourse } = useCourses();
-  const course = courseId ? getCourse(courseId) : undefined;
+  const { getRegisteredCourse } = useCourses();
+  const course = courseId ? getRegisteredCourse(courseId) : undefined;
+  const registeredCourseId = course?.id ?? course?._id;
 
   if (!course) {
     return (
@@ -44,7 +48,7 @@ export default function CourseView() {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-8 pb-20">
         <Link
-          href="/dashboard/courses"
+          href="/dashboard/my-courses"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -106,7 +110,7 @@ export default function CourseView() {
           </h2>
 
           {course.contents && course.contents.length > 0 ? (
-            <div className="glass-panel rounded-2xl overflow-hidden">
+            <div className="glass-panel rounded-2xl overflow-hidden cursor-pointer">
               <Accordion type="single" collapsible className="w-full">
                 {course.contents.map((section, idx) => (
                   <AccordionItem
@@ -114,7 +118,9 @@ export default function CourseView() {
                     key={idx}
                     className="border-border/50 px-6"
                   >
-                    <AccordionTrigger className="hover:no-underline py-6 text-left">
+                    <AccordionTrigger
+                      className={`hover:no-underline py-6 text-left cursor-pointer ${course.isExpired ? "opacity-50" : ""}`}
+                    >
                       <div className="flex flex-col md:flex-row md:items-center justify-between w-full pr-4 gap-2">
                         <div>
                           <span className="text-sm font-semibold text-primary uppercase tracking-wider mb-1 block">
@@ -129,7 +135,24 @@ export default function CourseView() {
                         </span>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pb-6">
+                    <AccordionContent
+                      className={`pb-6 ${course.isExpired ? "opacity-50" : ""}`}
+                    >
+                      {course.isExpired && (
+                        <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-background/50 px-4 py-3 mb-6">
+                          <div className="rounded-full bg-muted p-2 text-muted-foreground">
+                            <Lock className="h-4 w-4" aria-hidden="true" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              Course access has expired
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Lesson content is locked.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <p className="text-muted-foreground mb-6">
                         {section.description}
                       </p>
@@ -138,6 +161,26 @@ export default function CourseView() {
                         {section.subTopics?.map((topic, topicIdx) => (
                           <div
                             key={topicIdx}
+                            onClick={() =>
+                              course?.isExpired
+                                ? setLocation(`/courses/${registeredCourseId}`)
+                                : setLocation(
+                                    `/dashboard/my-courses/${registeredCourseId}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                    {
+                                      state: {
+                                        mainTopic: section?.mainTopic,
+                                        courseId: registeredCourseId,
+                                        mainContent: {
+                                          title: topic?.title,
+                                          contentURI: topic?.contentURI,
+                                          isVideo: topic?.isVideo,
+                                          isCompleted: topic?.isCompleted,
+                                        },
+                                        courseName: course?.name,
+                                      },
+                                    },
+                                  )
+                            }
                             className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer"
                           >
                             <div className="flex items-center gap-4">
@@ -154,13 +197,15 @@ export default function CourseView() {
                                 {topic.title}
                               </span>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              View
-                            </Button>
+                            {topic.isCompleted && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                Completed
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>

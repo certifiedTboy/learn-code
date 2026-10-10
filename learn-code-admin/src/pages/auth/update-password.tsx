@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Lock } from "lucide-react";
-import { Button } from "../components/ui/button";
-import Loader from "../components/ui/loader";
-import { useToast } from "../hooks/use-toast";
-import useForm from "../hooks/useForm";
-import { Input } from "../components/ui/input";
-import { updatePasswordResetSchema } from "../helpers/data-validator-schema";
-import { useUpdatePasscodeMutation } from "../lib/apis/auth-apis";
+import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader";
+import { useToast } from "@/hooks/use-toast";
+import useForm from "@/hooks/useForm";
+import { Input } from "@/components/ui/input";
+import { updatePasswordResetSchema } from "@/helpers/data-validator-schema";
+import { useUpdatePasscodeMutation } from "@/lib/apis/auth-apis";
 
 export default function UpdatePassword() {
   const {
@@ -72,13 +72,13 @@ export default function UpdatePassword() {
               </span>
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Manage your <br />
-              <span className="text-gradient">educational content</span> <br />
-              with precision.
+              Keep your learning <br />
+              <span className="text-gradient">journey on track</span> <br />
+              and keep building.
             </h1>
             <p className="text-xl text-muted-foreground max-w-md">
-              The professional platform for creators to build, scale, and
-              analyze their online courses.
+              Your next breakthrough could be one lesson away. Get back to
+              exploring code, creating projects, and growing your skills.
             </p>
           </motion.div>
         </div>

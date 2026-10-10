@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Mail } from "lucide-react";
-import { Button } from "../components/ui/button";
-import Loader from "../components/ui/loader";
-import { useToast } from "../hooks/use-toast";
-import useForm from "../hooks/useForm";
-import { Input } from "../components/ui/input";
-import { passwordResetSchema } from "../helpers/data-validator-schema";
-import { useRequestPasscodeResetMutation } from "../lib/apis/auth-apis";
+import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader";
+import { useToast } from "@/hooks/use-toast";
+import useForm from "@/hooks/useForm";
+import { Input } from "@/components/ui/input";
+import { passwordResetSchema } from "@/helpers/data-validator-schema";
+import { useRequestPasscodeResetMutation } from "@/lib/apis/auth-apis";
 
 export default function ResetPassword() {
   const { formData, error, handleInputChange } = useForm(passwordResetSchema);
@@ -63,13 +63,13 @@ export default function ResetPassword() {
               </span>
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Manage your <br />
-              <span className="text-gradient">educational content</span> <br />
-              with precision.
+              Restart your coding <br />
+              <span className="text-gradient">momentum</span> <br />
+              with a fresh start.
             </h1>
             <p className="text-xl text-muted-foreground max-w-md">
-              The professional platform for creators to build, scale, and
-              analyze their online courses.
+              Reset your access and jump back into hands-on lessons, guided
+              projects, and the next milestone in your tech journey.
             </p>
           </motion.div>
         </div>

@@ -1,10 +1,9 @@
 import { useEffect, type SubmitEvent } from "react";
-// import { useAuth } from "../hooks/use-auth";
 import { useSelector } from "react-redux";
-import useForm from "../hooks/useForm";
-import { userProfileSchema } from "../helpers/data-validator-schema";
-import { DashboardLayout } from "../components/layout";
-import type { RootState } from "../redux/store/store";
+import useForm from "@/hooks/useForm";
+import { userProfileSchema } from "@/helpers/data-validator-schema";
+import { DashboardLayout } from "@/components/layout";
+import type { RootState } from "@/redux/store/store";
 
 export default function UserProfile() {
   const { formData, updateFormDataForContentUpdate, handleInputChange } =
@@ -14,7 +13,6 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (currentUser) {
-      console.log(currentUser);
       updateFormDataForContentUpdate(currentUser);
     }
   }, [currentUser]);

@@ -2,6 +2,7 @@ export interface SubTopic {
   title: string;
   contentURI: string;
   isVideo: boolean;
+  isCompleted: boolean;
 }
 
 export interface CourseContent {
@@ -11,19 +12,22 @@ export interface CourseContent {
 }
 
 export interface Course {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   image?: string;
-  price: number;
+  price: number | string;
   totalTopics: number;
   requiredDuration: number;
   subscribers: number;
-  rating: number;
+  rating: number | string;
   skills: string | string[];
   contents: CourseContent[];
   _id?: string;
   __v?: string;
   createdAt?: string;
   updatedAt?: string;
+  completion?: string;
+  completed?: boolean;
+  isExpired?: boolean;
 }

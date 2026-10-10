@@ -32,6 +32,15 @@
 $ npm install
 ```
 
+## Admin Google sign-in
+
+Set `GOOGLE_CLIENT_ID` on the server to the OAuth 2.0 web client ID used by the
+Learn Code Admin Firebase project. Enable Google as a sign-in provider in
+Firebase Authentication and allow the admin app's domain. The server verifies
+Google identity tokens against this client ID; new accounts created through the
+admin Google buttons receive the `admin` role, while existing non-admin
+accounts are not promoted.
+
 ## Compile and run the project
 
 ```bash
