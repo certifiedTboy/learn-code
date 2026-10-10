@@ -11,7 +11,7 @@ import { type Course } from "../lib/mock-data";
 import type { RootState } from "../redux/store/store";
 import { getAllRegisteredCourse } from "@/helpers/course-database";
 import { markSubTopicAsCompleted } from "@/helpers/course-database";
-import { checkIfPaymentIsExpired } from "@/helpers/payment";
+// import { checkIfPaymentIsExpired } from "@/helpers/payment";
 
 interface CoursesContextType {
   courses: Course[];

@@ -20,10 +20,8 @@ export default function Dashboard() {
   );
   const avgRating = courses?.length
     ? (
-        courses.reduce(
-          (acc, c) => acc + (Number(c.rating) || 0),
-          0,
-        ) / courses.length
+        courses.reduce((acc, c) => acc + (Number(c.rating) || 0), 0) /
+        courses.length
       ).toFixed(1)
     : "0.0";
   const totalRevenue = courses?.reduce(
@@ -88,11 +86,13 @@ export default function Dashboard() {
               Here's what's happening with your platform today.
             </p>
           </div>
-          <Link href="/dashboard/courses/new" className="cursor-pointer">
-            <Button className="shadow-glow cursor-pointer">
-              <Plus className="w-4 h-4 mr-2" /> Create Course
-            </Button>
-          </Link>
+          {user && user?.role === "admin" && (
+            <Link href="/dashboard/courses/new" className="cursor-pointer">
+              <Button className="shadow-glow cursor-pointer">
+                <Plus className="w-4 h-4 mr-2" /> Create Course
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="glass-panel p-4 rounded-xl flex items-center gap-3">

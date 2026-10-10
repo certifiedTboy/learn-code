@@ -56,8 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name:
             currentUser?.firstName && currentUser?.lastName
               ? `${currentUser?.firstName} ${currentUser?.lastName}`
-              : "Admin",
-          role: currentUser?.role || "admin",
+              : "",
+          role: currentUser?.role || "",
           email: currentUser?.email!,
         },
         isAuthenticated,

@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -18,8 +18,6 @@ import { useAuth } from "../hooks/use-auth";
 import { deleteToken } from "../helpers/user-session";
 import { useGoogleAuth } from "../hooks/use-google-auth";
 import { useBackup } from "@/hooks/use-backup";
-
-// import { useBackup } from "../hooks/use-backup";
 
 interface LayoutProps {
   children: ReactNode;
@@ -45,7 +43,7 @@ export function DashboardLayout({ children }: LayoutProps) {
   ];
 
   const userNavItems = [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Courses", icon: LayoutDashboard },
     { href: "/dashboard/my-courses", label: "My Courses", icon: BookOpen },
 
     { href: "/dashboard/profile", label: "Settings", icon: Settings },

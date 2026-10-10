@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
-import { useHistoryState } from "wouter/use-browser-location";
 import { DashboardLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -111,11 +110,11 @@ function getGoogleDocsEmbedUrl(value: string): string | null {
 
 export function UserCourseContent() {
   const [tempCourseCompleted, setTempCourseCompleted] = useState(false);
-  const [, params] = useRoute("/dashboard/my-courses/:id/content");
+  const [, params] = useRoute("/courses/:id");
   const { user } = useAuth();
   const { markTopicAsCompleted } = useCourses();
-  const lesson = getLessonState(useHistoryState<unknown>());
-  const courseId = params?.id;
+  const lesson = getLessonState(window.history.state);
+  const courseId = params;
 
   const originalUrl = lesson
     ? parseHttpUrl(lesson.mainContent.contentURI)
@@ -142,6 +141,8 @@ export function UserCourseContent() {
     title: string,
   ) {
     const result = await markTopicAsCompleted(courseId, mainTopic, title);
+
+    console.log("result: ", result);
 
     //  @ts-ignore
     if (result?.success) {
