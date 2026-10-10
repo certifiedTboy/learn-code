@@ -2,13 +2,13 @@ import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Lock } from "lucide-react";
-import { Button } from "../components/ui/button";
-import Loader from "../components/ui/loader";
-import { useToast } from "../hooks/use-toast";
-import useForm from "../hooks/useForm";
-import { Input } from "../components/ui/input";
-import { updatePasswordResetSchema } from "../helpers/data-validator-schema";
-import { useUpdatePasscodeMutation } from "../lib/apis/auth-apis";
+import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/loader";
+import { useToast } from "@/hooks/use-toast";
+import useForm from "@/hooks/useForm";
+import { Input } from "@/components/ui/input";
+import { updatePasswordResetSchema } from "@/helpers/data-validator-schema";
+import { useUpdatePasscodeMutation } from "@/lib/apis/auth-apis";
 
 export default function UpdatePassword() {
   const {

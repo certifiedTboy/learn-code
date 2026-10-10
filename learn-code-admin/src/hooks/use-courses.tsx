@@ -11,7 +11,7 @@ import { type Course } from "../lib/mock-data";
 import type { RootState } from "../redux/store/store";
 import { getAllRegisteredCourse } from "@/helpers/course-database";
 import { markSubTopicAsCompleted } from "@/helpers/course-database";
-// import { checkIfPaymentIsExpired } from "@/helpers/payment";
+import { checkIfPaymentIsExpired } from "@/helpers/payment";
 
 interface CoursesContextType {
   courses: Course[];
@@ -67,8 +67,7 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
           (course: any) => ({
             ...course,
             id: course.id ?? course._id,
-            // isExpired: checkIfPaymentIsExpired(course?.dateRegistered),
-            isExpired: false,
+            isExpired: checkIfPaymentIsExpired(course?.dateRegistered),
             contents: course.contents,
           }),
         ) as Course[];

@@ -9,6 +9,15 @@ import {
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 
+class DriveRequestError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function driveRequest(
   url: string,
   accessToken: string,
@@ -24,14 +33,19 @@ async function driveRequest(
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Google Drive API error: ${error}`);
+    throw new DriveRequestError(
+      `Google Drive API error: ${error}`,
+      response.status,
+    );
   }
 
   return response;
 }
 
-export async function listAppData() {
-  const accessToken = localStorage.getItem("gtkn");
+export async function listAppData(
+  refreshAccessToken: () => Promise<string>,
+) {
+  let accessToken = localStorage.getItem("gtkn");
 
   if (!accessToken) {
     return console.log("token is not provided");
@@ -43,10 +57,18 @@ export async function listAppData() {
     pageSize: "100",
   });
 
-  const response = await driveRequest(
-    `${DRIVE_API}/files?${params}`,
-    accessToken,
-  );
+  let response: Response;
+
+  try {
+    response = await driveRequest(`${DRIVE_API}/files?${params}`, accessToken);
+  } catch (error) {
+    if (!(error instanceof DriveRequestError) || error.status !== 401) {
+      throw error;
+    }
+
+    accessToken = await refreshAccessToken();
+    response = await driveRequest(`${DRIVE_API}/files?${params}`, accessToken);
+  }
 
   const files = (await response.json())?.files ?? [];
 
@@ -103,7 +125,8 @@ export function useBackup() {
         token = await handleGoogleSignIn();
       }
 
-      const files = await listAppData();
+      const files = await listAppData(handleGoogleSignIn);
+      token = localStorage.getItem("gtkn") ?? token;
 
       let file = files.find((file: any) => file.name === path);
 
@@ -172,7 +195,8 @@ export function useBackup() {
         token = await handleGoogleSignIn();
       }
 
-      const files = await listAppData();
+      const files = await listAppData(handleGoogleSignIn);
+      token = localStorage.getItem("gtkn") ?? token;
 
       const fileId = files.find((file: any) => file.name === path)?.id;
 

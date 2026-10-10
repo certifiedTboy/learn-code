@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, Clock, BookOpen } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 export function AdminCourseCard({ course }: { course: any }) {

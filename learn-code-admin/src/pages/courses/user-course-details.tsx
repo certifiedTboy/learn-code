@@ -9,17 +9,15 @@ import {
   FileText,
   Lock,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../components/ui/accordion";
-import { DashboardLayout } from "../../components/layout";
-import { useCourses } from "../../hooks/use-courses";
-import { getRegisteredCourseById } from "@/helpers/course-database";
-import { useEffect } from "react";
+} from "@/components/ui/accordion";
+import { DashboardLayout } from "@/components/layout";
+import { useCourses } from "@/hooks/use-courses";
 
 export default function UserCourseDetails() {
   const [, params] = useRoute("/dashboard/my-courses/:id");
@@ -29,15 +27,6 @@ export default function UserCourseDetails() {
   const { getRegisteredCourse } = useCourses();
   const course = courseId ? getRegisteredCourse(courseId) : undefined;
   const registeredCourseId = course?.id ?? course?._id;
-
-  useEffect(() => {
-    (async () => {
-      if (courseId) {
-        const cs = await getRegisteredCourseById(courseId);
-        console.log("course from db: ", cs);
-      }
-    })();
-  }, [courseId]);
 
   if (!course) {
     return (
@@ -173,23 +162,24 @@ export default function UserCourseDetails() {
                           <div
                             key={topicIdx}
                             onClick={() =>
-                              !course?.isExpired &&
-                              setLocation(
-                                `/dashboard/my-courses/${registeredCourseId}/content/?title=${encodeURIComponent(topic?.title)}`,
-                                {
-                                  state: {
-                                    mainTopic: section?.mainTopic,
-                                    courseId: registeredCourseId,
-                                    mainContent: {
-                                      title: topic?.title,
-                                      contentURI: topic?.contentURI,
-                                      isVideo: topic?.isVideo,
-                                      isCompleted: topic?.isCompleted,
+                              course?.isExpired
+                                ? setLocation(`/courses/${registeredCourseId}`)
+                                : setLocation(
+                                    `/dashboard/my-courses/${registeredCourseId}/content/?title=${encodeURIComponent(topic?.title)}`,
+                                    {
+                                      state: {
+                                        mainTopic: section?.mainTopic,
+                                        courseId: registeredCourseId,
+                                        mainContent: {
+                                          title: topic?.title,
+                                          contentURI: topic?.contentURI,
+                                          isVideo: topic?.isVideo,
+                                          isCompleted: topic?.isCompleted,
+                                        },
+                                        courseName: course?.name,
+                                      },
                                     },
-                                    courseName: course?.name,
-                                  },
-                                },
-                              )
+                                  )
                             }
                             className="flex items-center justify-between p-4 rounded-xl bg-background/50 border border-white/5 hover:border-primary/30 transition-colors group cursor-pointer"
                           >

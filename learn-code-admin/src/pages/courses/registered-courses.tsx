@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { DashboardLayout } from "../../components/layout";
+import { DashboardLayout } from "@/components/layout";
 import { Link } from "wouter";
 import { AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { useCourses } from "../../hooks/use-courses";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useCourses } from "@/hooks/use-courses";
 import { RegistereCourseCard } from "./registered-course-card";
 
 export default function RegisteredCourses() {

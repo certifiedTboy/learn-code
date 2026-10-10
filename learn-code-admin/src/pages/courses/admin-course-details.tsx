@@ -11,16 +11,16 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../components/ui/accordion";
-import { DashboardLayout } from "../../components/layout";
-import { useCourses } from "../../hooks/use-courses";
-import { useAuth } from "../../hooks/use-auth";
+} from "@/components/ui/accordion";
+import { DashboardLayout } from "@/components/layout";
+import { useCourses } from "@/hooks/use-courses";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function AdminCourseDetails() {
   const [, params] = useRoute("/courses/:id");
@@ -28,8 +28,10 @@ export default function AdminCourseDetails() {
 
   const { user } = useAuth();
   const courseId = params?.id;
-  const { getCourse } = useCourses();
+  const { getCourse, getRegisteredCourse } = useCourses();
   const course = courseId ? getCourse(courseId) : undefined;
+
+  const registeredCourse = courseId ? getRegisteredCourse(courseId) : undefined;
 
   if (!course) {
     return (
@@ -92,7 +94,7 @@ export default function AdminCourseDetails() {
     <DashboardLayout>
       <div className="mx-auto max-w-6xl space-y-8 pb-20">
         <Link
-          href="/dashboard/courses"
+          href="/dashboard"
           className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -295,18 +297,20 @@ export default function AdminCourseDetails() {
                                   </p>
                                 </div>
                               </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={!canViewLessons}
-                                onClick={() =>
-                                  openLesson(section.mainTopic, topic)
-                                }
-                                className="shrink-0"
-                              >
-                                {topic.isCompleted ? "Review" : "View lesson"}
-                              </Button>
+                              {user && user?.role === "admin" && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={!canViewLessons}
+                                  onClick={() =>
+                                    openLesson(section.mainTopic, topic)
+                                  }
+                                  className="shrink-0"
+                                >
+                                  View lesson
+                                </Button>
+                              )}
                             </li>
                           ))}
                         </ol>
@@ -332,25 +336,48 @@ export default function AdminCourseDetails() {
             </div>
           )}
 
-          <div className="sticky bottom-0 z-30 -mx-4 border-y border-white/10 bg-background/85 px-4 py-3 shadow-lg backdrop-blur-xl md:-mx-8 md:px-8">
-            <div className="flex max-w-8 gap-3">
-              <Button
-                type="button"
-                className="h-12 cursor-pointer flex-1 rounded-xl text-sm font-semibold shadow-glow sm:text-base"
-              >
-                <BookOpen className="h-4 w-4" />
-                Continue Learning
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-12 flex-1 cursor-pointer rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
-              >
-                <CircleDollarSign className="h-4 w-4" />
-                Make Payment
-              </Button>
+          {user && user?.role === "user" && (
+            <div className="sticky bottom-0 z-30 -mx-4 border-y border-white/10 bg-background/85 px-4 py-3 shadow-lg backdrop-blur-xl md:-mx-8 md:px-8">
+              <div className="flex max-w-8 gap-3">
+                {!registeredCourse ? (
+                  <Button
+                    onClick={() =>
+                      setLocation(`/dashboard/my-courses/${courseId}/payment`)
+                    }
+                    type="button"
+                    variant="outline"
+                    className="h-12 flex-1 cursor-pointer rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
+                  >
+                    <CircleDollarSign className="h-4 w-4" />
+                    Enroll to course
+                  </Button>
+                ) : registeredCourse && !registeredCourse?.isExpired ? (
+                  <Button
+                    onClick={() =>
+                      setLocation(`/dashboard/my-courses/${courseId}`)
+                    }
+                    type="button"
+                    className="h-12 cursor-pointer flex-1 rounded-xl text-sm font-semibold shadow-glow sm:text-base"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Continue Learning
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() =>
+                      setLocation(`/dashboard/my-courses/${courseId}/payment`)
+                    }
+                    type="button"
+                    variant="outline"
+                    className="h-12 flex-1 cursor-pointer rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
+                  >
+                    <CircleDollarSign className="h-4 w-4" />
+                    Renew subscription
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
     </DashboardLayout>

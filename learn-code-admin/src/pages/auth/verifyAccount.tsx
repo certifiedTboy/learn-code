@@ -1,30 +1,25 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowLeft, Mail, Lock } from "lucide-react";
-import { useToast } from "../hooks/use-toast";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { registerSchema } from "../helpers/data-validator-schema";
-import useForm from "../hooks/useForm";
-import { useCreateAdminAccountMutation } from "../lib/apis/auth-apis";
-import { useAuth } from "../hooks/use-auth";
-import Loader from "../components/ui/loader";
-import GoogleAuthButton from "../components/google-auth-button";
-import { useGoogleAdminAuth } from "../hooks/use-google-admin-auth";
+import { GraduationCap, ArrowLeft, Lock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { accountVerificationSchema } from "@/helpers/data-validator-schema";
+import useForm from "@/hooks/useForm";
+import { useVerifyAdminAccountMutation } from "@/lib/apis/auth-apis";
+import Loader from "@/components/ui/loader";
+import { useAuth } from "@/hooks/use-auth";
 
-export default function Register() {
+export default function VerifyAccount() {
   const [, setLocation] = useLocation();
-
   const { isAuthenticated } = useAuth();
   const [
-    createAdminAccount,
-    { isLoading, error: errorResponse, isSuccess, isError },
-  ] = useCreateAdminAccountMutation();
+    verifyAdminAccount,
+    { isLoading, error: errorResponse, isSuccess, isError, data: __ },
+  ] = useVerifyAdminAccountMutation();
 
   const { toast } = useToast();
-  const { continueWithGoogle, isLoading: isGoogleLoading } =
-    useGoogleAdminAuth();
 
   const {
     error,
@@ -32,24 +27,23 @@ export default function Register() {
     handlePasswordTypeChange,
     inputType,
     formData,
-  } = useForm(registerSchema);
+  } = useForm(accountVerificationSchema);
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
     if (Object.values(error)[0]) return;
 
-    delete formData.confirmPassword;
-
-    createAdminAccount({
+    verifyAdminAccount({
       ...formData,
-      role: "admin",
+      action: "ACCOUNT_VERIFICATION",
+      verificationCode: formData.verificationCode.slice(0, 5),
     });
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setLocation("/verify-acount");
+      setLocation("/login");
     }
 
     if (isError) {
@@ -57,6 +51,7 @@ export default function Register() {
         errorResponse && "data" in errorResponse
           ? (errorResponse.data as any)?.message || "Something went wrong"
           : "Something went wrong";
+
       toast({
         variant: "destructive",
         title: message,
@@ -89,71 +84,26 @@ export default function Register() {
         >
           <div className="text-center lg:text-left">
             <h2 className="text-3xl font-display font-bold tracking-tight mb-2">
-              Create an account
+              Verify Acount
             </h2>
-            <p className="text-muted-foreground">
-              Start managing your courses today
-            </p>
+            <p className="text-muted-foreground">Verify your account</p>
           </div>
 
           <div className="glass-panel p-8 rounded-2xl">
-            {isLoading && <Loader />}
             <form onSubmit={onSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
+                  {isLoading && <Loader />}
                   <label className="text-sm font-medium text-foreground">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      onChange={handleInputChange}
-                      placeholder="admin@example.com"
-                      name="email"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                  </div>
-                  {error?.field === "email" && (
-                    <p className="text-xs text-destructive">{error?.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      onChange={handleInputChange}
-                      type={inputType?.passwordType}
-                      placeholder="••••••••"
-                      name="password"
-                      className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
-                    />
-                    <span
-                      onClick={() => handlePasswordTypeChange("passwordType")}
-                      className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
-                    >
-                      {inputType.passwordType === "password" ? "👁️" : "🙈"}
-                    </span>
-                  </div>
-                  {error?.field === "password" && (
-                    <p className="text-xs text-destructive">{error?.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">
-                    Confirm Password
+                    Verification Code
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                     <Input
                       onChange={handleInputChange}
                       type={inputType.confirmPasswordType}
-                      placeholder="••••••••"
-                      name="confirmPassword"
+                      placeholder="••••••"
+                      name="verificationCode"
                       className="pl-10 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20"
                     />
 
@@ -168,7 +118,7 @@ export default function Register() {
                         : "🙈"}
                     </span>
                   </div>
-                  {error?.field === "confirmPassword" && (
+                  {error?.field === "verificationCode" && (
                     <p className="text-xs text-destructive">{error?.message}</p>
                   )}
                 </div>
@@ -178,20 +128,9 @@ export default function Register() {
                 type="submit"
                 className="w-full cursor-pointer h-12 text-base font-semibold shadow-glow hover:shadow-primary/40 transition-all duration-300"
               >
-                Create Account
+                Verify Account
               </Button>
             </form>
-            <div className="my-6 flex items-center gap-4">
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Or continue with
-              </span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
-            <GoogleAuthButton
-              isLoading={isGoogleLoading}
-              onClick={continueWithGoogle}
-            />
           </div>
         </motion.div>
       </div>
@@ -212,13 +151,12 @@ export default function Register() {
               <GraduationCap className="h-12 w-12" />
             </div>
             <h1 className="text-5xl font-display font-bold text-white mb-6 leading-tight">
-              Code your next
-              <br />
-              <span className="text-gradient">chapter</span> starts here.
+              Your next skill <br />
+              <span className="text-gradient">is within reach.</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-md ml-auto">
-              Build your skills from the ground up with expert-led lessons,
-              practical challenges, and a clear path from curious to capable.
+              One quick confirmation brings you closer to coding lessons,
+              hands-on projects, and a learning journey built around you.
             </p>
           </motion.div>
         </div>

@@ -1,28 +1,29 @@
 import { Switch, Route } from "wouter";
-import { useAuth } from "../hooks/use-auth";
-import NotFound from "../pages/not-found";
+import { useAuth } from "@/hooks/use-auth";
+import NotFound from "@/pages/others/not-found";
 
 // Pages
-import Login from "../pages/login";
-import Register from "../pages/register";
-import VerifyAccount from "../pages/verifyAccount";
-import ResetPassword from "../pages/reset-password";
-import UpdatePassword from "../pages/update-password";
-import Dashboard from "../pages/dashboard";
-import CoursesList from "../pages/courses/list";
-import RegisteredCourses from "../pages/courses/registered-courses";
-import CourseForm from "../pages/courses/form";
-import AdminCourseDetails from "../pages/courses/admin-course-details";
+import Login from "@/pages/auth/login";
+import Register from "@/pages/auth/register";
+import VerifyAccount from "@/pages/auth/verifyAccount";
+import ResetPassword from "@/pages/auth/reset-password";
+import UpdatePassword from "@/pages/auth/update-password";
+import Dashboard from "@/pages/dashboard/dashboard";
+import CoursesList from "@/pages/courses/list";
+import RegisteredCourses from "@/pages/courses/registered-courses";
+import CourseForm from "@/pages/courses/form";
+import AdminCourseDetails from "@/pages/courses/admin-course-details";
 import UserCourseDetails from "@/pages/courses/user-course-details";
-import UserProfile from "../pages/user-profile";
-import AppRedirect from "../pages/app-redirect";
-import RegisteredUsers from "../pages/registered-users";
-import LandingPage from "../pages/landing-page";
-import PrivacyPolicy from "../pages/privacy-policy";
-import TermsAndConditions from "../pages/term-conditions";
-import { AdminCourseContent } from "../pages/courses/admin-course-content";
+import UserProfile from "@/pages/dashboard/user-profile";
+import AppRedirect from "@/pages/others/app-redirect";
+import RegisteredUsers from "@/pages/dashboard/registered-users";
+import LandingPage from "@/pages/others/landing-page";
+import PrivacyPolicy from "@/pages/legal/privacy-policy";
+import TermsAndConditions from "@/pages/legal/term-conditions";
+import { AdminCourseContent } from "@/pages/courses/admin-course-content";
 import { UserCourseContent } from "@/pages/courses/user-course-content";
-import Contacts from "../pages/contacts";
+import Contacts from "@/pages/others/contacts";
+import PaymentOptions from "@/pages/payment/payment-options";
 
 import Redirect from "./redirect";
 
@@ -53,6 +54,10 @@ const AppRoutes = () => {
       <Route
         path="/dashboard/my-courses/:id/content"
         component={UserCourseContent}
+      />
+      <Route
+        path="/dashboard/my-courses/:id/payment"
+        component={PaymentOptions}
       />
       <Route path="/courses/:id/content" component={AdminCourseContent} />
       <Route

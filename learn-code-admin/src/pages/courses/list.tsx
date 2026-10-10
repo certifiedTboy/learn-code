@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DashboardLayout } from "../../components/layout";
 import { Link } from "wouter";
+import { DashboardLayout } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -13,14 +13,14 @@ import {
   BookOpen,
   Star,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,11 +30,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
-import Loader from "../../components/ui/loader";
-import { useDeleteCourseMutation } from "../../lib/apis/course-apis";
-import { useToast } from "../../hooks/use-toast";
-import { useCourses } from "../../hooks/use-courses";
+} from "@/components/ui/alert-dialog";
+import Loader from "@/components/ui/loader";
+import { useDeleteCourseMutation } from "@/lib/apis/course-apis";
+import { useToast } from "@/hooks/use-toast";
+import { useCourses } from "@/hooks/use-courses";
 
 export default function CoursesList() {
   const [deleteCourse, { isLoading, isSuccess, error, isError }] =

@@ -1,13 +1,14 @@
-import { DashboardLayout } from "../components/layout";
+import { DashboardLayout } from "../../components/layout";
 import { motion } from "framer-motion";
 import { Users, BookOpen, Clock, TrendingUp, Plus, Search } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { useCourses } from "../hooks/use-courses";
-import { useAuth } from "../hooks/use-auth";
-import { AdminCourseCard } from "./courses/admin-course-card";
-import { UserCourseCard } from "./courses/user-coruse-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useCourses } from "@/hooks/use-courses";
+import { useAuth } from "@/hooks/use-auth";
+import { AdminCourseCard } from "../courses/admin-course-card";
+import { UserCourseCard } from "../courses/user-coruse-card";
+import { DashboardScreenMap } from "./screen-map";
 
 export default function Dashboard() {
   const { courses } = useCourses();
@@ -79,20 +80,30 @@ export default function Dashboard() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-display font-bold">
+            <h1
+              data-tour="dashboard-heading"
+              className="text-3xl font-display font-bold"
+            >
               Dashboard Overview
             </h1>
             <p className="text-muted-foreground mt-1">
               Here's what's happening with your platform today.
             </p>
           </div>
-          {user && user?.role === "admin" && (
-            <Link href="/dashboard/courses/new" className="cursor-pointer">
-              <Button className="shadow-glow cursor-pointer">
-                <Plus className="w-4 h-4 mr-2" /> Create Course
-              </Button>
-            </Link>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <DashboardScreenMap />
+            {user && user?.role === "admin" && (
+              <Link
+                href="/dashboard/courses/new"
+                data-tour="create-course"
+                className="cursor-pointer"
+              >
+                <Button className="shadow-glow cursor-pointer">
+                  <Plus className="w-4 h-4 mr-2" /> Create Course
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="glass-panel p-4 rounded-xl flex items-center gap-3">
@@ -108,6 +119,7 @@ export default function Dashboard() {
         {/* Stats Grid */}
         {user && user?.role === "admin" && (
           <motion.div
+            data-tour="dashboard-stats"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             variants={container}
             initial="hidden"
@@ -137,7 +149,7 @@ export default function Dashboard() {
         )}
 
         {/* Recent Courses Section */}
-        <div className="mt-12">
+        <div className="mt-12" data-tour="dashboard-courses">
           {user && user?.role === "admin" && (
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-display font-bold">Recent Courses</h2>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DashboardLayout } from "../components/layout";
+import { DashboardLayout } from "@/components/layout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -11,14 +11,14 @@ import {
   ShieldAlert,
   BookOpen,
 } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +28,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 // import { useToast } from "../hooks/use-toast";
-import { useUsers } from "../hooks/use-users";
+import { useUsers } from "@/hooks/use-users";
 
 type FilterType = "all" | "subscribed" | "unsubscribed";
 

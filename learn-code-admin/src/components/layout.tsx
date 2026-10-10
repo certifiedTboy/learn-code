@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -12,6 +12,7 @@ import {
   CloudUpload,
   CloudDownload,
   CloudSync,
+  RefreshCcw,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
@@ -30,6 +31,24 @@ export function DashboardLayout({ children }: LayoutProps) {
   const { revokeAccess } = useGoogleAuth();
   const { writeToCloud, readFromCloud } = useBackup();
   const [isBackupMenuOpen, setIsBackupMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleTourMobileMenu = (event: Event) => {
+      if (event instanceof CustomEvent && typeof event.detail === "boolean") {
+        setIsMobileMenuOpen(event.detail);
+      }
+    };
+
+    window.addEventListener(
+      "learn-code:tour-mobile-menu",
+      handleTourMobileMenu,
+    );
+    return () =>
+      window.removeEventListener(
+        "learn-code:tour-mobile-menu",
+        handleTourMobileMenu,
+      );
+  }, []);
 
   const adminNavItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -59,15 +78,19 @@ export function DashboardLayout({ children }: LayoutProps) {
     <div className="h-dvh bg-background flex flex-col md:flex-row overflow-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border/50 sticky top-0 z-50">
-        <div className="flex items-center gap-2 text-primary">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-primary"
+        >
           <GraduationCap className="h-6 w-6" />
           <span className="font-display font-bold text-lg text-foreground">
             Learn Code
           </span>
-        </div>
+        </Link>
         <Button
           variant="ghost"
           size="icon"
+          data-tour="mobile-menu"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X /> : <Menu />}
@@ -81,14 +104,14 @@ export function DashboardLayout({ children }: LayoutProps) {
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0
       `}
       >
-        <div className="p-6 flex items-center gap-3">
+        <Link href="/dashboard" className="p-6 flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-primary-foreground shadow-glow">
             <GraduationCap className="h-6 w-6" />
           </div>
           <span className="font-display font-bold text-xl tracking-wide text-foreground">
             Learn Code
           </span>
-        </div>
+        </Link>
 
         <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6 space-y-2">
           {user &&
@@ -102,6 +125,15 @@ export function DashboardLayout({ children }: LayoutProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  data-tour={
+                    item.href === "/dashboard/courses"
+                      ? "nav-courses"
+                      : item.href === "/dashboard/registered-users"
+                        ? "nav-users"
+                        : item.href === "/dashboard/profile"
+                          ? "nav-settings"
+                          : "nav-overview"
+                  }
                   className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
                   ${
@@ -139,6 +171,13 @@ export function DashboardLayout({ children }: LayoutProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  data-tour={
+                    item.href === "/dashboard/my-courses"
+                      ? "nav-my-courses"
+                      : item.href === "/dashboard/profile"
+                        ? "nav-settings"
+                        : "nav-discover-courses"
+                  }
                   className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
                   ${
@@ -222,7 +261,7 @@ export function DashboardLayout({ children }: LayoutProps) {
                     setIsBackupMenuOpen(false);
                     await writeToCloud();
                   }}
-                  className="flex items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
+                  className="flex cursor-pointer items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
                 >
                   Back up to cloud
                   <CloudUpload className="h-5 w-5 text-primary" />
@@ -233,7 +272,7 @@ export function DashboardLayout({ children }: LayoutProps) {
                     setIsBackupMenuOpen(false);
                     await readFromCloud();
                   }}
-                  className="flex items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
+                  className="flex cursor-pointer items-center gap-3 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-foreground shadow-xl shadow-primary/10 transition hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10"
                 >
                   Restore from cloud
                   <CloudDownload className="h-5 w-5 text-primary" />
@@ -243,21 +282,32 @@ export function DashboardLayout({ children }: LayoutProps) {
           </AnimatePresence>
           <button
             type="button"
-            aria-label={
-              isBackupMenuOpen
-                ? "Close cloud backup menu"
-                : "Cloud backup options"
-            }
             aria-expanded={isBackupMenuOpen}
-            onClick={() => setIsBackupMenuOpen((open) => !open)}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-500 text-primary-foreground shadow-xl shadow-primary/30 transition hover:scale-105 hover:shadow-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            onClick={() => window.location.reload()}
+            className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-500 text-primary-foreground shadow-xl shadow-primary/30 transition hover:scale-105 hover:shadow-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            {isBackupMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <CloudSync className="h-6 w-6" />
-            )}
+            <RefreshCcw className="h-6 w-6" />
           </button>
+          {user && user?.role === "user" && (
+            <button
+              type="button"
+              data-tour="cloud-backup"
+              aria-label={
+                isBackupMenuOpen
+                  ? "Close cloud backup menu"
+                  : "Cloud backup options"
+              }
+              aria-expanded={isBackupMenuOpen}
+              onClick={() => setIsBackupMenuOpen((open) => !open)}
+              className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-primary to-blue-500 text-primary-foreground shadow-xl shadow-primary/30 transition hover:scale-105 hover:shadow-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              {isBackupMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <CloudSync className="h-6 w-6" />
+              )}
+            </button>
+          )}
         </div>
       )}
     </div>
