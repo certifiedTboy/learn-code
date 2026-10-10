@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRoute, Link, useLocation } from "wouter";
+import { useRoute, Link } from "wouter";
 import { PaystackButton } from "react-paystack";
 import { FlutterWaveButton, closePaymentModal } from "flutterwave-react-v3";
 import { useSelector } from "react-redux";
