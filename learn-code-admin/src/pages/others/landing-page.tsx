@@ -1,5 +1,5 @@
 import { motion, type Variants } from "framer-motion";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   GraduationCap,
   Code,
@@ -16,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 const LandingPage = () => {
+  const [, setLocation] = useLocation();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -83,6 +85,7 @@ const LandingPage = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="#download">
                 <Button
+                  onClick={() => setLocation("/login")}
                   size="lg"
                   className="h-14 px-8 text-lg shadow-glow rounded-full cursor-pointer"
                 >

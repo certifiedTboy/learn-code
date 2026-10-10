@@ -13,6 +13,8 @@ import {
   CloudDownload,
   CloudSync,
   RefreshCcw,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
@@ -27,6 +29,7 @@ interface LayoutProps {
 export function DashboardLayout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { user } = useAuth();
   const { revokeAccess } = useGoogleAuth();
   const { writeToCloud, readFromCloud } = useBackup();
@@ -100,20 +103,45 @@ export function DashboardLayout({ children }: LayoutProps) {
       {/* Sidebar */}
       <aside
         className={`
-        fixed inset-y-0 left-0 z-40 w-64 min-h-0 glass-panel border-r border-border/50 flex flex-col transition-transform duration-300 ease-in-out md:h-full
+        fixed inset-y-0 left-0 z-40 w-64 min-h-0 glass-panel border-r border-border/50 flex flex-col transition-[width,transform] duration-300 ease-in-out md:h-full
+        ${isSidebarCollapsed ? "md:w-20" : "md:w-64"}
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0
       `}
       >
-        <Link href="/dashboard" className="p-6 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-primary-foreground shadow-glow">
-            <GraduationCap className="h-6 w-6" />
-          </div>
-          <span className="font-display font-bold text-xl tracking-wide text-foreground">
-            Learn Code
-          </span>
-        </Link>
+        <div className="flex items-center p-4 justify-between">
+          <Link
+            href="/dashboard"
+            aria-label="Learn Code dashboard"
+            className={`flex min-w-0 items-center gap-3`}
+          >
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-primary-foreground shadow-glow">
+              <GraduationCap className="h-6 w-6" />
+            </div>
+            <span
+              className={`font-display font-bold text-xl tracking-wide text-foreground ${isSidebarCollapsed ? "md:hidden" : ""}`}
+            >
+              Learn Code
+            </span>
+          </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={
+              isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
+            aria-expanded={!isSidebarCollapsed}
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
+            className="hidden md:inline-flex -mr-8"
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+          </Button>
+        </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-6 space-y-2">
+        <nav
+          className={`min-h-0 flex-1 overflow-y-auto py-6 space-y-2 ${isSidebarCollapsed ? "px-2 md:px-3" : "px-4"}`}
+        >
           {user &&
             user?.role === "admin" &&
             adminNavItems.map((item) => {
@@ -136,17 +164,21 @@ export function DashboardLayout({ children }: LayoutProps) {
                   }
                   className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
+                  ${isSidebarCollapsed ? "md:justify-center md:px-2" : ""}
                   ${
                     isActive
                       ? "bg-primary/10 text-primary font-medium shadow-[inset_0_0_0_1px_rgba(0,188,212,0.2)]"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }
                 `}
+                  title={isSidebarCollapsed ? item.label : undefined}
                 >
                   <item.icon
                     className={`h-5 w-5 ${isActive ? "text-primary" : "group-hover:text-primary/70 transition-colors"}`}
                   />
-                  {item.label}
+                  <span className={isSidebarCollapsed ? "md:hidden" : ""}>
+                    {item.label}
+                  </span>
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
@@ -180,17 +212,21 @@ export function DashboardLayout({ children }: LayoutProps) {
                   }
                   className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative
+                  ${isSidebarCollapsed ? "md:justify-center md:px-2" : ""}
                   ${
                     isActive
                       ? "bg-primary/10 text-primary font-medium shadow-[inset_0_0_0_1px_rgba(0,188,212,0.2)]"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                   }
                 `}
+                  title={isSidebarCollapsed ? item.label : undefined}
                 >
                   <item.icon
                     className={`h-5 w-5 ${isActive ? "text-primary" : "group-hover:text-primary/70 transition-colors"}`}
                   />
-                  {item.label}
+                  <span className={isSidebarCollapsed ? "md:hidden" : ""}>
+                    {item.label}
+                  </span>
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
@@ -205,12 +241,18 @@ export function DashboardLayout({ children }: LayoutProps) {
             })}
         </nav>
 
-        <div className="mt-auto flex-none border-t border-border/50 p-4">
-          <div className="flex items-center gap-3 px-4 py-3 mb-2">
+        <div
+          className={`mt-auto flex-none border-t border-border/50 p-4 ${isSidebarCollapsed ? "md:px-2" : ""}`}
+        >
+          <div
+            className={`flex items-center gap-3 px-4 py-3 mb-2 ${isSidebarCollapsed ? "md:justify-center md:px-0" : ""}`}
+          >
             <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium border border-white/10">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex flex-col truncate">
+            <div
+              className={`flex flex-col truncate ${isSidebarCollapsed ? "md:hidden" : ""}`}
+            >
               <span className="text-sm font-medium text-foreground truncate">
                 {user.name}
               </span>
@@ -222,11 +264,15 @@ export function DashboardLayout({ children }: LayoutProps) {
 
           <Button
             variant="ghost"
-            className="w-full cursor-pointer justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            aria-label="Log out"
+            title={isSidebarCollapsed ? "Log out" : undefined}
+            className={`w-full cursor-pointer text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${isSidebarCollapsed ? "md:justify-center md:px-0" : "justify-start"}`}
             onClick={onLogoutUser}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Log Out
+            <LogOut className={isSidebarCollapsed ? "" : "mr-2"} />
+            <span className={isSidebarCollapsed ? "md:hidden" : ""}>
+              Log Out
+            </span>
           </Button>
         </div>
       </aside>
