@@ -29,7 +29,9 @@ interface DragOrigin extends ChatPosition {
 export function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<ChatPosition | null>(null);
-  const [launcherPosition, setLauncherPosition] = useState<ChatPosition | null>(null);
+  const [launcherPosition, setLauncherPosition] = useState<ChatPosition | null>(
+    null,
+  );
   const dragOrigin = useRef<DragOrigin | null>(null);
   const launcherDragOrigin = useRef<DragOrigin | null>(null);
   const launcherDidDrag = useRef(false);
@@ -61,11 +63,17 @@ export function AiChatWidget() {
     setPosition({
       x: Math.max(
         12,
-        Math.min(window.innerWidth - bounds.width - 12, x + event.clientX - pointerX),
+        Math.min(
+          window.innerWidth - bounds.width - 12,
+          x + event.clientX - pointerX,
+        ),
       ),
       y: Math.max(
         12,
-        Math.min(window.innerHeight - bounds.height - 12, y + event.clientY - pointerY),
+        Math.min(
+          window.innerHeight - bounds.height - 12,
+          y + event.clientY - pointerY,
+        ),
       ),
     });
   };
@@ -74,7 +82,9 @@ export function AiChatWidget() {
     dragOrigin.current = null;
   };
 
-  const handleLauncherPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const handleLauncherPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
     if (event.button !== 0) return;
 
     const bounds = launcherRef.current?.getBoundingClientRect();
@@ -90,7 +100,9 @@ export function AiChatWidget() {
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
-  const handleLauncherPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+  const handleLauncherPointerMove = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
     const origin = launcherDragOrigin.current;
     if (!origin || !launcherRef.current) return;
 
@@ -101,8 +113,14 @@ export function AiChatWidget() {
     launcherDidDrag.current = true;
     const bounds = launcherRef.current.getBoundingClientRect();
     setLauncherPosition({
-      x: Math.max(12, Math.min(window.innerWidth - bounds.width - 12, origin.x + deltaX)),
-      y: Math.max(12, Math.min(window.innerHeight - bounds.height - 12, origin.y + deltaY)),
+      x: Math.max(
+        12,
+        Math.min(window.innerWidth - bounds.width - 12, origin.x + deltaX),
+      ),
+      y: Math.max(
+        12,
+        Math.min(window.innerHeight - bounds.height - 12, origin.y + deltaY),
+      ),
     });
   };
 
@@ -123,7 +141,10 @@ export function AiChatWidget() {
       const panelWidth = Math.min(390, window.innerWidth - 32);
       const panelHeight = Math.min(
         620,
-        Math.max(isMobile ? 360 : 420, window.innerHeight - (isMobile ? 42 : 88)),
+        Math.max(
+          isMobile ? 360 : 420,
+          window.innerHeight - (isMobile ? 42 : 88),
+        ),
       );
       const maxX = Math.max(12, window.innerWidth - panelWidth - 12);
       const maxY = Math.max(12, window.innerHeight - panelHeight - 12);
@@ -139,6 +160,7 @@ export function AiChatWidget() {
     setIsOpen(true);
   };
 
+  console.log(position);
   return (
     <div className="ai-chat-widget">
       {isOpen ? (
@@ -164,7 +186,10 @@ export function AiChatWidget() {
                   <h2>LearnCode AI</h2>
                   <span className="ai-chat-beta">BETA</span>
                 </div>
-                <p><span className="ai-chat-status-dot" />Your learning copilot</p>
+                <p>
+                  <span className="ai-chat-status-dot" />
+                  Your learning copilot
+                </p>
               </div>
             </div>
             <div className="ai-chat-header-actions">
@@ -189,22 +214,34 @@ export function AiChatWidget() {
           </header>
 
           <div className="ai-chat-context">
-            <span className="ai-chat-context-icon"><GraduationCap size={14} /></span>
+            <span className="ai-chat-context-icon">
+              <GraduationCap size={14} />
+            </span>
             <span>Here to help you learn</span>
             <span className="ai-chat-context-separator">·</span>
             <span>Ask me anything</span>
           </div>
 
           <div className="ai-chat-messages">
-            <div className="ai-chat-day-divider"><span>JUST NOW</span></div>
+            <div className="ai-chat-day-divider">
+              <span>JUST NOW</span>
+            </div>
 
             <div className="ai-chat-assistant-message">
-              <div className="ai-chat-avatar"><Bot size={17} /></div>
+              <div className="ai-chat-avatar">
+                <Bot size={17} />
+              </div>
               <div className="ai-chat-message-content">
                 <span className="ai-chat-sender">LearnCode AI</span>
                 <div className="ai-chat-bubble ai-chat-welcome">
-                  <p>Hey there! <span className="ai-chat-wave">✦</span></p>
-                  <p>I&apos;m your learning copilot. Whether you&apos;re stuck on a concept or curious about what to learn next, I&apos;m here for you.</p>
+                  <p>
+                    Hey there! <span className="ai-chat-wave">✦</span>
+                  </p>
+                  <p>
+                    I&apos;m your learning copilot. Whether you&apos;re stuck on
+                    a concept or curious about what to learn next, I&apos;m here
+                    for you.
+                  </p>
                   <p>What are we exploring today?</p>
                 </div>
                 <span className="ai-chat-time">Just now</span>
@@ -212,20 +249,28 @@ export function AiChatWidget() {
             </div>
 
             <div className="ai-chat-suggestions">
-              <span className="ai-chat-suggestions-label">A FEW IDEAS TO GET STARTED</span>
+              <span className="ai-chat-suggestions-label">
+                A FEW IDEAS TO GET STARTED
+              </span>
               <div className="ai-chat-suggestion-list">
                 <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple"><Lightbulb size={15} /></span>
+                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple">
+                    <Lightbulb size={15} />
+                  </span>
                   <span>Explain a tricky concept</span>
                   <span className="ai-chat-suggestion-arrow">↗</span>
                 </div>
                 <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-teal"><Command size={15} /></span>
+                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-teal">
+                    <Command size={15} />
+                  </span>
                   <span>Help me debug my code</span>
                   <span className="ai-chat-suggestion-arrow">↗</span>
                 </div>
                 <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-amber"><GraduationCap size={15} /></span>
+                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-amber">
+                    <GraduationCap size={15} />
+                  </span>
                   <span>Plan my learning path</span>
                   <span className="ai-chat-suggestion-arrow">↗</span>
                 </div>
@@ -234,7 +279,10 @@ export function AiChatWidget() {
           </div>
 
           <div className="ai-chat-composer-area">
-            <form className="ai-chat-composer" onSubmit={(event) => event.preventDefault()}>
+            <form
+              className="ai-chat-composer"
+              onSubmit={(event) => event.preventDefault()}
+            >
               <textarea
                 aria-label="Message LearnCode AI"
                 placeholder="Ask anything about your learning..."
@@ -242,20 +290,36 @@ export function AiChatWidget() {
               />
               <div className="ai-chat-composer-toolbar">
                 <div className="ai-chat-composer-tools">
-                  <button type="button" className="ai-chat-tool-button" aria-label="Add attachment">
+                  <button
+                    type="button"
+                    className="ai-chat-tool-button"
+                    aria-label="Add attachment"
+                  >
                     <Paperclip size={16} />
                   </button>
-                  <button type="button" className="ai-chat-tool-button" aria-label="More tools">
+                  <button
+                    type="button"
+                    className="ai-chat-tool-button"
+                    aria-label="More tools"
+                  >
                     <Plus size={17} />
                   </button>
-                  <span className="ai-chat-composer-hint"><WandSparkles size={12} /> AI can make mistakes</span>
+                  <span className="ai-chat-composer-hint">
+                    <WandSparkles size={12} /> AI can make mistakes
+                  </span>
                 </div>
-                <button type="button" className="ai-chat-send-button" aria-label="Send message">
+                <button
+                  type="button"
+                  className="ai-chat-send-button"
+                  aria-label="Send message"
+                >
                   <ArrowUp size={17} strokeWidth={2.5} />
                 </button>
               </div>
             </form>
-            <p className="ai-chat-footer">Made for curious minds <Sparkles size={11} /></p>
+            <p className="ai-chat-footer">
+              Made for curious minds <Sparkles size={11} />
+            </p>
           </div>
         </section>
       ) : (
@@ -263,7 +327,11 @@ export function AiChatWidget() {
           ref={launcherRef}
           type="button"
           className={`ai-chat-launcher${launcherPosition ? " ai-chat-launcher-positioned" : ""}`}
-          style={launcherPosition ? { left: launcherPosition.x, top: launcherPosition.y } : undefined}
+          style={
+            launcherPosition
+              ? { left: launcherPosition.x, top: launcherPosition.y }
+              : undefined
+          }
           onPointerDown={handleLauncherPointerDown}
           onPointerMove={handleLauncherPointerMove}
           onPointerUp={handleLauncherPointerUp}
@@ -271,9 +339,13 @@ export function AiChatWidget() {
           onClick={handleLauncherClick}
           aria-label="Open LearnCode AI chat"
         >
-          <span className="ai-chat-launcher-icon"><MessageCircle size={21} /></span>
+          <span className="ai-chat-launcher-icon">
+            <MessageCircle size={21} />
+          </span>
           <span className="ai-chat-launcher-label">Ask LearnCode AI</span>
-          <span className="ai-chat-launcher-sparkle"><Sparkles size={13} /></span>
+          <span className="ai-chat-launcher-sparkle">
+            <Sparkles size={13} />
+          </span>
         </button>
       )}
     </div>
