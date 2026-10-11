@@ -219,9 +219,9 @@ function PaymentOptions() {
           <h1 className="font-display text-3xl font-bold sm:text-4xl">
             Choose how you&apos;d like to pay
           </h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Review your course details, then select a payment provider to
-            continue.
+          <p className="mt-3 max-w-2xl text-[#a22222]">
+            Always backup your data after a successful payment to keep your data
+            in sync
           </p>
         </header>
 
@@ -261,6 +261,11 @@ function PaymentOptions() {
                 Pay with Flutterwave
               </FlutterWaveButton>
             </div>
+
+            <p className="mt-3 max-w-2xl  text-[#a22222]">
+              Always backup your data after a successful payment to keep your
+              data in sync
+            </p>
 
             <div className="mt-5 flex gap-3 rounded-xl border border-white/10 bg-background/40 p-4">
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
