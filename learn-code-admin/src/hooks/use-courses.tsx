@@ -9,7 +9,10 @@ import { useSelector } from "react-redux";
 import { useGetAllCoursesMutation } from "../lib/apis/course-apis";
 import { type Course } from "../lib/mock-data";
 import type { RootState } from "../redux/store/store";
-import { getAllRegisteredCourse } from "@/helpers/course-database";
+import {
+  getAllRegisteredCourse,
+  upsertCourse,
+} from "@/helpers/course-database";
 import { markSubTopicAsCompleted } from "@/helpers/course-database";
 import { checkIfPaymentIsExpired } from "@/helpers/payment";
 
@@ -50,6 +53,14 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
           id: course._id,
         })),
       );
+
+      (async () => {
+        if (data && data?.data) {
+          for (let course of data?.data) {
+            await upsertCourse(course);
+          }
+        }
+      })();
     }
   }, [data, isSuccess]);
 

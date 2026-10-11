@@ -114,6 +114,7 @@ export default function CourseForm() {
   };
 
   const onSubmit = () => {
+    delete formData.id;
     if (isEdit && courseId) {
       updateCourse({
         courseData: {
