@@ -2,25 +2,13 @@ import { useAuth } from "./use-auth";
 import { useGoogleAuth } from "./use-google-auth";
 import { useToast } from "./use-toast";
 import {
-  upsertCourse,
   upsertRegisteredCourse,
   getAllRegisteredCourse,
   getAllCourse,
-  type StoredCourse,
 } from "@/helpers/course-database";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
-
-interface CourseBackup {
-  availableCourses: StoredCourse[];
-  registeredCourses: StoredCourse[];
-}
-
-const uniqueCoursesById = (courses: StoredCourse[]): StoredCourse[] =>
-  Array.from(
-    new Map(courses.map((course) => [course._id, course])).values(),
-  );
 
 class DriveRequestError extends Error {
   readonly status: number;
@@ -163,24 +151,86 @@ export function useBackup() {
 
       const registeredCourses = await getAllRegisteredCourse();
       const updatedAvailableCourse = await getAllCourse();
-      const backup: CourseBackup = {
-        availableCourses: uniqueCoursesById(updatedAvailableCourse),
-        registeredCourses: uniqueCoursesById(registeredCourses).map(
-          (course) => ({
-            ...course,
-            contents:
-              course.contents?.map((cont) => ({
-                ...cont,
-                subTopics: cont.subTopics.map((sub) => ({
-                  ...sub,
-                  isCompleted: sub.isCompleted ?? false,
-                })),
-              })) ?? null,
-          }),
-        ),
-      };
 
-      await updateJsonFile(token, file.id, backup);
+      const registered = registeredCourses ?? [];
+      const available = updatedAvailableCourse ?? [];
+
+      // Create a lookup of registered courses by ID
+      const registeredCourseMap = new Map(
+        registered.map((course) => [course._id, course]),
+      );
+
+      // Merge available courses with registered course progress
+      const courseMap = new Map();
+
+      available.forEach((course) => {
+        const registeredCourse = registeredCourseMap.get(course._id);
+
+        // Merge contents and preserve completion status
+        const registeredContents = new Map(
+          (registeredCourse?.contents ?? []).map((cont) => [
+            (cont as typeof cont & { _id: string })._id,
+            cont,
+          ]),
+        );
+
+        const contents = (course.contents ?? []).map((cont) => {
+          const contentId = (cont as typeof cont & { _id: string })._id;
+          const registeredContent = registeredContents.get(contentId);
+
+          const registeredSubTopics = new Map(
+            (registeredContent?.subTopics ?? []).map((sub) => [
+              (sub as typeof sub & { _id: string })._id,
+              sub,
+            ]),
+          );
+
+          const subTopics = (cont.subTopics ?? []).map((sub) => {
+            const registeredSubTopic = registeredSubTopics.get(
+              (sub as typeof sub & { _id: string })._id,
+            );
+
+            return {
+              ...sub,
+              ...registeredSubTopic,
+              isCompleted: registeredSubTopic?.isCompleted ?? false,
+            };
+          });
+
+          return {
+            ...cont,
+            ...registeredContent,
+            subTopics,
+          };
+        });
+
+        courseMap.set(course._id, {
+          ...course,
+          ...registeredCourse,
+          contents,
+        });
+      });
+
+      // Include registered courses that are no longer in the available list,
+      // while ensuring there are no duplicate course IDs.
+      registered.forEach((course) => {
+        if (!courseMap.has(course._id)) {
+          courseMap.set(course._id, {
+            ...course,
+            contents: (course.contents ?? []).map((cont) => ({
+              ...cont,
+              subTopics: (cont.subTopics ?? []).map((sub) => ({
+                ...sub,
+                isCompleted: sub.isCompleted ?? false,
+              })),
+            })),
+          });
+        }
+      });
+
+      const updatedCourse = Array.from(courseMap.values());
+
+      await updateJsonFile(token, file.id, updatedCourse);
       toast({
         variant: "default",
         title: "Backup Completed!",
@@ -219,25 +269,8 @@ export function useBackup() {
       );
 
       const data = await response.json();
-      const availableCourses = Array.isArray(data)
-        ? []
-        : data?.availableCourses;
-      const registeredCourses = Array.isArray(data)
-        ? data
-        : data?.registeredCourses;
 
-      if (
-        !Array.isArray(availableCourses) ||
-        !Array.isArray(registeredCourses)
-      ) {
-        throw new Error("Cloud backup contains invalid course data.");
-      }
-
-      for (const course of uniqueCoursesById(availableCourses)) {
-        await upsertCourse(course);
-      }
-
-      for (const course of uniqueCoursesById(registeredCourses)) {
+      for (let course of data) {
         await upsertRegisteredCourse({
           _id: course?._id,
           name: course?.name,
@@ -252,7 +285,7 @@ export function useBackup() {
           createdAt: course?.createdAt,
           updatedAt: course?.updatedAt,
           skills: course?.skills,
-          image: course?.image,
+          image: course?.course_image || course?.image,
           dateRegistered: course?.dateRegistered,
           completion: course?.completion,
         });
