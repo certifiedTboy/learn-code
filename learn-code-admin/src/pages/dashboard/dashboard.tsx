@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "../../components/layout";
 import { motion } from "framer-motion";
 import { Users, BookOpen, Clock, TrendingUp, Plus, Search } from "lucide-react";
@@ -11,8 +12,15 @@ import { UserCourseCard } from "../courses/user-coruse-card";
 import { DashboardScreenMap } from "./screen-map";
 
 export default function Dashboard() {
+  const [searchTerm, setSearchTerm] = useState("");
   const { courses } = useCourses();
   const { user } = useAuth();
+
+  const filteredCourses = courses?.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const totalCourses = courses?.length;
   const totalSubscribers = courses?.reduce(
@@ -111,8 +119,8 @@ export default function Dashboard() {
           <Input
             placeholder="Search courses..."
             className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-0 shadow-none text-base"
-            // value={searchTerm}
-            // onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
@@ -162,13 +170,11 @@ export default function Dashboard() {
             </div>
           )}
 
-          {courses?.length > 0 ? (
+          {filteredCourses?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {user &&
                 user?.role === "admin" &&
-                courses &&
-                courses?.length > 0 &&
-                courses
+                filteredCourses
                   ?.slice(0, 3)
                   ?.map((course) => (
                     <AdminCourseCard key={course.id} course={course} />
@@ -176,9 +182,7 @@ export default function Dashboard() {
 
               {user &&
                 user?.role === "user" &&
-                courses &&
-                courses?.length > 0 &&
-                courses?.map((course) => (
+                filteredCourses?.map((course) => (
                   <UserCourseCard key={course.id} course={course} />
                 ))}
             </div>
