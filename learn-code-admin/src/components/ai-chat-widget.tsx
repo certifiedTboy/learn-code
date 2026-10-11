@@ -8,8 +8,6 @@ import {
   MessageCircle,
   Minimize2,
   MoreHorizontal,
-  Paperclip,
-  Plus,
   Sparkles,
   WandSparkles,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import { generateRandomRoomId } from "@/helpers/chat";
 import { CHAT_STARTER } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { MarkdownRender } from "./markdown-render";
+import ChatLoader from "./chat-loader";
 import "./ai-chat-widget.css";
 
 interface ChatPosition {
@@ -46,12 +45,11 @@ export function AiChatWidget() {
   const panelRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const roomIdRef = useRef(generateRandomRoomId());
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
 
-  const { joinRoom, socketMessages, sendMessage } = useChat();
-
-  console.log("socket messages: ", socketMessages);
+  const { joinRoom, socketMessages, sendMessage, isTyping } = useChat();
 
   useEffect(() => {
     if (user) {
@@ -192,6 +190,10 @@ export function AiChatWidget() {
     setChatText("");
   };
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [socketMessages]);
+
   return (
     <div className="ai-chat-widget">
       {isOpen ? (
@@ -268,6 +270,35 @@ export function AiChatWidget() {
           </div>
 
           <div className="ai-chat-messages">
+            {socketMessages?.length <= 0 && (
+              <div className="ai-chat-suggestions">
+                <span className="ai-chat-suggestions-label">
+                  A FEW IDEAS TO GET STARTED
+                </span>
+                <div className="ai-chat-suggestion-list">
+                  {CHAT_STARTER.map((start) => (
+                    <div
+                      className="ai-chat-suggestion cursor-pointer"
+                      onClick={() => {
+                        sendMessage({
+                          chatId: generateRandomRoomId(),
+                          content: start?.title,
+                          senderId: user?.email,
+                          roomId: roomIdRef?.current!,
+                        });
+                      }}
+                    >
+                      <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple">
+                        <start.icon size={15} />
+                      </span>
+                      <span>{start.title}</span>
+                      <span className="ai-chat-suggestion-arrow">↗</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="max-w-3xl mx-auto space-y-8 pb-12">
               <AnimatePresence initial={false}>
                 {socketMessages?.map((message, index) => (
@@ -315,28 +346,15 @@ export function AiChatWidget() {
                 ))}
               </AnimatePresence>
             </div>
-
-            {socketMessages?.length <= 0 && (
-              <div className="ai-chat-suggestions">
-                <span className="ai-chat-suggestions-label">
-                  A FEW IDEAS TO GET STARTED
-                </span>
-                <div className="ai-chat-suggestion-list">
-                  {CHAT_STARTER.map((start) => (
-                    <div className="ai-chat-suggestion">
-                      <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple">
-                        <start.icon size={15} />
-                      </span>
-                      <span>{start.title}</span>
-                      <span className="ai-chat-suggestion-arrow">↗</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div ref={bottomRef} />
           </div>
 
           <div className="ai-chat-composer-area">
+            {isTyping && (
+              <div className="max-w-3xl mx-auto mb-2">
+                <ChatLoader />
+              </div>
+            )}
             <form
               className="ai-chat-composer"
               onSubmit={(event) => event.preventDefault()}
@@ -350,20 +368,6 @@ export function AiChatWidget() {
               />
               <div className="ai-chat-composer-toolbar">
                 <div className="ai-chat-composer-tools">
-                  <button
-                    type="button"
-                    className="ai-chat-tool-button"
-                    aria-label="Add attachment"
-                  >
-                    <Paperclip size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="ai-chat-tool-button"
-                    aria-label="More tools"
-                  >
-                    <Plus size={17} />
-                  </button>
                   <span className="ai-chat-composer-hint">
                     <WandSparkles size={12} /> AI can make mistakes
                   </span>

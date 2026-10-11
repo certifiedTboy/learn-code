@@ -1,4 +1,13 @@
-import { Command, GraduationCap, Lightbulb } from "lucide-react";
+import {
+  Command,
+  DropletIcon,
+  GraduationCap,
+  HandHelping,
+  Lightbulb,
+  MessageCircleQuestionMark,
+  NotebookPen,
+  Siren,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface SubTopic {
@@ -36,9 +45,17 @@ export interface Course {
 }
 
 export const CHAT_STARTER: { title: string; icon: LucideIcon }[] = [
-  { title: "Explain a tricky concept", icon: Lightbulb },
+  { title: "Explain the concept of programming", icon: Lightbulb },
   { title: "Help me debug my code", icon: Command },
-  { title: "Plan my learning path", icon: GraduationCap },
+  { title: "Plan my learning path for me", icon: GraduationCap },
+  { title: "Can you explain a topic from my course?", icon: Siren },
+  {
+    title: "Quiz me on what I’ve learned so far.",
+    icon: MessageCircleQuestionMark,
+  },
+  { title: "Explain a coding concept in simple terms.", icon: DropletIcon },
+  { title: "Help me understand a difficult lesson.", icon: HandHelping },
+  { title: "What should I focus on learning next?", icon: NotebookPen },
 ];
 
 export const languageAliases: Record<string, string> = {

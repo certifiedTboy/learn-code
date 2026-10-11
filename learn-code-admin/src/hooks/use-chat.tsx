@@ -1,4 +1,4 @@
-import { removeAsteriks } from "@/helpers/chat";
+import { generateRandomRoomId } from "@/helpers/chat";
 import {
   type ReactNode,
   createContext,
@@ -46,6 +46,7 @@ export const ChatContext = createContext<ChatContextType>({
 
 const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const socket = useRef(io(API_URL));
+  const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [socketMessages, setSocketMessages] = useState<SocketMessage[]>([]);
 
@@ -82,31 +83,65 @@ const ChatContextProvider = ({ children }: { children: ReactNode }) => {
     socket.current.emit("message", messageData);
   };
 
-  /**
-   * listens to incoming messages from the socket server
-   */
   useEffect(() => {
-    const currentSocket = socket.current;
+    const handleMessage = (msg: SocketMessage) => {
+      // Stop previous stream
+      if (streamIntervalRef.current) {
+        clearInterval(streamIntervalRef.current);
+        streamIntervalRef.current = null;
+      }
 
-    currentSocket.on(
-      "message",
-      (
-        message: Partial<SocketMessage> & { senderId: string; content: string },
-      ) => {
-        setSocketMessages((prev) => [
-          ...prev,
-          {
-            ...message,
-            content: removeAsteriks(message.content),
-          },
-        ]);
-      },
-    );
+      const messageId = generateRandomRoomId();
+
+      // Insert an empty AI message
+      setSocketMessages((prev) => [
+        ...prev,
+        {
+          ...msg,
+          chatId: messageId,
+          content: "",
+          isStreaming: true,
+          roomId: msg.roomId,
+        },
+      ]);
+
+      let charIndex = 0;
+
+      streamIntervalRef.current = window.setInterval(() => {
+        charIndex += 3;
+
+        const revealed = msg?.content.slice(0, charIndex);
+        const done = charIndex >= msg?.content.length;
+
+        setSocketMessages((prev) =>
+          prev.map((m) =>
+            m.chatId === messageId
+              ? {
+                  ...m,
+                  content: revealed,
+                  isStreaming: !done,
+                }
+              : m,
+          ),
+        );
+
+        if (done && streamIntervalRef.current) {
+          clearInterval(streamIntervalRef.current);
+          streamIntervalRef.current = null;
+        }
+      }, 1);
+    };
+
+    socket.current?.on("message", handleMessage);
 
     return () => {
-      currentSocket.off("message");
+      socket.current?.off("message", handleMessage);
+
+      if (streamIntervalRef.current) {
+        clearInterval(streamIntervalRef.current);
+      }
     };
-  }, [socket]);
+  }, []);
 
   useEffect(() => {
     const currentSocket = socket.current;

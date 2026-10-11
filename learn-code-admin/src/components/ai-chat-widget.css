@@ -85,9 +85,15 @@
   place-items: center;
   border: 1px solid rgb(103 232 249 / 26%);
   border-radius: 14px;
-  background: linear-gradient(145deg, rgb(34 211 238 / 21%), rgb(99 102 241 / 20%));
+  background: linear-gradient(
+    145deg,
+    rgb(34 211 238 / 21%),
+    rgb(99 102 241 / 20%)
+  );
   color: #67e8f9;
-  box-shadow: inset 0 1px rgb(255 255 255 / 8%), 0 5px 16px rgb(34 211 238 / 10%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 8%),
+    0 5px 16px rgb(34 211 238 / 10%);
 }
 
 .ai-chat-brand > div:last-child {
@@ -225,7 +231,11 @@
   place-items: center;
   border: 1px solid rgb(103 232 249 / 23%);
   border-radius: 10px;
-  background: linear-gradient(145deg, rgb(34 211 238 / 17%), rgb(99 102 241 / 18%));
+  background: linear-gradient(
+    145deg,
+    rgb(34 211 238 / 17%),
+    rgb(99 102 241 / 18%)
+  );
   color: #67e8f9;
 }
 
@@ -450,7 +460,6 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
-  margin-left: 38px;
 }
 
 .ai-chat-suggestions-label {
@@ -477,7 +486,10 @@
   background: rgb(20 33 52 / 76%);
   color: #c5d2e2;
   font-size: 11px;
-  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
 }
 
 .ai-chat-suggestion:hover {
@@ -527,7 +539,9 @@
   border: 1px solid rgb(119 143 171 / 25%);
   border-radius: 15px;
   background: #121f31;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .ai-chat-composer:focus-within {
@@ -588,7 +602,9 @@
   color: #09202b;
   cursor: pointer;
   box-shadow: 0 3px 12px rgb(34 211 238 / 18%);
-  transition: filter 150ms ease, transform 150ms ease;
+  transition:
+    filter 150ms ease,
+    transform 150ms ease;
 }
 
 .ai-chat-send-button:hover {
@@ -622,8 +638,13 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 34px rgb(0 0 0 / 34%), 0 0 24px rgb(34 211 238 / 9%);
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  box-shadow:
+    0 10px 34px rgb(0 0 0 / 34%),
+    0 0 24px rgb(34 211 238 / 9%);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
   animation: ai-chat-appear 180ms ease-out;
 }
 
@@ -644,7 +665,9 @@
 .ai-chat-launcher:hover {
   transform: translateY(-2px);
   border-color: rgb(103 232 249 / 52%);
-  box-shadow: 0 14px 38px rgb(0 0 0 / 38%), 0 0 30px rgb(34 211 238 / 17%);
+  box-shadow:
+    0 14px 38px rgb(0 0 0 / 38%),
+    0 0 30px rgb(34 211 238 / 17%);
 }
 
 .ai-chat-launcher-icon {
@@ -655,7 +678,9 @@
   border-radius: 50%;
   background: linear-gradient(145deg, #22d3ee, #6366f1);
   color: #fff;
-  box-shadow: inset 0 1px rgb(255 255 255 / 25%), 0 3px 12px rgb(34 211 238 / 18%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 25%),
+    0 3px 12px rgb(34 211 238 / 18%);
 }
 
 .ai-chat-launcher-sparkle {
