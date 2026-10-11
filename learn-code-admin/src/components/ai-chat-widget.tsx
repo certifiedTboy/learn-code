@@ -1,11 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
   Bot,
   ChevronDown,
-  Command,
   GraduationCap,
-  Lightbulb,
   Maximize2,
   MessageCircle,
   Minimize2,
@@ -15,7 +13,12 @@ import {
   Sparkles,
   WandSparkles,
 } from "lucide-react";
-
+import { useChat } from "@/hooks/use-chat";
+import { useAuth } from "@/hooks/use-auth";
+import { generateRandomRoomId } from "@/helpers/chat";
+import { CHAT_STARTER } from "@/lib/mock-data";
+import { motion, AnimatePresence } from "framer-motion";
+import { MarkdownRender } from "./markdown-render";
 import "./ai-chat-widget.css";
 
 interface ChatPosition {
@@ -29,8 +32,9 @@ interface DragOrigin extends ChatPosition {
 }
 
 export function AiChatWidget() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [chatText, setChatText] = useState<string>("");
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [position, setPosition] = useState<ChatPosition | null>(null);
   const [launcherPosition, setLauncherPosition] = useState<ChatPosition | null>(
     null,
@@ -41,7 +45,19 @@ export function AiChatWidget() {
   const suppressLauncherClick = useRef(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const roomIdRef = useRef(generateRandomRoomId());
 
+  const { user } = useAuth();
+
+  const { joinRoom, socketMessages, sendMessage } = useChat();
+
+  console.log("socket messages: ", socketMessages);
+
+  useEffect(() => {
+    if (user) {
+      joinRoom(roomIdRef?.current, user?.email);
+    }
+  }, [user]);
   const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
 
@@ -163,7 +179,19 @@ export function AiChatWidget() {
     setIsOpen(true);
   };
 
-  console.log(position);
+  const handleSendMessage = () => {
+    if (!chatText.trim()) return;
+
+    sendMessage({
+      chatId: generateRandomRoomId(),
+      content: chatText,
+      senderId: user?.email,
+      roomId: roomIdRef?.current!,
+    });
+
+    setChatText("");
+  };
+
   return (
     <div className="ai-chat-widget">
       {isOpen ? (
@@ -240,59 +268,72 @@ export function AiChatWidget() {
           </div>
 
           <div className="ai-chat-messages">
-            <div className="ai-chat-day-divider">
-              <span>JUST NOW</span>
+            <div className="max-w-3xl mx-auto space-y-8 pb-12">
+              <AnimatePresence initial={false}>
+                {socketMessages?.map((message, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-2  ${message?.senderId === user?.email ? "flex-row-reverse" : "flex-row"}`}
+                  >
+                    {message?.senderId !== user.email && (
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                          message?.senderId === user?.email
+                            ? "bg-primary/20 text-primary font-medium text-sm"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        <Bot size={18} />
+                      </div>
+                    )}
+
+                    <div
+                      className={`flex flex-col justify-center ${message?.senderId === user?.email ? "items-end" : "items-start"} max-w-[85%]`}
+                    >
+                      <div className="font-medium text-xs text-muted-foreground mb-1 px-1">
+                        {message?.senderId !== user?.email
+                          ? "Assistant"
+                          : "You"}
+                      </div>
+                      {message?.senderId === user?.email ? (
+                        <div className="flex flex-col items-end gap-2 rounded-2xl rounded-tr-sm bg-muted px-4 py-3 text-sm leading-relaxed shadow-sm">
+                          {message?.content && (
+                            <div className="whitespace-pre-wrap">
+                              {message.content}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="ai-chat-assistant-response">
+                          <MarkdownRender content={message?.content} />
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
-            <div className="ai-chat-assistant-message">
-              <div className="ai-chat-avatar">
-                <Bot size={17} />
-              </div>
-              <div className="ai-chat-message-content">
-                <span className="ai-chat-sender">LearnCode AI</span>
-                <div className="ai-chat-bubble ai-chat-welcome">
-                  <p>
-                    Hey there! <span className="ai-chat-wave">✦</span>
-                  </p>
-                  <p>
-                    I&apos;m your learning copilot. Whether you&apos;re stuck on
-                    a concept or curious about what to learn next, I&apos;m here
-                    for you.
-                  </p>
-                  <p>What are we exploring today?</p>
-                </div>
-                <span className="ai-chat-time">Just now</span>
-              </div>
-            </div>
-
-            <div className="ai-chat-suggestions">
-              <span className="ai-chat-suggestions-label">
-                A FEW IDEAS TO GET STARTED
-              </span>
-              <div className="ai-chat-suggestion-list">
-                <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple">
-                    <Lightbulb size={15} />
-                  </span>
-                  <span>Explain a tricky concept</span>
-                  <span className="ai-chat-suggestion-arrow">↗</span>
-                </div>
-                <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-teal">
-                    <Command size={15} />
-                  </span>
-                  <span>Help me debug my code</span>
-                  <span className="ai-chat-suggestion-arrow">↗</span>
-                </div>
-                <div className="ai-chat-suggestion">
-                  <span className="ai-chat-suggestion-icon ai-chat-suggestion-amber">
-                    <GraduationCap size={15} />
-                  </span>
-                  <span>Plan my learning path</span>
-                  <span className="ai-chat-suggestion-arrow">↗</span>
+            {socketMessages?.length <= 0 && (
+              <div className="ai-chat-suggestions">
+                <span className="ai-chat-suggestions-label">
+                  A FEW IDEAS TO GET STARTED
+                </span>
+                <div className="ai-chat-suggestion-list">
+                  {CHAT_STARTER.map((start) => (
+                    <div className="ai-chat-suggestion">
+                      <span className="ai-chat-suggestion-icon ai-chat-suggestion-purple">
+                        <start.icon size={15} />
+                      </span>
+                      <span>{start.title}</span>
+                      <span className="ai-chat-suggestion-arrow">↗</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="ai-chat-composer-area">
@@ -301,6 +342,8 @@ export function AiChatWidget() {
               onSubmit={(event) => event.preventDefault()}
             >
               <textarea
+                onChange={(event) => setChatText(event.target.value)}
+                value={chatText}
                 aria-label="Message LearnCode AI"
                 placeholder="Ask anything about your learning..."
                 rows={2}
@@ -329,6 +372,7 @@ export function AiChatWidget() {
                   type="button"
                   className="ai-chat-send-button"
                   aria-label="Send message"
+                  onClick={handleSendMessage}
                 >
                   <ArrowUp size={17} strokeWidth={2.5} />
                 </button>

@@ -5,6 +5,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { AiChatWidget } from "./components/ai-chat-widget";
 import { AuthProvider } from "./hooks/use-auth";
 import { CoursesProvider } from "./hooks/use-courses";
+import ChatContextProvider from "./hooks/use-chat";
 
 function App() {
   return (
@@ -14,7 +15,9 @@ function App() {
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <AppRoutes />
           </WouterRouter>
-          <AiChatWidget />
+          <ChatContextProvider>
+            <AiChatWidget />
+          </ChatContextProvider>
           <Toaster />
         </TooltipProvider>
       </CoursesProvider>
