@@ -49,7 +49,7 @@ export async function listAppData(refreshAccessToken: () => Promise<string>) {
   let accessToken = localStorage.getItem("gtkn");
 
   if (!accessToken) {
-    return console.log("token is not provided");
+    throw new Error("Google Drive access token is missing.");
   }
 
   const params = new URLSearchParams({
@@ -203,6 +203,10 @@ export function useBackup() {
 
       const fileId = files.find((file: any) => file.name === path)?.id;
 
+      if (!fileId) {
+        throw new Error("No cloud backup was found for this account.");
+      }
+
       const response = await driveRequest(
         `${DRIVE_API}/files/${fileId}?alt=media`,
         token,
@@ -210,7 +214,9 @@ export function useBackup() {
 
       const data = await response.json();
 
-      setReisgeredCourses(data);
+      if (!Array.isArray(data)) {
+        throw new Error("The cloud backup has an invalid format.");
+      }
 
       for (let course of data) {
         await upsertRegisteredCourse({
@@ -232,6 +238,8 @@ export function useBackup() {
           completion: course?.completion,
         });
       }
+
+      setReisgeredCourses(data);
 
       toast({
         variant: "default",

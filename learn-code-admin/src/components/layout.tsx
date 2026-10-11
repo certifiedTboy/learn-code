@@ -20,6 +20,10 @@ import { Button } from "./ui/button";
 import { useAuth } from "../hooks/use-auth";
 import { deleteToken } from "../helpers/user-session";
 import { useGoogleAuth } from "../hooks/use-google-auth";
+import {
+  deleteAllCourse,
+  deleteAllRegisteredCourses,
+} from "@/helpers/course-database";
 import { useBackup } from "@/hooks/use-backup";
 
 interface LayoutProps {
@@ -74,6 +78,8 @@ export function DashboardLayout({ children }: LayoutProps) {
   const onLogoutUser = async () => {
     await deleteToken();
     await revokeAccess();
+    await deleteAllCourse();
+    await deleteAllRegisteredCourses();
     window.location.href = "/login";
   };
 

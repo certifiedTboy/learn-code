@@ -2,14 +2,16 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/layout";
 import { Link } from "wouter";
 import { AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { CloudDownload, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCourses } from "@/hooks/use-courses";
+import { useBackup } from "@/hooks/use-backup";
 import { RegistereCourseCard } from "./registered-course-card";
 
 export default function RegisteredCourses() {
   const { registeredCourses } = useCourses();
+  const { readFromCloud } = useBackup();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredCourses = registeredCourses?.filter(
@@ -57,14 +59,37 @@ export default function RegisteredCourses() {
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
               {searchTerm
                 ? "Try adjusting your search terms."
-                : "You haven't created any courses yet."}
+                : "You haven't enrolled to a course yet."}
             </p>
             {!searchTerm && (
-              <Link href="/dashboard/courses/new">
-                <Button className="shadow-glow cursor-pointer">
-                  Create Course
+              <div className="flex w-full max-w-sm flex-col items-stretch gap-4">
+                <Button
+                  asChild
+                  className="h-11 w-full cursor-pointer font-semibold shadow-glow transition-shadow hover:shadow-primary/40"
+                >
+                  <Link href="/dashboard/courses">
+                    Enroll in a course
+                  </Link>
                 </Button>
-              </Link>
+
+                <div className="flex items-center gap-3" aria-hidden="true">
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    or
+                  </span>
+                  <span className="h-px flex-1 bg-border" />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void readFromCloud()}
+                  className="h-11 w-full cursor-pointer gap-2 font-semibold"
+                >
+                  <CloudDownload className="h-4 w-4" />
+                  Restore progress from cloud
+                </Button>
+              </div>
             )}
           </div>
         )}
