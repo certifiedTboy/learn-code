@@ -152,83 +152,20 @@ export function useBackup() {
       const registeredCourses = await getAllRegisteredCourse();
       const updatedAvailableCourse = await getAllCourse();
 
-      const registered = registeredCourses ?? [];
-      const available = updatedAvailableCourse ?? [];
+      let updatedCourse;
 
-      // Create a lookup of registered courses by ID
-      const registeredCourseMap = new Map(
-        registered.map((course) => [course._id, course]),
-      );
-
-      // Merge available courses with registered course progress
-      const courseMap = new Map();
-
-      available.forEach((course) => {
-        const registeredCourse = registeredCourseMap.get(course._id);
-
-        // Merge contents and preserve completion status
-        const registeredContents = new Map(
-          (registeredCourse?.contents ?? []).map((cont) => [
-            (cont as typeof cont & { _id: string })._id,
-            cont,
-          ]),
-        );
-
-        const contents = (course.contents ?? []).map((cont) => {
-          const contentId = (cont as typeof cont & { _id: string })._id;
-          const registeredContent = registeredContents.get(contentId);
-
-          const registeredSubTopics = new Map(
-            (registeredContent?.subTopics ?? []).map((sub) => [
-              (sub as typeof sub & { _id: string })._id,
-              sub,
-            ]),
-          );
-
-          const subTopics = (cont.subTopics ?? []).map((sub) => {
-            const registeredSubTopic = registeredSubTopics.get(
-              (sub as typeof sub & { _id: string })._id,
-            );
-
-            return {
-              ...sub,
-              ...registeredSubTopic,
-              isCompleted: registeredSubTopic?.isCompleted ?? false,
-            };
-          });
-
-          return {
-            ...cont,
-            ...registeredContent,
-            subTopics,
-          };
-        });
-
-        courseMap.set(course._id, {
+      if (registeredCourses && registeredCourses.length > 0) {
+        updatedCourse = registeredCourses.map((course) => ({
           ...course,
-          ...registeredCourse,
-          contents,
-        });
-      });
-
-      // Include registered courses that are no longer in the available list,
-      // while ensuring there are no duplicate course IDs.
-      registered.forEach((course) => {
-        if (!courseMap.has(course._id)) {
-          courseMap.set(course._id, {
-            ...course,
-            contents: (course.contents ?? []).map((cont) => ({
-              ...cont,
-              subTopics: (cont.subTopics ?? []).map((sub) => ({
-                ...sub,
-                isCompleted: sub.isCompleted ?? false,
-              })),
+          contents: course?.contents?.map((cont) => ({
+            ...cont,
+            subTopics: cont?.subTopics?.map((sub) => ({
+              ...sub,
+              isCompleted: sub?.isCompleted ?? false,
             })),
-          });
-        }
-      });
-
-      const updatedCourse = Array.from(courseMap.values());
+          })),
+        }));
+      }
 
       await updateJsonFile(token, file.id, updatedCourse);
       toast({
