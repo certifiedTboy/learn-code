@@ -6,7 +6,9 @@ import {
   Command,
   GraduationCap,
   Lightbulb,
+  Maximize2,
   MessageCircle,
+  Minimize2,
   MoreHorizontal,
   Paperclip,
   Plus,
@@ -28,6 +30,7 @@ interface DragOrigin extends ChatPosition {
 
 export function AiChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [position, setPosition] = useState<ChatPosition | null>(null);
   const [launcherPosition, setLauncherPosition] = useState<ChatPosition | null>(
     null,
@@ -166,13 +169,17 @@ export function AiChatWidget() {
       {isOpen ? (
         <section
           ref={panelRef}
-          className={`ai-chat-panel${position ? " ai-chat-panel-positioned" : ""}`}
-          style={position ? { left: position.x, top: position.y } : undefined}
+          className={`ai-chat-panel${position && !isExpanded ? " ai-chat-panel-positioned" : ""}${isExpanded ? " ai-chat-panel-expanded" : ""}`}
+          style={
+            position && !isExpanded
+              ? { left: position.x, top: position.y }
+              : undefined
+          }
           aria-label="LearnCode AI chat"
         >
           <header
             className="ai-chat-header"
-            onPointerDown={handlePointerDown}
+            onPointerDown={isExpanded ? undefined : handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
@@ -193,6 +200,16 @@ export function AiChatWidget() {
               </div>
             </div>
             <div className="ai-chat-header-actions">
+              <button
+                type="button"
+                className="ai-chat-icon-button"
+                aria-label={isExpanded ? "Restore chat size" : "Expand chat"}
+                title={isExpanded ? "Restore chat size" : "Expand chat"}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => setIsExpanded((expanded) => !expanded)}
+              >
+                {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              </button>
               <button
                 type="button"
                 className="ai-chat-icon-button"

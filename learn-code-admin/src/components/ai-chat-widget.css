@@ -1,7 +1,7 @@
 .ai-chat-widget {
   position: fixed;
   z-index: 80;
-  right: 24px;
+  left: 280px;
   bottom: 24px;
   font-family: var(--font-sans);
 }
@@ -29,6 +29,19 @@
 
 .ai-chat-panel-positioned {
   position: fixed;
+}
+
+.ai-chat-panel-expanded {
+  position: fixed;
+  inset: 24px;
+  width: auto;
+  height: auto;
+  min-height: 0;
+}
+
+.ai-chat-panel-expanded .ai-chat-header {
+  cursor: default;
+  touch-action: auto;
 }
 
 .ai-chat-header {
@@ -495,7 +508,7 @@
 
 @media (max-width: 520px) {
   .ai-chat-widget {
-    right: 14px;
+    left: 14px;
     bottom: 14px;
   }
 
@@ -506,6 +519,14 @@
 
   .ai-chat-panel-positioned {
     max-height: calc(100dvh - 24px);
+  }
+
+  .ai-chat-panel.ai-chat-panel-expanded {
+    inset: 8px;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
   }
 
   .ai-chat-suggestions {
