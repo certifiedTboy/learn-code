@@ -1,11 +1,13 @@
 import { useAuth } from "./use-auth";
 import { useGoogleAuth } from "./use-google-auth";
 import { useToast } from "./use-toast";
+import { useCourses } from "./use-courses";
 import {
   upsertRegisteredCourse,
   getAllRegisteredCourse,
   getAllCourse,
 } from "@/helpers/course-database";
+import { syncRegisteredCourses } from "@/helpers/course";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -97,12 +99,7 @@ export async function updateJsonFile(
 export function useBackup() {
   // Custom hook to trigger Google OAuth sign-in flow for Drive access
   const { handleGoogleSignIn } = useGoogleAuth();
-  // Context updater to re-hydrate the UI once a backup is successfully restored
-  //   const { setRegisteredCourses } = useRegisteredCourseContext();
-  // const [updateRegisteredCoursesProgress] =
-  //   useUpdateRegisteredCoursesProgressMutation();
-
-  // Immediate notification trigger to inform the user of backup success/failure
+  const { setReisgeredCourses } = useCourses();
 
   const { toast } = useToast();
   const { user } = useAuth();
@@ -149,17 +146,22 @@ export function useBackup() {
         file = await metadataResponse.json();
       }
 
+      const updatedAvailableCourses = await getAllCourse();
       const registeredCourses = await getAllRegisteredCourse();
-      const updatedAvailableCourse = await getAllCourse();
+
+      const syncedCourses = syncRegisteredCourses(
+        registeredCourses,
+        updatedAvailableCourses,
+      );
 
       let updatedCourse;
 
-      if (registeredCourses && registeredCourses.length > 0) {
-        updatedCourse = registeredCourses.map((course) => ({
+      if (syncedCourses && syncedCourses.length > 0) {
+        updatedCourse = syncedCourses.map((course: any) => ({
           ...course,
-          contents: course?.contents?.map((cont) => ({
+          contents: course?.contents?.map((cont: any) => ({
             ...cont,
-            subTopics: cont?.subTopics?.map((sub) => ({
+            subTopics: cont?.subTopics?.map((sub: any) => ({
               ...sub,
               isCompleted: sub?.isCompleted ?? false,
             })),
@@ -196,6 +198,7 @@ export function useBackup() {
       }
 
       const files = await listAppData(handleGoogleSignIn);
+
       token = localStorage.getItem("gtkn") ?? token;
 
       const fileId = files.find((file: any) => file.name === path)?.id;
@@ -206,6 +209,8 @@ export function useBackup() {
       );
 
       const data = await response.json();
+
+      setReisgeredCourses(data);
 
       for (let course of data) {
         await upsertRegisteredCourse({

@@ -23,6 +23,7 @@ interface CoursesContextType {
   updateCourse: (id: string, data: Partial<Omit<Course, "id">>) => void;
   deleteCourse: (id: string) => void;
   getRegisteredCourse: (id: string) => Course | undefined;
+  setReisgeredCourses: (courses: Course[]) => void;
   markTopicAsCompleted: (
     courseId: string,
     topicId: string,
@@ -121,6 +122,18 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
         registeredCourses,
         getRegisteredCourse,
         markTopicAsCompleted,
+        setReisgeredCourses: (courses: Course[]) => {
+          const normalizedRegisteredCourses = (courses as any[]).map(
+            (course: any) => ({
+              ...course,
+              id: course.id ?? course._id,
+              isExpired: checkIfPaymentIsExpired(course?.dateRegistered),
+              contents: course.contents,
+            }),
+          ) as Course[];
+
+          setRegisteredCourses(normalizedRegisteredCourses);
+        },
       }}
     >
       {children}
