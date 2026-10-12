@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import { GraduationCap, ArrowLeft, Mail, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,15 +9,17 @@ import { Input } from "@/components/ui/input";
 import { registerSchema } from "@/helpers/data-validator-schema";
 import useForm from "@/hooks/useForm";
 import { useCreateAdminAccountMutation } from "@/lib/apis/auth-apis";
-import { useAuth } from "@/hooks/use-auth";
 import Loader from "@/components/ui/loader";
 import GoogleAuthButton from "@/components/google-auth-button";
 import { useGoogleAdminAuth } from "@/hooks/use-google-admin-auth";
+import type { RootState } from "@/redux/store/store";
 
 export default function Register() {
   const [, setLocation] = useLocation();
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSelector(
+    (state: RootState) => state.authState,
+  );
   const [
     createAdminAccount,
     { isLoading, error: errorResponse, isSuccess, isError },

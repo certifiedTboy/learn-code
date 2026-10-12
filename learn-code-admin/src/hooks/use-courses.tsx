@@ -43,8 +43,10 @@ export function CoursesProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    getAllCourses(null);
-  }, []);
+    if (isAuthenticated && currentUser) {
+      getAllCourses(null);
+    }
+  }, [isAuthenticated, currentUser]);
 
   useEffect(() => {
     if (isSuccess) {

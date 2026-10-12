@@ -2,19 +2,20 @@ import { useState } from "react";
 import { DashboardLayout } from "../../components/layout";
 import { motion } from "framer-motion";
 import { Users, BookOpen, Clock, TrendingUp, Plus, Search } from "lucide-react";
+import { useSelector } from "react-redux";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCourses } from "@/hooks/use-courses";
-import { useAuth } from "@/hooks/use-auth";
 import { AdminCourseCard } from "../courses/admin-course-card";
 import { UserCourseCard } from "../courses/user-coruse-card";
 import { DashboardScreenMap } from "./screen-map";
+import type { RootState } from "@/redux/store/store";
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const { courses } = useCourses();
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
 
   const filteredCourses = courses?.filter(
     (c) =>
@@ -100,7 +101,7 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DashboardScreenMap />
-            {user && user?.role === "admin" && (
+            {currentUser && currentUser?.role === "admin" && (
               <Link
                 href="/dashboard/courses/new"
                 data-tour="create-course"
@@ -125,7 +126,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        {user && user?.role === "admin" && (
+        {currentUser && currentUser?.role === "admin" && (
           <motion.div
             data-tour="dashboard-stats"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
@@ -158,7 +159,7 @@ export default function Dashboard() {
 
         {/* Recent Courses Section */}
         <div className="mt-12" data-tour="dashboard-courses">
-          {user && user?.role === "admin" && (
+          {currentUser && currentUser?.role === "admin" && (
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-display font-bold">Recent Courses</h2>
               <Link
@@ -172,16 +173,16 @@ export default function Dashboard() {
 
           {filteredCourses?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {user &&
-                user?.role === "admin" &&
+              {currentUser &&
+                currentUser?.role === "admin" &&
                 filteredCourses
                   ?.slice(0, 3)
                   ?.map((course) => (
                     <AdminCourseCard key={course.id} course={course} />
                   ))}
 
-              {user &&
-                user?.role === "user" &&
+              {currentUser &&
+                currentUser?.role === "user" &&
                 filteredCourses?.map((course) => (
                   <UserCourseCard key={course.id} course={course} />
                 ))}
@@ -191,13 +192,13 @@ export default function Dashboard() {
               <h3 className="text-xl font-display font-bold mb-2">
                 No courses yet
               </h3>
-              {user && user?.role === "admin" && (
+              {currentUser && currentUser?.role === "admin" && (
                 <p className="text-muted-foreground max-w-md mx-auto mb-6">
                   You haven't created any educational content yet. Start
                   building your platform by creating your first course.
                 </p>
               )}
-              {user && user?.role === "admin" && (
+              {currentUser && currentUser?.role === "admin" && (
                 <Link href="/dashboard/courses/new">
                   <Button className="shadow-glow cursor-pointer">
                     Create First Course

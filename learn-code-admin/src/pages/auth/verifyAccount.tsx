@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import { GraduationCap, ArrowLeft, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,14 @@ import { accountVerificationSchema } from "@/helpers/data-validator-schema";
 import useForm from "@/hooks/useForm";
 import { useVerifyAdminAccountMutation } from "@/lib/apis/auth-apis";
 import Loader from "@/components/ui/loader";
-import { useAuth } from "@/hooks/use-auth";
+import type { RootState } from "@/redux/store/store";
 
 export default function VerifyAccount() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useAuth();
+
+  const { isAuthenticated } = useSelector(
+    (state: RootState) => state.authState,
+  );
   const [
     verifyAdminAccount,
     { isLoading, error: errorResponse, isSuccess, isError, data: __ },

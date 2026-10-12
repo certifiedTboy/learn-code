@@ -3,8 +3,9 @@ import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { DashboardLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
+import { useSelector } from "react-redux";
 import { useCourses } from "@/hooks/use-courses";
+import type { RootState } from "@/redux/store/store";
 
 type MainContent = {
   title: string;
@@ -111,7 +112,7 @@ function getGoogleDocsEmbedUrl(value: string): string | null {
 export function UserCourseContent() {
   const [tempCourseCompleted, setTempCourseCompleted] = useState(false);
   const [, params] = useRoute("/courses/:id");
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
   const { markTopicAsCompleted } = useCourses();
   const lesson = getLessonState(window.history.state);
   const courseId = params;
@@ -153,7 +154,7 @@ export function UserCourseContent() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
-        {user && user?.role === "admin" && (
+        {currentUser && currentUser?.role === "admin" && (
           <Link
             href={courseId ? `/courses/${courseId}` : "/dashboard/courses"}
             className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
@@ -163,7 +164,7 @@ export function UserCourseContent() {
           </Link>
         )}
 
-        {user && user?.role === "user" && (
+        {currentUser && currentUser?.role === "user" && (
           <Link
             href={
               courseId
@@ -239,31 +240,34 @@ export function UserCourseContent() {
                 </div>
               )}
 
-              {user && user?.role === "user" && embedUrl && originalUrl && (
-                <div className="flex flex-wrap items-center justify-end gap-3 border-t border-white/10 px-4 py-3 sm:px-6">
-                  {!tempCourseCompleted ? (
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setTempCourseCompleted(true);
-                        handleMarkTopicAsComplted(
-                          lesson?.courseId,
-                          lesson?.mainTopic,
-                          lesson?.mainContent?.title,
-                        );
-                      }}
-                    >
-                      <a href="#">Mark as completed</a>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="outline" size="sm">
-                      <a href="#">Completed</a>
-                    </Button>
-                  )}
-                </div>
-              )}
+              {currentUser &&
+                currentUser?.role === "user" &&
+                embedUrl &&
+                originalUrl && (
+                  <div className="flex flex-wrap items-center justify-end gap-3 border-t border-white/10 px-4 py-3 sm:px-6">
+                    {!tempCourseCompleted ? (
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setTempCourseCompleted(true);
+                          handleMarkTopicAsComplted(
+                            lesson?.courseId,
+                            lesson?.mainTopic,
+                            lesson?.mainContent?.title,
+                          );
+                        }}
+                      >
+                        <a href="#">Mark as completed</a>
+                      </Button>
+                    ) : (
+                      <Button asChild variant="outline" size="sm">
+                        <a href="#">Completed</a>
+                      </Button>
+                    )}
+                  </div>
+                )}
             </section>
           </>
         ) : (

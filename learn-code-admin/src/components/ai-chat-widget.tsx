@@ -11,14 +11,15 @@ import {
   Sparkles,
   WandSparkles,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 import { useChat } from "@/hooks/use-chat";
-import { useAuth } from "@/hooks/use-auth";
 import { generateRandomRoomId } from "@/helpers/chat";
 import { CHAT_STARTER } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { MarkdownRender } from "./markdown-render";
 import ChatLoader from "./chat-loader";
 import "./ai-chat-widget.css";
+import type { RootState } from "@/redux/store/store";
 
 interface ChatPosition {
   x: number;
@@ -47,15 +48,15 @@ export function AiChatWidget() {
   const roomIdRef = useRef(generateRandomRoomId());
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
 
   const { joinRoom, socketMessages, sendMessage, isTyping } = useChat();
 
   useEffect(() => {
-    if (user) {
-      joinRoom(roomIdRef?.current, user?.email);
+    if (currentUser) {
+      joinRoom(roomIdRef?.current, currentUser?.email);
     }
-  }, [user]);
+  }, [currentUser]);
   const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
 
@@ -183,7 +184,7 @@ export function AiChatWidget() {
     sendMessage({
       chatId: generateRandomRoomId(),
       content: chatText,
-      senderId: user?.email,
+      senderId: currentUser?.email!,
       roomId: roomIdRef?.current!,
     });
 
@@ -283,7 +284,7 @@ export function AiChatWidget() {
                         sendMessage({
                           chatId: generateRandomRoomId(),
                           content: start?.title,
-                          senderId: user?.email,
+                          senderId: currentUser?.email!,
                           roomId: roomIdRef?.current!,
                         });
                       }}
@@ -306,12 +307,12 @@ export function AiChatWidget() {
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-2  ${message?.senderId === user?.email ? "flex-row-reverse" : "flex-row"}`}
+                    className={`flex gap-2  ${message?.senderId === currentUser?.email ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    {message?.senderId !== user.email && (
+                    {message?.senderId !== currentUser?.email && (
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                          message?.senderId === user?.email
+                          message?.senderId === currentUser?.email
                             ? "bg-primary/20 text-primary font-medium text-sm"
                             : "bg-primary text-primary-foreground"
                         }`}
@@ -321,14 +322,14 @@ export function AiChatWidget() {
                     )}
 
                     <div
-                      className={`flex flex-col justify-center ${message?.senderId === user?.email ? "items-end" : "items-start"} max-w-[85%]`}
+                      className={`flex flex-col justify-center ${message?.senderId === currentUser?.email ? "items-end" : "items-start"} max-w-[85%]`}
                     >
                       <div className="font-medium text-xs text-muted-foreground mb-1 px-1">
-                        {message?.senderId !== user?.email
+                        {message?.senderId !== currentUser?.email
                           ? "Assistant"
                           : "You"}
                       </div>
-                      {message?.senderId === user?.email ? (
+                      {message?.senderId === currentUser?.email ? (
                         <div className="flex flex-col items-end gap-2 rounded-2xl rounded-tr-sm bg-muted px-4 py-3 text-sm leading-relaxed shadow-sm">
                           {message?.content && (
                             <div className="whitespace-pre-wrap">

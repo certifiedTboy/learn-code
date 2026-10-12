@@ -1,4 +1,4 @@
-import { useAuth } from "./use-auth";
+import { useSelector } from "react-redux";
 import { useGoogleAuth } from "./use-google-auth";
 import { useToast } from "./use-toast";
 import { useCourses } from "./use-courses";
@@ -8,6 +8,7 @@ import {
   getAllCourse,
 } from "@/helpers/course-database";
 import { syncRegisteredCourses } from "@/helpers/course";
+import type { RootState } from "@/redux/store/store";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -102,10 +103,10 @@ export function useBackup() {
   const { setReisgeredCourses } = useCourses();
 
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
 
   // Generates a unique backup filename based on the user's email prefix
-  const path = `${user?.email?.split("@")[0]}.json`;
+  const path = `${currentUser?.email?.split("@")[0]}.json`;
 
   // const path = "file.json";
 

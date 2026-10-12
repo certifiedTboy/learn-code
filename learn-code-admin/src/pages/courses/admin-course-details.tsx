@@ -20,13 +20,14 @@ import {
 } from "@/components/ui/accordion";
 import { DashboardLayout } from "@/components/layout";
 import { useCourses } from "@/hooks/use-courses";
-import { useAuth } from "@/hooks/use-auth";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store/store";
 
 export default function AdminCourseDetails() {
   const [, params] = useRoute("/courses/:id");
   const [, setLocation] = useLocation();
 
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
   const courseId = params?.id;
   const { getCourse, getRegisteredCourse } = useCourses();
   const course = courseId ? getCourse(courseId) : undefined;
@@ -65,7 +66,7 @@ export default function AdminCourseDetails() {
     (total, section) => total + (section.subTopics?.length ?? 0),
     0,
   );
-  const canViewLessons = user?.role === "admin";
+  const canViewLessons = currentUser?.role === "admin";
 
   const openLesson = (
     mainTopic: string,
@@ -297,7 +298,7 @@ export default function AdminCourseDetails() {
                                   </p>
                                 </div>
                               </div>
-                              {user && user?.role === "admin" && (
+                              {currentUser && currentUser?.role === "admin" && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -336,7 +337,7 @@ export default function AdminCourseDetails() {
             </div>
           )}
 
-          {user && user?.role === "user" && (
+          {currentUser && currentUser?.role === "user" && (
             <div className="sticky bottom-0 z-30 -mx-4 border-y border-white/10 bg-background/85 px-4 py-3 shadow-lg backdrop-blur-xl md:-mx-8 md:px-8">
               <div className="flex max-w-8 gap-3">
                 {!registeredCourse ? (

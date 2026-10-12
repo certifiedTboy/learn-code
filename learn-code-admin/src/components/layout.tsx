@@ -16,8 +16,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 import { Button } from "./ui/button";
-import { useAuth } from "../hooks/use-auth";
 import { deleteToken } from "../helpers/user-session";
 import { useGoogleAuth } from "../hooks/use-google-auth";
 import {
@@ -25,6 +25,8 @@ import {
   deleteAllRegisteredCourses,
 } from "@/helpers/course-database";
 import { useBackup } from "@/hooks/use-backup";
+import type { RootState } from "@/redux/store/store";
+import { useGetAdminProfileMutation } from "@/lib/apis/user-apis";
 
 interface LayoutProps {
   children: ReactNode;
@@ -34,10 +36,16 @@ export function DashboardLayout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const { user } = useAuth();
   const { revokeAccess } = useGoogleAuth();
   const { writeToCloud, readFromCloud } = useBackup();
   const [isBackupMenuOpen, setIsBackupMenuOpen] = useState(false);
+  const [getAdminProfile] = useGetAdminProfileMutation();
+
+  const { currentUser } = useSelector((state: RootState) => state.authState);
+
+  useEffect(() => {
+    getAdminProfile(null);
+  }, []);
 
   useEffect(() => {
     const handleTourMobileMenu = (event: Event) => {
@@ -148,8 +156,8 @@ export function DashboardLayout({ children }: LayoutProps) {
         <nav
           className={`min-h-0 flex-1 overflow-y-auto py-6 space-y-2 ${isSidebarCollapsed ? "px-2 md:px-3" : "px-4"}`}
         >
-          {user &&
-            user?.role === "admin" &&
+          {currentUser &&
+            currentUser?.role === "admin" &&
             adminNavItems.map((item) => {
               const isActive =
                 location === item.href ||
@@ -198,8 +206,8 @@ export function DashboardLayout({ children }: LayoutProps) {
               );
             })}
 
-          {user &&
-            user?.role === "user" &&
+          {currentUser &&
+            currentUser?.role === "user" &&
             userNavItems.map((item) => {
               const isActive =
                 location === item.href ||
@@ -254,16 +262,16 @@ export function DashboardLayout({ children }: LayoutProps) {
             className={`flex items-center gap-3 px-4 py-3 mb-2 ${isSidebarCollapsed ? "md:justify-center md:px-0" : ""}`}
           >
             <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium border border-white/10">
-              {user.name.charAt(0).toUpperCase()}
+              {currentUser?.firstName.charAt(0).toUpperCase()}
             </div>
             <div
               className={`flex flex-col truncate ${isSidebarCollapsed ? "md:hidden" : ""}`}
             >
               <span className="text-sm font-medium text-foreground truncate">
-                {user.name}
+                {currentUser?.firstName} {currentUser?.lastName}
               </span>
               <span className="text-xs text-muted-foreground truncate">
-                {user.role}
+                {currentUser?.role}
               </span>
             </div>
           </div>
@@ -296,7 +304,7 @@ export function DashboardLayout({ children }: LayoutProps) {
         />
       )}
 
-      {user && (
+      {currentUser && (
         <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3">
           <AnimatePresence>
             {isBackupMenuOpen && (
@@ -340,7 +348,7 @@ export function DashboardLayout({ children }: LayoutProps) {
           >
             <RefreshCcw className="h-6 w-6" />
           </button>
-          {user && user?.role === "user" && (
+          {currentUser && currentUser?.role === "user" && (
             <button
               type="button"
               data-tour="cloud-backup"

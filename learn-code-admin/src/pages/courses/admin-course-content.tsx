@@ -1,7 +1,8 @@
 import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { DashboardLayout } from "@/components/layout";
-import { useAuth } from "@/hooks/use-auth";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store/store";
 
 type MainContent = {
   title: string;
@@ -104,7 +105,7 @@ function getGoogleDocsEmbedUrl(value: string): string | null {
 
 export function AdminCourseContent() {
   const [, params] = useRoute("/courses/:id");
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
   const lesson = getLessonState(window.history.state);
   const courseId = params;
 
@@ -120,7 +121,7 @@ export function AdminCourseContent() {
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
-        {user && user?.role === "admin" && (
+        {currentUser && currentUser?.role === "admin" && (
           <Link
             href={courseId ? `/courses/${courseId}` : "/dashboard/courses"}
             className="inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
@@ -130,7 +131,7 @@ export function AdminCourseContent() {
           </Link>
         )}
 
-        {user && user?.role === "user" && (
+        {currentUser && currentUser?.role === "user" && (
           <Link
             href={
               courseId

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
+import type { RootState } from "@/redux/store/store";
 
 type TourStep = {
   target: string;
@@ -102,7 +103,7 @@ function getTourStorageKey(role: string, email: string) {
 }
 
 export function DashboardScreenMap() {
-  const { user } = useAuth();
+  const { currentUser } = useSelector((state: RootState) => state.authState);
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [targetPosition, setTargetPosition] = useState<TargetPosition | null>(
@@ -110,8 +111,10 @@ export function DashboardScreenMap() {
   );
   const nextButtonRef = useRef<HTMLButtonElement>(null);
   const tourTriggerRef = useRef<HTMLButtonElement>(null);
-  const steps = user.role === "admin" ? adminSteps : learnerSteps;
-  const storageKey = getTourStorageKey(user.role, user.email);
+  const steps =
+    currentUser && currentUser.role === "admin" ? adminSteps : learnerSteps;
+  const storageKey =
+    currentUser && getTourStorageKey(currentUser?.role, currentUser?.email);
   const step = steps[currentStep];
 
   const finishTour = useCallback(() => {

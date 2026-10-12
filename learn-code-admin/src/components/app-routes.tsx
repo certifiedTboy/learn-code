@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
+import { useSelector } from "react-redux";
 import NotFound from "@/pages/others/not-found";
 
 // Pages
@@ -24,11 +24,13 @@ import { AdminCourseContent } from "@/pages/courses/admin-course-content";
 import { UserCourseContent } from "@/pages/courses/user-course-content";
 import Contacts from "@/pages/others/contacts";
 import PaymentOptions from "@/pages/payment/payment-options";
-
 import Redirect from "./redirect";
+import type { RootState } from "@/redux/store/store";
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSelector(
+    (state: RootState) => state.authState,
+  );
 
   return (
     <Switch>

@@ -1,27 +1,30 @@
 import { Router as WouterRouter } from "wouter";
-import AppRoutes from "./components/app-routes";
-import { Toaster } from "./components/ui/toaster";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { AiChatWidget } from "./components/ai-chat-widget";
-import { AuthProvider } from "./hooks/use-auth";
-import { CoursesProvider } from "./hooks/use-courses";
-import ChatContextProvider from "./hooks/use-chat";
+import { useSelector } from "react-redux";
+import AppRoutes from "@/components/app-routes";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AiChatWidget } from "@/components/ai-chat-widget";
+import { CoursesProvider } from "@/hooks/use-courses";
+import ChatContextProvider from "@/hooks/use-chat";
+import type { RootState } from "@/redux/store/store";
 
 function App() {
+  const { currentUser } = useSelector((state: RootState) => state.authState);
+
   return (
-    <AuthProvider>
-      <CoursesProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppRoutes />
-          </WouterRouter>
+    <CoursesProvider>
+      <TooltipProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <AppRoutes />
+        </WouterRouter>
+        {currentUser && currentUser?.role === "user" && (
           <ChatContextProvider>
             <AiChatWidget />
           </ChatContextProvider>
-          <Toaster />
-        </TooltipProvider>
-      </CoursesProvider>
-    </AuthProvider>
+        )}
+        <Toaster />
+      </TooltipProvider>
+    </CoursesProvider>
   );
 }
 

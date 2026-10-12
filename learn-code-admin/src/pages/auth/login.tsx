@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { GraduationCap, ArrowRight, Mail, Lock } from "lucide-react";
+import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/ui/loader";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +10,6 @@ import useForm from "@/hooks/useForm";
 import { Input } from "@/components/ui/input";
 import { loginSchema } from "@/helpers/data-validator-schema";
 import { useLoginAdminAccountMutation } from "@/lib/apis/auth-apis";
-import { useAuth } from "@/hooks/use-auth";
 import { storeToken } from "@/helpers/user-session";
 import GoogleAuthButton from "@/components/google-auth-button";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
@@ -17,6 +17,7 @@ import {
   createCourseTable,
   createRegisteredCourseTable,
 } from "@/helpers/course-database";
+import type { RootState } from "@/redux/store/store";
 
 export default function Login() {
   const {
@@ -30,7 +31,9 @@ export default function Login() {
 
   const { handleGoogleSignIn, isLoading: googleIsLoading } = useGoogleAuth();
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSelector(
+    (state: RootState) => state?.authState,
+  );
 
   const { toast } = useToast();
 
@@ -77,11 +80,7 @@ export default function Login() {
         try {
           await createCourseTable();
           await createRegisteredCourseTable();
-
-          console.log("table created");
-        } catch (error) {
-          console.log("table creation failed: ", error);
-        }
+        } catch (error) {}
       })();
     }, 1000);
 
