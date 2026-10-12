@@ -1,4 +1,10 @@
-import { type ReactNode, useEffect, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Link, useLocation } from "wouter";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -32,7 +38,19 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+const DashboardLayoutContext = createContext(false);
+
 export function DashboardLayout({ children }: LayoutProps) {
+  const isInsideDashboardLayout = useContext(DashboardLayoutContext);
+
+  return isInsideDashboardLayout ? (
+    <>{children}</>
+  ) : (
+    <DashboardLayoutShell>{children}</DashboardLayoutShell>
+  );
+}
+
+function DashboardLayoutShell({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -44,8 +62,8 @@ export function DashboardLayout({ children }: LayoutProps) {
   const { currentUser } = useSelector((state: RootState) => state.authState);
 
   useEffect(() => {
-    getAdminProfile(null);
-  }, []);
+    void getAdminProfile(null);
+  }, [getAdminProfile]);
 
   useEffect(() => {
     const handleTourMobileMenu = (event: Event) => {
@@ -293,7 +311,9 @@ export function DashboardLayout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <main className="min-h-0 w-full flex-1 overflow-y-auto">
-        <div className="p-4 md:p-8 max-w-7xl mx-auto">{children}</div>
+        <DashboardLayoutContext.Provider value>
+          <div className="p-4 md:p-8 max-w-7xl mx-auto">{children}</div>
+        </DashboardLayoutContext.Provider>
       </main>
 
       {/* Mobile Backdrop */}

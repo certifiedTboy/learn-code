@@ -1,6 +1,7 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { useSelector } from "react-redux";
 import NotFound from "@/pages/others/not-found";
+import { DashboardLayout } from "@/components/layout";
 
 // Pages
 import Login from "@/pages/auth/login";
@@ -28,11 +29,12 @@ import Redirect from "./redirect";
 import type { RootState } from "@/redux/store/store";
 
 const AppRoutes = () => {
+  const [location] = useLocation();
   const { isAuthenticated } = useSelector(
     (state: RootState) => state.authState,
   );
 
-  return (
+  const routes = (
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/contacts" component={Contacts} />
@@ -70,6 +72,17 @@ const AppRoutes = () => {
       />
       <Route component={NotFound} />
     </Switch>
+  );
+
+  const shouldRenderDashboardLayout =
+    location === "/dashboard" ||
+    location.startsWith("/dashboard/") ||
+    location.startsWith("/courses/");
+
+  return shouldRenderDashboardLayout ? (
+    <DashboardLayout>{routes}</DashboardLayout>
+  ) : (
+    routes
   );
 };
 
