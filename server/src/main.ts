@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { BadRequestException, VersioningType } from '@nestjs/common';
 import { ValidationPipe, ConsoleLogger } from '@nestjs/common';
-// import { BadRequestException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
