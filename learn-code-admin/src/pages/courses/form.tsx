@@ -81,28 +81,30 @@ export default function CourseForm() {
 
     setIsScanningPdf(true);
     try {
-      // Create a FormData object to send the file
-      const formDataToSend = new FormData();
-      formDataToSend.append("file", file);
-
       const textContent = await pdfToText(file);
 
-      if (textContent) {
-        const convertedContent = convertCourseTextToReference(textContent);
-
-        // Populate the form with the parsed data
-        updateFormDataForContentUpdate(convertedContent);
-
-        toast({
-          title: "PDF Scanned Successfully",
-          description: "Form fields have been populated from the PDF.",
-          variant: "default",
-        });
+      if (!textContent.trim()) {
+        throw new Error("No readable text was found in the PDF.");
       }
+
+      const convertedContent = convertCourseTextToReference(textContent);
+      updateFormDataForContentUpdate({
+        ...convertedContent,
+        skills: convertSkillsToString(convertedContent.skills).trim(),
+      });
+
+      toast({
+        title: "PDF Scanned Successfully",
+        description: "Form fields have been populated from the PDF.",
+        variant: "default",
+      });
     } catch (error) {
       toast({
         title: "Scan Failed",
-        description: "Failed to scan the PDF file.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred while scanning the PDF.",
         variant: "destructive",
       });
     } finally {
@@ -119,7 +121,9 @@ export default function CourseForm() {
       updateCourse({
         courseData: {
           ...formData,
-          // skills: convertSkillsToArray(formData.skills),
+          skills: Array.isArray(formData.skills)
+            ? formData.skills
+            : convertSkillsToArray(formData.skills),
           price: +formData.price,
           totalTopics: +formData.totalTopics,
           requiredDuration: +formData.requiredDuration,
@@ -161,7 +165,12 @@ export default function CourseForm() {
 
     if (isUpdateSuccess) {
       toast({ title: "Course updated successfully", variant: "default" });
-      updateLocalCourse(courseId!, formData);
+      updateLocalCourse(courseId!, {
+        ...formData,
+        skills: Array.isArray(formData.skills)
+          ? formData.skills
+          : convertSkillsToArray(formData.skills),
+      });
       setLocation("/dashboard/courses");
     }
 
