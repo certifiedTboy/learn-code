@@ -27,19 +27,33 @@ export function convertCourseTextToReference(rawText: string): CourseReference {
   }
 
   const text = rawText
-    .replace(/N\s*ame\s*:/gi, "Name:")
-    .replace(/D\s*escription\s*:/gi, "Description:")
-    .replace(/P\s*rice\s*:/gi, "Price:")
-    .replace(/T\s*otal\s*T\s*opics\s*:/gi, "Total Topics:")
-    .replace(/R\s*equired\s*D\s*urations\s*:/gi, "Required Durations:")
-    .replace(/I\s*mage\s*:/gi, "Image:")
-    .replace(/S\s*kills\s*:/gi, "Skills:")
-    .replace(/M\s*ain\s*T\s*opic/gi, "Main Topic")
-    .replace(/T\s*itle\s*:/gi, "Title:")
-    .replace(/T\s*opic\s*:/gi, "Topic:")
-    .replace(/C\s*ontent\s*U\s*R\s*I\s*:/gi, "Content URI:")
-    .replace(/C\s*ontent\s*U\s*R\s*L\s*:/gi, "Content URL:")
-    .replace(/I\s*s\s*V\s*ideo\s*:/gi, "Is Video:")
+    .replace(/N\s*a\s*m\s*e\s*:/gi, "Name:")
+    .replace(/D\s*e\s*s\s*c\s*r\s*i\s*p\s*t\s*i\s*o\s*n\s*:/gi, "Description:")
+    .replace(/P\s*r\s*i\s*c\s*e\s*:/gi, "Price:")
+    .replace(
+      /T\s*o\s*t\s*a\s*l\s*T\s*o\s*p\s*i\s*c\s*s\s*:/gi,
+      "Total Topics:",
+    )
+    .replace(
+      /R\s*e\s*q\s*u\s*i\s*r\s*e\s*d\s+D\s*u\s*r\s*a\s*t\s*i\s*o\s*n\s*s?\s*:/gi,
+      "Required Durations:",
+    )
+    .replace(/I\s*m\s*a\s*g\s*e\s*:/gi, "Image:")
+    .replace(/S\s*k\s*i\s*l\s*l\s*s\s*:/gi, "Skills:")
+    .replace(/M\s*a\s*i\s*n\s+T\s*o\s*p\s*i\s*c/gi, "Main Topic")
+    .replace(/T\s*i\s*t\s*l\s*e\s*:?/gi, "Title:")
+    .replace(/T\s*o\s*p\s*i\s*c\s*:/gi, "Topic:")
+    .replace(
+      /C\s*o\s*n\s*t\s*e\s*n\s*t\s+U\s*R\s*I\s*:/gi,
+      "Content URI:",
+    )
+    .replace(
+      /C\s*o\s*n\s*t\s*e\s*n\s*t\s+U\s*R\s*L\s*:/gi,
+      "Content URL:",
+    )
+    .replace(/I\s*s\s*V\s*i\s*d\s*e\s*o\s*:/gi, "Is Video:")
+    .replace(/t\s*r\s*u\s*e/gi, "true")
+    .replace(/f\s*a\s*l\s*s\s*e/gi, "false")
     .replace(/\s+/g, " ")
     .trim();
 
