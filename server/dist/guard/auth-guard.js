@@ -57,6 +57,7 @@ let AdminGuard = class AdminGuard {
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const authHeader = request.headers['authorization'];
+        console.log(authHeader);
         if (authHeader?.split(' ')[0] !== 'Bearer') {
             throw new common_1.UnauthorizedException('Invalid token format', {
                 cause: 'Unauthorized access',

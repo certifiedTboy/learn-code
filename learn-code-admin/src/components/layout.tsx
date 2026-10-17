@@ -273,40 +273,42 @@ function DashboardLayoutShell({ children }: LayoutProps) {
             })}
         </nav>
 
-        <div
-          className={`mt-auto flex-none border-t border-border/50 p-4 ${isSidebarCollapsed ? "md:px-2" : ""}`}
-        >
+        {currentUser && (
           <div
-            className={`flex items-center gap-3 px-4 py-3 mb-2 ${isSidebarCollapsed ? "md:justify-center md:px-0" : ""}`}
+            className={`mt-auto flex-none border-t border-border/50 p-4 ${isSidebarCollapsed ? "md:px-2" : ""}`}
           >
-            <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium border border-white/10">
-              {currentUser?.firstName.charAt(0).toUpperCase()}
-            </div>
             <div
-              className={`flex flex-col truncate ${isSidebarCollapsed ? "md:hidden" : ""}`}
+              className={`flex items-center gap-3 px-4 py-3 mb-2 ${isSidebarCollapsed ? "md:justify-center md:px-0" : ""}`}
             >
-              <span className="text-sm font-medium text-foreground truncate">
-                {currentUser?.firstName} {currentUser?.lastName}
-              </span>
-              <span className="text-xs text-muted-foreground truncate">
-                {currentUser?.role}
-              </span>
+              <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium border border-white/10">
+                {currentUser?.firstName?.charAt(0).toUpperCase()}
+              </div>
+              <div
+                className={`flex flex-col truncate ${isSidebarCollapsed ? "md:hidden" : ""}`}
+              >
+                <span className="text-sm font-medium text-foreground truncate">
+                  {currentUser?.firstName} {currentUser?.lastName}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {currentUser?.role}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <Button
-            variant="ghost"
-            aria-label="Log out"
-            title={isSidebarCollapsed ? "Log out" : undefined}
-            className={`w-full cursor-pointer text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${isSidebarCollapsed ? "md:justify-center md:px-0" : "justify-start"}`}
-            onClick={onLogoutUser}
-          >
-            <LogOut className={isSidebarCollapsed ? "" : "mr-2"} />
-            <span className={isSidebarCollapsed ? "md:hidden" : ""}>
-              Log Out
-            </span>
-          </Button>
-        </div>
+            <Button
+              variant="ghost"
+              aria-label="Log out"
+              title={isSidebarCollapsed ? "Log out" : undefined}
+              className={`w-full cursor-pointer text-muted-foreground hover:text-destructive hover:bg-destructive/10 ${isSidebarCollapsed ? "md:justify-center md:px-0" : "justify-start"}`}
+              onClick={onLogoutUser}
+            >
+              <LogOut className={isSidebarCollapsed ? "" : "mr-2"} />
+              <span className={isSidebarCollapsed ? "md:hidden" : ""}>
+                Log Out
+              </span>
+            </Button>
+          </div>
+        )}
       </aside>
 
       {/* Main Content */}

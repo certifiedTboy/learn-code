@@ -26,59 +26,184 @@ export function convertCourseTextToReference(rawText: string): CourseReference {
     throw new Error("Valid course text is required");
   }
 
-  const normalizeText = (text: string): string => {
-    return text
-      .replace(/\s+/g, " ")
-      .replace(/N\s*ame\s*:/gi, "Name:")
-      .replace(/D\s*escription\s*:/gi, "Description:")
-      .replace(/P\s*rice\s*:/gi, "Price:")
-      .replace(/Total\s*Topics\s*:/gi, "Total Topics:")
-      .replace(/R\s*equired\s*D\s*urations\s*:/gi, "Required Durations:")
-      .replace(/I\s*mage\s*:/gi, "Image:")
-      .replace(/S\s*kills\s*:/gi, "Skills:")
-      .replace(/Tit\s*le\s*:/gi, "Title:")
-      .replace(/Content\s*URI\s*:/gi, "Content URI:")
-      .replace(/Is\s*Video\s*:/gi, "Is Video:")
-      .replace(/https\s*:\s*\/\//gi, "https://")
-      .replace(/\s*-\s*/g, "-")
-      .trim();
+  const text = rawText
+    .replace(/N\s*a\s*m\s*e\s*:/gi, "Name:")
+    .replace(/D\s*e\s*s\s*c\s*r\s*i\s*p\s*t\s*i\s*o\s*n\s*:/gi, "Description:")
+    .replace(/P\s*r\s*i\s*c\s*e\s*:/gi, "Price:")
+    .replace(
+      /T\s*o\s*t\s*a\s*l\s*T\s*o\s*p\s*i\s*c\s*s\s*:/gi,
+      "Total Topics:",
+    )
+    .replace(
+      /R\s*e\s*q\s*u\s*i\s*r\s*e\s*d\s+D\s*u\s*r\s*a\s*t\s*i\s*o\s*n\s*s?\s*:/gi,
+      "Required Durations:",
+    )
+    .replace(/I\s*m\s*a\s*g\s*e\s*:/gi, "Image:")
+    .replace(/S\s*k\s*i\s*l\s*l\s*s\s*:/gi, "Skills:")
+    .replace(/M\s*a\s*i\s*n\s+T\s*o\s*p\s*i\s*c/gi, "Main Topic")
+    .replace(/T\s*i\s*t\s*l\s*e\s*:?/gi, "Title:")
+    .replace(/T\s*o\s*p\s*i\s*c\s*:/gi, "Topic:")
+    .replace(
+      /C\s*o\s*n\s*t\s*e\s*n\s*t\s+U\s*R\s*I\s*:/gi,
+      "Content URI:",
+    )
+    .replace(
+      /C\s*o\s*n\s*t\s*e\s*n\s*t\s+U\s*R\s*L\s*:/gi,
+      "Content URL:",
+    )
+    .replace(/I\s*s\s*V\s*i\s*d\s*e\s*o\s*:/gi, "Is Video:")
+    .replace(/t\s*r\s*u\s*e/gi, "true")
+    .replace(/f\s*a\s*l\s*s\s*e/gi, "false")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const extractValue = (label: string, nextLabels: string[]): string => {
+    const nextPattern = nextLabels.join("|");
+    const match = text.match(
+      new RegExp(`${label}\\s*:\\s*(.*?)\\s*(?=${nextPattern}|$)`, "i"),
+    );
+
+    return match?.[1]?.trim() ?? "";
   };
 
-  const text = normalizeText(rawText);
+  const nameAndDescription = extractValue("Name", [
+    "Description\\s*:",
+    "Price\\s*:",
+  ]);
+  const explicitDescription = extractValue("Description", ["Price\\s*:"]);
+  const repeatedName = nameAndDescription.match(
+    /^(.+?)\s+\1\s+(?:is|covers|provides|introduces)\b/i,
+  );
+  const inferredName = repeatedName?.[1]?.trim() ?? "";
+  const name = explicitDescription
+    ? nameAndDescription
+    : inferredName;
+  const description =
+    explicitDescription ||
+    (repeatedName ? nameAndDescription.slice(name.length).trim() : "");
 
-  const extractValue = (label: string, nextLabels: string[] = []): string => {
-    const nextPattern = nextLabels.length ? `(?=${nextLabels.join("|")})` : "$";
+  const parseNumber = (label: string, nextLabel: string): number => {
+    const value = extractValue(label, [`${nextLabel}\\s*:`]).replace(
+      /[^0-9.-]/g,
+      "",
+    );
+    const parsed = Number(value);
 
-    const regex = new RegExp(`${label}\\s*:\\s*(.*?)\\s*${nextPattern}`, "i");
+    if (!value || !Number.isFinite(parsed)) {
+      throw new Error(`Could not read ${label.toLowerCase()} from the PDF`);
+    }
 
-    const match = text.match(regex);
-
-    return match ? match[1].trim() : "";
+    return parsed;
   };
 
-  const name = extractValue("Name", ["Description\\s*:"]);
-
-  const description = extractValue("Description", ["Price\\s*:"]);
-
-  const price = Number(extractValue("Price", ["Total Topics\\s*:"])) || 0;
-
-  const totalTopics =
-    Number(extractValue("Total Topics", ["Required Durations\\s*:"])) || 0;
-
-  const requiredDuration =
-    Number(extractValue("Required Durations", ["Image\\s*:"])) || 0;
-
-  const image = extractValue("Image", ["Skills\\s*:"]);
-
-  const skillsText = extractValue("Skills", ["Main Topic"]);
-
-  const skills = skillsText
+  const price = parseNumber("Price", "Total Topics");
+  const totalTopics = parseNumber("Total Topics", "Required Durations");
+  const requiredDuration = parseNumber("Required Durations", "Image");
+  const image = extractValue("Image", ["Skills\\s*:"])
+    .replace(/\s+/g, "")
+    .replace(/[.,;]+$/, "");
+  const skillsText = extractValue("Skills", ["Main\\s+Topic"])
     .replace(/\.$/, "")
+    .trim();
+  const skills = skillsText
     .split(",")
     .map((skill) => skill.trim())
     .filter(Boolean);
 
-  const courseReference: CourseReference = {
+  if (!name) {
+    throw new Error("Could not read the course name from the PDF");
+  }
+
+  if (!description) {
+    throw new Error("Could not read the course description from the PDF");
+  }
+
+  const curriculumHeader = text.match(
+    /Main\s+Topic\s+Description\s+Subtopics/i,
+  );
+
+  if (!curriculumHeader || curriculumHeader.index === undefined) {
+    throw new Error("Could not find curriculum sections in the PDF");
+  }
+
+  const curriculumStart =
+    curriculumHeader.index + curriculumHeader[0].length;
+  const curriculumText = text.slice(curriculumStart);
+  const descriptionStarts = [
+    ...curriculumText.matchAll(/\bLearn\s+(?:the|how)\b/gi),
+  ];
+  const videoLabels = [
+    ...curriculumText.matchAll(/Is\s*Video\s*:\s*(?:true|false)/gi),
+  ];
+
+  const sections = descriptionStarts.map((descriptionStart, index) => {
+    const descriptionIndex = descriptionStart.index;
+
+    if (descriptionIndex === undefined) {
+      throw new Error("Could not locate a curriculum section in the PDF");
+    }
+
+    const precedingVideo = videoLabels
+      .filter((videoLabel) => (videoLabel.index ?? 0) < descriptionIndex)
+      .at(-1);
+    const sectionStart =
+      index === 0
+        ? 0
+        : (precedingVideo?.index ?? -1) +
+          (precedingVideo?.[0].length ?? 0);
+
+    if (sectionStart < 0) {
+      throw new Error("Could not determine a curriculum section boundary");
+    }
+
+    const descriptionEndMatch = curriculumText
+      .slice(descriptionIndex)
+      .match(/\b(?:Title|Topic)\s*:/i);
+
+    if (!descriptionEndMatch || descriptionEndMatch.index === undefined) {
+      throw new Error("Could not find lessons for a curriculum section");
+    }
+
+    const sectionEnd = sectionsEnd(descriptionStarts, index, curriculumText);
+    const sectionBlock = curriculumText.slice(sectionStart, sectionEnd);
+    const mainTopic = sectionBlock
+      .slice(0, descriptionIndex - sectionStart)
+      .trim();
+    const description = curriculumText
+      .slice(
+        descriptionIndex,
+        descriptionIndex + descriptionEndMatch.index,
+      )
+      .trim();
+    const subTopics: SubTopic[] = [];
+    const subTopicPattern =
+      /(?:Title|Topic)\s*:\s*(.*?)\s*Content\s*(?:URI|URL)\s*:\s*(.*?)(?:\s*Is\s*Video\s*:\s*(true|false))?(?=\s*(?:Title|Topic)\s*:|$)/gi;
+
+    for (const match of sectionBlock.matchAll(subTopicPattern)) {
+      const title = match[1].trim();
+      const contentURI = match[2].replace(/\s+/g, "").replace(/[.,;]+$/, "");
+
+      if (!title || !contentURI) continue;
+
+      subTopics.push({
+        title,
+        contentURI,
+        isVideo: match[3]?.toLowerCase() === "true",
+      });
+    }
+
+    if (!mainTopic || !description || subTopics.length === 0) {
+      throw new Error("Could not completely read a curriculum section from the PDF");
+    }
+
+    return { mainTopic, description, subTopics };
+  });
+
+  if (sections.length === 0) {
+    throw new Error("No curriculum sections were found in the PDF");
+  }
+
+  return {
     name,
     description,
     price,
@@ -86,75 +211,30 @@ export function convertCourseTextToReference(rawText: string): CourseReference {
     requiredDuration,
     image,
     skills,
-    contents: [],
+    contents: sections,
   };
+}
 
-  const mainContent = text.split(/Main Topic\s+Description\s+Subtopics/i)[1];
+function sectionsEnd(
+  descriptionStarts: RegExpMatchArray[],
+  currentIndex: number,
+  curriculumText: string,
+): number {
+  const nextDescription = descriptionStarts[currentIndex + 1];
 
-  if (!mainContent) {
-    return courseReference;
+  if (!nextDescription || nextDescription.index === undefined) {
+    return curriculumText.length;
   }
 
-  const knownMainTopics = [
-    "Introduction to Software Development",
-    "CSS Introduction",
-    "Version Control System",
-    "JavaScript Introduction",
-  ];
+  const precedingVideo = [
+    ...curriculumText
+      .slice(0, nextDescription.index)
+      .matchAll(/Is\s*Video\s*:\s*(?:true|false)/gi),
+  ].at(-1);
 
-  const contents: CourseContent[] = [];
-
-  for (let i = 0; i < knownMainTopics.length; i++) {
-    const currentTopic = knownMainTopics[i];
-    const nextTopic = knownMainTopics[i + 1];
-
-    const startIndex = mainContent.indexOf(currentTopic);
-
-    if (startIndex === -1) continue;
-
-    const endIndex =
-      nextTopic && mainContent.indexOf(nextTopic) !== -1
-        ? mainContent.indexOf(nextTopic)
-        : mainContent.length;
-
-    const topicBlock = mainContent.slice(startIndex, endIndex).trim();
-
-    const withoutTopic = topicBlock.replace(currentTopic, "").trim();
-
-    const firstTitleIndex = withoutTopic.search(/Title\s*:/i);
-
-    const topicDescription =
-      firstTitleIndex !== -1
-        ? withoutTopic.slice(0, firstTitleIndex).trim()
-        : withoutTopic;
-
-    const subtopicBlock =
-      firstTitleIndex !== -1 ? withoutTopic.slice(firstTitleIndex).trim() : "";
-
-    const subTopics: SubTopic[] = [];
-
-    const subTopicRegex =
-      /Title\s*:\s*(.*?)\s*Content URI\s*:\s*(.*?)\s*Is Video\s*:\s*(true|false)/gi;
-
-    let match: RegExpExecArray | null;
-
-    while ((match = subTopicRegex.exec(subtopicBlock)) !== null) {
-      subTopics.push({
-        title: match[1].trim(),
-        contentURI: match[2].trim(),
-        isVideo: match[3].toLowerCase() === "true",
-      });
-    }
-
-    contents.push({
-      mainTopic: currentTopic,
-      description: topicDescription,
-      subTopics,
-    });
+  if (!precedingVideo || precedingVideo.index === undefined) {
+    throw new Error("Could not determine a curriculum section boundary");
   }
 
-  return {
-    ...courseReference,
-    contents,
-  };
+  return precedingVideo.index + precedingVideo[0].length;
 }

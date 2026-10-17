@@ -40,9 +40,15 @@ exports.AppModule = AppModule = __decorate([
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => ({
                     connection: {
-                        host: configService.get('REDIS_HOST'),
-                        port: configService.get('REDIS_PORT'),
-                        password: configService.get('REDIS_PASSWORD'),
+                        host: process.env.NODE_ENV === 'production'
+                            ? configService.get('REDIS_HOST_PROD')
+                            : configService.get('REDIS_HOST'),
+                        port: process.env.NODE_ENV === 'production'
+                            ? configService.get('REDIS_PORT_PROD')
+                            : configService.get('REDIS_PORT'),
+                        password: process.env.NODE_ENV === 'production'
+                            ? configService.get('REDIS_PASSWORD_PROD')
+                            : configService.get('REDIS_PASSWORD'),
                         user: configService.get('REDIS_USER'),
                     },
                     defaultJobOptions: {
