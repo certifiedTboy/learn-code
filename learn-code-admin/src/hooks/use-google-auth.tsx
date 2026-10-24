@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { useLoginAdminWithGoogleMutation } from "../lib/apis/auth-apis";
 import { useToast } from "./use-toast";
-import { storeToken } from "../helpers/user-session";
 
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
 
@@ -262,7 +261,7 @@ export function useGoogleAuth() {
       if (isSuccess && data) {
         const { accessToken, refreshToken } = data.data;
 
-        await storeToken(accessToken);
+        localStorage.setItem("a_t", accessToken);
         localStorage.setItem("token", refreshToken);
         setLocation("/dashboard");
       }

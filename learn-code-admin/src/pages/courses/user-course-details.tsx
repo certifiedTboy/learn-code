@@ -59,8 +59,8 @@ export default function UserCourseDetails() {
           <div className="h-64 sm:h-80 relative">
             {course.image ? (
               <img
-                src={course.image}
-                alt={course.name}
+                src={course?.image}
+                alt={course?.name}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -75,27 +75,27 @@ export default function UserCourseDetails() {
             <div className="flex flex-wrap gap-3 mb-6">
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm text-white font-medium">
                 <BookOpen className="w-4 h-4 text-primary" />{" "}
-                {course.totalTopics}+ Topics
+                {course?.totalTopics}+ Topics
               </div>
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm text-white font-medium">
-                <Users className="w-4 h-4 text-blue-400" /> {course.subscribers}{" "}
-                Subscribers
+                <Users className="w-4 h-4 text-blue-400" />{" "}
+                {course?.subscribers} Subscribers
               </div>
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm text-white font-medium">
                 <Clock className="w-4 h-4 text-purple-400" />{" "}
-                {course.requiredDuration}+ Weeks
+                {course?.requiredDuration}+ Weeks
               </div>
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm text-white font-medium">
                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />{" "}
-                {course.rating}
+                {course?.rating}
               </div>
             </div>
 
             <h1 className="text-4xl sm:text-5xl font-display font-bold text-white mb-4 leading-tight">
-              {course.name}
+              {course?.name}
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-              {course.description}
+              {course?.description}
             </p>
           </div>
         </div>

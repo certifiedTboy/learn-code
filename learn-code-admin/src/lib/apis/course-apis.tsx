@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getToken } from "../../helpers/user-session";
 
 const baseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
@@ -8,7 +7,7 @@ export const courseApis = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: async (headers) => {
-      const token = await getToken();
+      const token = localStorage.getItem("a_t");
 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);

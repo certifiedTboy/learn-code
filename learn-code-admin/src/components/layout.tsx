@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Button } from "./ui/button";
-import { deleteToken } from "../helpers/user-session";
 import { useGoogleAuth } from "../hooks/use-google-auth";
 import {
   deleteAllCourse,
@@ -102,7 +101,7 @@ function DashboardLayoutShell({ children }: LayoutProps) {
   ];
 
   const onLogoutUser = async () => {
-    await deleteToken();
+    localStorage.removeItem("a_t");
     await revokeAccess();
     await deleteAllCourse();
     await deleteAllRegisteredCourses();

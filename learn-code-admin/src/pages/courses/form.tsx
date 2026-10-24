@@ -121,13 +121,15 @@ export default function CourseForm() {
       updateCourse({
         courseData: {
           ...formData,
+          completed: +courseData?.completed!,
+          subscribers: +courseData?.subscribers!,
           skills: Array.isArray(formData.skills)
             ? formData.skills
             : convertSkillsToArray(formData.skills),
           price: +formData.price,
           totalTopics: +formData.totalTopics,
           requiredDuration: +formData.requiredDuration,
-          rating: formData.rating.toString(),
+          rating: Number(courseData?.rating!)?.toFixed(1),
         },
         id: courseId,
       });

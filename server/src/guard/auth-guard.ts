@@ -64,8 +64,6 @@ export class AdminGuard implements CanActivate {
 
     const authHeader = request.headers['authorization'];
 
-    console.log(authHeader);
-
     if (authHeader?.split(' ')[0] !== 'Bearer') {
       throw new UnauthorizedException('Invalid token format', {
         cause: 'Unauthorized access',

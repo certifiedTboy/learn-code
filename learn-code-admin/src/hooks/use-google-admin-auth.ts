@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useLocation } from "wouter";
-import { storeToken } from "../helpers/user-session";
 import { useToast } from "./use-toast";
 import { useLoginAdminWithGoogleMutation } from "../lib/apis/auth-apis";
 
@@ -22,7 +21,7 @@ export function useGoogleAdminAuth() {
       if (isSuccess && data) {
         const { accessToken, refreshToken } = data.data;
 
-        await storeToken(accessToken);
+        localStorage.setItem("a_t", accessToken);
         localStorage.setItem("token", refreshToken);
         setLocation("/dashboard");
       }

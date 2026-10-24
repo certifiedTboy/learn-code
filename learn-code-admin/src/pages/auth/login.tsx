@@ -10,7 +10,6 @@ import useForm from "@/hooks/useForm";
 import { Input } from "@/components/ui/input";
 import { loginSchema } from "@/helpers/data-validator-schema";
 import { useLoginAdminAccountMutation } from "@/lib/apis/auth-apis";
-import { storeToken } from "@/helpers/user-session";
 import GoogleAuthButton from "@/components/google-auth-button";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import {
@@ -52,7 +51,7 @@ export default function Login() {
   useEffect(() => {
     if (isSuccess) {
       (async () => {
-        await storeToken(data?.data?.accessToken);
+        localStorage.setItem("a_t", data?.data?.accessToken);
         localStorage.setItem("token", data?.data?.refreshToken);
         setLocation("/dashboard");
       })();

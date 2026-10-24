@@ -67,9 +67,7 @@ export default function RegisteredCourses() {
                   asChild
                   className="h-11 w-full cursor-pointer font-semibold shadow-glow transition-shadow hover:shadow-primary/40"
                 >
-                  <Link href="/dashboard/courses">
-                    Enroll in a course
-                  </Link>
+                  <Link href="/dashboard">Enroll to a course</Link>
                 </Button>
 
                 <div className="flex items-center gap-3" aria-hidden="true">
