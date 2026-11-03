@@ -199,7 +199,7 @@ function PaymentOptions() {
         window.location.href = "/dashboard/my-courses";
       }
     })();
-  }, [paystackPaymentSuccess]);
+  }, [paymentCompleted]);
 
   return (
     <DashboardLayout>

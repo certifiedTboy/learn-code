@@ -1,121 +1,51 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, FileText, PlayCircle } from "lucide-react";
-import { Link, useRoute } from "wouter";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  PlayCircle,
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { useHistoryState } from "wouter/use-browser-location";
 import { DashboardLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import { useCourses } from "@/hooks/use-courses";
 import type { RootState } from "@/redux/store/store";
-
-type MainContent = {
-  title: string;
-  contentURI: string;
-  isVideo: boolean;
-  isCompleted: boolean;
-};
-
-type LessonState = {
-  courseName: string;
-  mainTopic: string;
-  mainContent: MainContent;
-  courseId: string;
-};
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function getLessonState(value: unknown): LessonState | null {
-  if (!isRecord(value) || !isRecord(value.mainContent)) {
-    return null;
-  }
-
-  const { courseName, mainTopic, mainContent, courseId } = value;
-  const { title, contentURI, isVideo, isCompleted } = mainContent;
-
-  if (
-    typeof courseName !== "string" ||
-    typeof mainTopic !== "string" ||
-    typeof courseId !== "string" ||
-    typeof title !== "string" ||
-    typeof contentURI !== "string" ||
-    typeof isVideo !== "boolean" ||
-    typeof isCompleted !== "boolean"
-  ) {
-    return null;
-  }
-
-  return {
-    courseName,
-    mainTopic,
-    courseId,
-    mainContent: { title, contentURI, isVideo, isCompleted },
-  };
-}
-
-function parseHttpUrl(value: string): URL | null {
-  try {
-    const url = new URL(value.trim());
-    return url.protocol === "https:" || url.protocol === "http:" ? url : null;
-  } catch {
-    return null;
-  }
-}
-
-function getYoutubeEmbedUrl(value: string): string | null {
-  const url = parseHttpUrl(value);
-  if (!url) return null;
-
-  const host = url.hostname.toLowerCase();
-  const isShortLink = host === "youtu.be";
-  const isYoutube =
-    host === "youtube.com" ||
-    host === "www.youtube.com" ||
-    host === "m.youtube.com" ||
-    host === "music.youtube.com" ||
-    host === "youtube-nocookie.com" ||
-    host === "www.youtube-nocookie.com";
-
-  if (!isShortLink && !isYoutube) return null;
-
-  let videoId: string | null = null;
-  if (isShortLink) {
-    videoId = url.pathname.split("/").filter(Boolean)[0] ?? null;
-  } else if (url.pathname === "/watch") {
-    videoId = url.searchParams.get("v");
-  } else {
-    videoId =
-      url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1] ?? null;
-  }
-
-  if (!videoId || !/^[\w-]{11}$/.test(videoId)) return null;
-  return `https://www.youtube-nocookie.com/embed/${videoId}`;
-}
-
-function getGoogleDocsEmbedUrl(value: string): string | null {
-  const url = parseHttpUrl(value);
-  if (!url || url.hostname.toLowerCase() !== "docs.google.com") return null;
-
-  const publishedDocument = url.pathname.match(
-    /^\/document\/d\/e\/([^/]+)\/pub/,
-  );
-  if (publishedDocument) {
-    return `https://docs.google.com/document/d/e/${encodeURIComponent(publishedDocument[1])}/pub?embedded=true`;
-  }
-
-  const document = url.pathname.match(/^\/document\/(?:u\/\d+\/)?d\/([^/]+)/);
-  if (!document) return null;
-
-  return `https://docs.google.com/document/d/${encodeURIComponent(document[1])}/preview`;
-}
+import {
+  getLessonState,
+  parseHttpUrl,
+  getYoutubeEmbedUrl,
+  getGoogleDocsEmbedUrl,
+} from "@/helpers/course";
 
 export function UserCourseContent() {
   const [tempCourseCompleted, setTempCourseCompleted] = useState(false);
-  const [, params] = useRoute("/courses/:id");
   const { currentUser } = useSelector((state: RootState) => state.authState);
-  const { markTopicAsCompleted } = useCourses();
-  const lesson = getLessonState(window.history.state);
-  const courseId = params;
+  const { getRegisteredCourse, markTopicAsCompleted } = useCourses();
+  const historyState = useHistoryState<unknown>();
+  const lesson = getLessonState(historyState);
+
+  const [location, setLocation] = useLocation();
+
+  const courseId = location && location?.split("/")[3];
+  const course = courseId ? getRegisteredCourse(courseId) : undefined;
+  const lessons =
+    course?.contents.flatMap((section) =>
+      section.subTopics.map((topic) => ({
+        mainTopic: section.mainTopic,
+        topic,
+      })),
+    ) ?? [];
+  const currentLessonIndex = lesson
+    ? lessons.findIndex(
+        ({ mainTopic, topic }) =>
+          mainTopic === lesson.mainTopic &&
+          topic.title === lesson.mainContent.title &&
+          topic.contentURI === lesson.mainContent.contentURI,
+      )
+    : -1;
 
   const originalUrl = lesson
     ? parseHttpUrl(lesson.mainContent.contentURI)
@@ -127,14 +57,37 @@ export function UserCourseContent() {
     : null;
 
   useEffect(() => {
-    if (lesson && !lesson?.mainContent?.isCompleted) {
-      setTempCourseCompleted(false);
-    }
+    setTempCourseCompleted(lesson?.mainContent.isCompleted ?? false);
+  }, [
+    lesson?.courseId,
+    lesson?.mainTopic,
+    lesson?.mainContent.contentURI,
+    lesson?.mainContent.isCompleted,
+    lesson?.mainContent.title,
+  ]);
 
-    if (lesson && lesson?.mainContent?.isCompleted) {
-      setTempCourseCompleted(true);
-    }
-  }, [lesson]);
+  function navigateToLesson(index: number) {
+    const nextLesson = lessons[index];
+    if (!nextLesson || !lesson) return;
+
+    const nextCourseId = course?.id ?? course?._id ?? lesson.courseId;
+    setLocation(
+      `/dashboard/my-courses/${nextCourseId}/content/?title=${encodeURIComponent(nextLesson.topic.title)}`,
+      {
+        state: {
+          mainTopic: nextLesson.mainTopic,
+          courseId: nextCourseId,
+          mainContent: {
+            title: nextLesson.topic.title,
+            contentURI: nextLesson.topic.contentURI,
+            isVideo: nextLesson.topic.isVideo,
+            isCompleted: nextLesson.topic.isCompleted,
+          },
+          courseName: course?.name ?? lesson.courseName,
+        },
+      },
+    );
+  }
 
   async function handleMarkTopicAsComplted(
     courseId: string,
@@ -142,9 +95,6 @@ export function UserCourseContent() {
     title: string,
   ) {
     const result = await markTopicAsCompleted(courseId, mainTopic, title);
-
-    console.log("result: ", result);
-
     //  @ts-ignore
     if (result?.success) {
       setTempCourseCompleted(true);
@@ -269,6 +219,37 @@ export function UserCourseContent() {
                   </div>
                 )}
             </section>
+
+            {currentLessonIndex >= 0 && (
+              <nav
+                aria-label="Lesson navigation"
+                className="flex flex-wrap items-center justify-between gap-3"
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer"
+                  disabled={currentLessonIndex === 0}
+                  onClick={() => navigateToLesson(currentLessonIndex - 1)}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                  Previous lesson
+                </Button>
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  Lesson {currentLessonIndex + 1} of {lessons.length}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer"
+                  disabled={currentLessonIndex === lessons.length - 1}
+                  onClick={() => navigateToLesson(currentLessonIndex + 1)}
+                >
+                  Next lesson
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </nav>
+            )}
           </>
         ) : (
           <section className="glass-panel rounded-2xl border border-white/10 p-8 text-center">

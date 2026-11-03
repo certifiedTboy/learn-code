@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCourses } from "@/hooks/use-courses";
 import { AdminCourseCard } from "../courses/admin-course-card";
-import { UserCourseCard } from "../courses/user-coruse-card";
+import { UserCourseCard } from "../courses/user-course-card";
 import { DashboardScreenMap } from "./screen-map";
 import type { RootState } from "@/redux/store/store";
 

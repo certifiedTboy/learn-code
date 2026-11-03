@@ -74,3 +74,17 @@ export const languageAliases: Record<string, string> = {
   cpp: "cpp",
   "c++": "cpp",
 };
+
+export type MainContent = {
+  title: string;
+  contentURI: string;
+  isVideo: boolean;
+  isCompleted: boolean;
+};
+
+export type LessonState = {
+  courseName: string;
+  mainTopic: string;
+  mainContent: MainContent;
+  courseId: string;
+};

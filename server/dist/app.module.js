@@ -38,25 +38,28 @@ exports.AppModule = AppModule = __decorate([
             }),
             bullmq_1.BullModule.forRootAsync({
                 imports: [config_1.ConfigModule],
-                useFactory: (configService) => ({
-                    connection: {
-                        host: process.env.NODE_ENV === 'production'
-                            ? configService.get('REDIS_HOST_PROD')
-                            : configService.get('REDIS_HOST'),
-                        port: process.env.NODE_ENV === 'production'
-                            ? configService.get('REDIS_PORT_PROD')
-                            : configService.get('REDIS_PORT'),
-                        password: process.env.NODE_ENV === 'production'
-                            ? configService.get('REDIS_PASSWORD_PROD')
-                            : configService.get('REDIS_PASSWORD'),
-                        user: configService.get('REDIS_USER'),
-                    },
-                    defaultJobOptions: {
-                        removeOnComplete: true,
-                        removeOnFail: true,
-                    },
-                }),
                 inject: [config_1.ConfigService],
+                useFactory: (configService) => {
+                    const isProduction = configService.get('NODE_ENV') === 'production';
+                    return {
+                        connection: {
+                            host: isProduction
+                                ? configService.get('REDIS_HOST_PROD')
+                                : configService.get('REDIS_HOST'),
+                            port: Number(isProduction
+                                ? configService.get('REDIS_PORT_PROD')
+                                : configService.get('REDIS_PORT')),
+                            password: isProduction
+                                ? configService.get('REDIS_PASSWORD_PROD')
+                                : configService.get('REDIS_PASSWORD'),
+                            username: configService.get('REDIS_USER'),
+                        },
+                        defaultJobOptions: {
+                            removeOnComplete: true,
+                            removeOnFail: false,
+                        },
+                    };
+                },
             }),
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
