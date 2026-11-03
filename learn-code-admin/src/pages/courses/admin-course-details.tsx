@@ -91,6 +91,53 @@ export default function AdminCourseDetails() {
     );
   };
 
+  const renderCourseAction = () => {
+    if (!registeredCourse) {
+      return (
+        <Button
+          onClick={() =>
+            setLocation(`/dashboard/my-courses/${courseId}/payment`)
+          }
+          type="button"
+          variant="outline"
+          className="h-12 flex-none cursor-pointer rounded-xl border-primary/40 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
+        >
+          <CircleDollarSign className="h-4 w-4" />
+          Enroll to course
+        </Button>
+      );
+    }
+
+    if (!registeredCourse.isExpired) {
+      return (
+        <Button
+          onClick={() =>
+            setLocation(`/dashboard/my-courses/${courseId}`)
+          }
+          type="button"
+          className="h-12 flex-none cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-glow sm:text-base"
+        >
+          <BookOpen className="h-4 w-4" />
+          Continue Learning
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        onClick={() =>
+          setLocation(`/dashboard/my-courses/${courseId}/payment`)
+        }
+        type="button"
+        variant="outline"
+        className="h-12 flex-none cursor-pointer rounded-xl border-primary/40 bg-primary/5 px-4 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
+      >
+        <CircleDollarSign className="h-4 w-4" />
+        Renew subscription
+      </Button>
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="mx-auto max-w-6xl space-y-8 pb-20">
@@ -161,14 +208,19 @@ export default function AdminCourseDetails() {
                     : "date unavailable"}
                 </p>
               </div>
-              <div className="shrink-0 rounded-2xl border border-primary/20 bg-primary/10 px-5 py-4 sm:text-right">
-                <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground sm:justify-end">
-                  <CircleDollarSign className="h-4 w-4 text-primary" />
-                  Course price
+              <div className="w-full shrink-0 space-y-3 sm:w-64">
+                <div className="rounded-2xl border border-primary/20 bg-primary/10 px-5 py-4 sm:text-right">
+                  <div className="mb-1 flex items-center gap-2 text-sm text-muted-foreground sm:justify-end">
+                    <CircleDollarSign className="h-4 w-4 text-primary" />
+                    Course price
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">
+                    ₦{formattedPrice}
+                  </p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">
-                  ₦{formattedPrice}
-                </p>
+                {currentUser?.role === "user" && (
+                  <div className="flex gap-3">{renderCourseAction()}</div>
+                )}
               </div>
             </div>
           </div>
@@ -339,43 +391,8 @@ export default function AdminCourseDetails() {
 
           {currentUser && currentUser?.role === "user" && (
             <div className="sticky bottom-0 z-30 -mx-4 border-y border-white/10 bg-background/85 px-4 py-3 shadow-lg backdrop-blur-xl md:-mx-8 md:px-8">
-              <div className="flex max-w-8 gap-3">
-                {!registeredCourse ? (
-                  <Button
-                    onClick={() =>
-                      setLocation(`/dashboard/my-courses/${courseId}/payment`)
-                    }
-                    type="button"
-                    variant="outline"
-                    className="h-12 flex-1 cursor-pointer rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
-                  >
-                    <CircleDollarSign className="h-4 w-4" />
-                    Enroll to course
-                  </Button>
-                ) : registeredCourse && !registeredCourse?.isExpired ? (
-                  <Button
-                    onClick={() =>
-                      setLocation(`/dashboard/my-courses/${courseId}`)
-                    }
-                    type="button"
-                    className="h-12 cursor-pointer flex-1 rounded-xl text-sm font-semibold shadow-glow sm:text-base"
-                  >
-                    <BookOpen className="h-4 w-4" />
-                    Continue Learning
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() =>
-                      setLocation(`/dashboard/my-courses/${courseId}/payment`)
-                    }
-                    type="button"
-                    variant="outline"
-                    className="h-12 flex-1 cursor-pointer rounded-xl border-primary/40 bg-primary/5 text-sm font-semibold text-primary hover:bg-primary/10 sm:text-base"
-                  >
-                    <CircleDollarSign className="h-4 w-4" />
-                    Renew subscription
-                  </Button>
-                )}
+              <div className="mx-auto flex w-full justify-center gap-3">
+                {renderCourseAction()}
               </div>
             </div>
           )}

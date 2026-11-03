@@ -26,30 +26,65 @@ import { BullModule } from '@nestjs/bullmq';
       inject: [ConfigService],
     }),
 
+    // BullModule.forRootAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: (configService: ConfigService) => ({
+
+    //     connection: {
+    //       host:
+    //         process.env.NODE_ENV === 'production'
+    //           ? configService.get<string>('REDIS_HOST_PROD')
+    //           : configService.get<string>('REDIS_HOST'),
+    //       port:
+    //         process.env.NODE_ENV === 'production'
+    //           ? configService.get<number>('REDIS_PORT_PROD')
+    //           : configService.get<number>('REDIS_PORT'),
+    //       password:
+    //         process.env.NODE_ENV === 'production'
+    //           ? configService.get<string>('REDIS_PASSWORD_PROD')
+    //           : configService.get<string>('REDIS_PASSWORD'),
+    //       user: configService.get<string>('REDIS_USER'),
+    //     },
+    //     defaultJobOptions: {
+    //       removeOnComplete: true,
+    //       removeOnFail: true,
+    //     },
+    //   }),
+    //   inject: [ConfigService],
+    // }),
+
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host:
-            process.env.NODE_ENV === 'production'
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const isProduction =
+          configService.get<string>('NODE_ENV') === 'production';
+
+        return {
+          connection: {
+            host: isProduction
               ? configService.get<string>('REDIS_HOST_PROD')
               : configService.get<string>('REDIS_HOST'),
-          port:
-            process.env.NODE_ENV === 'production'
-              ? configService.get<number>('REDIS_PORT_PROD')
-              : configService.get<number>('REDIS_PORT'),
-          password:
-            process.env.NODE_ENV === 'production'
+
+            port: Number(
+              isProduction
+                ? configService.get<string>('REDIS_PORT_PROD')
+                : configService.get<string>('REDIS_PORT'),
+            ),
+
+            password: isProduction
               ? configService.get<string>('REDIS_PASSWORD_PROD')
               : configService.get<string>('REDIS_PASSWORD'),
-          user: configService.get<string>('REDIS_USER'),
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      }),
-      inject: [ConfigService],
+
+            username: configService.get<string>('REDIS_USER'),
+          },
+
+          defaultJobOptions: {
+            removeOnComplete: true,
+            removeOnFail: false,
+          },
+        };
+      },
     }),
 
     ConfigModule.forRoot({
