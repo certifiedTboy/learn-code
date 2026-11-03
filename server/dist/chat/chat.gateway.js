@@ -97,7 +97,7 @@ exports.ChatGateway = ChatGateway = __decorate([
     (0, common_1.Injectable)(),
     (0, websockets_1.WebSocketGateway)({
         cors: {
-            origin: '*',
+            origin: 'https://www.learncode.codes',
         },
     }),
     __metadata("design:paramtypes", [chat_services_1.ChatService,

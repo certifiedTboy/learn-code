@@ -16,7 +16,7 @@ import { UsersService } from 'src/user/users-service';
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: '*', // or your frontend URL
+    origin: 'https://www.learncode.codes', // or your frontend URL
   },
 })
 export class ChatGateway
