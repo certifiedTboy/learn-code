@@ -19,7 +19,11 @@ const bootstrap = async () => {
         type: common_1.VersioningType.URI,
     });
     app.enableCors({
-        origin: ['http://localhost:5173', 'https://2c8c1a26d806.ngrok-free.app'],
+        origin: [
+            'http://localhost:5173',
+            'https://2c8c1a26d806.ngrok-free.app',
+            'https://www.learncode.codes',
+        ],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         allowedHeaders: [
             'Content-Type',
